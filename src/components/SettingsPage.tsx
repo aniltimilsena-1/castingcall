@@ -1,0 +1,159 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+
+const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
+
+export default function SettingsPage() {
+  const { user, profile, refreshProfile } = useAuth();
+  const [name, setName] = useState("");
+  const [location, setLocation] = useState("");
+  const [bio, setBio] = useState("");
+  const [role, setRole] = useState("Actor");
+  const [newPassword, setNewPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || "");
+      setLocation(profile.location || "");
+      setBio(profile.bio || "");
+      setRole(profile.role || "Actor");
+    }
+  }, [profile]);
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("profiles").update({ name, location, bio, role }).eq("user_id", user.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success("Settings saved!");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password updated!");
+      setNewPassword("");
+    } catch (e: any) {
+      toast.error(e.message);
+    }
+  };
+
+  return (
+    <motion.div className="max-w-[680px] mx-auto px-4 py-12" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+      <h1 className="font-display text-4xl text-primary mb-1">Settings</h1>
+      <p className="text-muted-foreground text-sm mb-8">Manage your account preferences</p>
+
+      <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6">
+        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Profile Photo</h3>
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0 flex items-center justify-center font-display text-2xl text-primary">
+            {profile?.photo_url ? (
+              <img src={profile.photo_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              (profile?.name || "?")[0].toUpperCase()
+            )}
+          </div>
+          <div>
+            <input
+              type="file"
+              id="settings-photo-upload"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file || !user) return;
+                const fileExt = file.name.split('.').pop();
+                const filePath = `${user.id}/${Math.random()}.${fileExt}`;
+
+                try {
+                  toast.loading("Uploading photo...");
+                  const { error: uploadError } = await supabase.storage
+                    .from('avatars')
+                    .upload(filePath, file);
+
+                  if (uploadError) throw uploadError;
+
+                  const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(filePath);
+
+                  const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({ photo_url: publicUrl })
+                    .eq('user_id', user.id);
+
+                  if (updateError) throw updateError;
+                  await refreshProfile();
+                  toast.dismiss();
+                  toast.success("Photo updated!");
+                } catch (err: any) {
+                  toast.dismiss();
+                  toast.error(err.message || "Failed to upload photo");
+                }
+              }}
+            />
+            <label
+              htmlFor="settings-photo-upload"
+              className="bg-secondary text-primary px-4 py-2 rounded-lg font-body font-bold text-xs cursor-pointer hover:bg-secondary/80 transition-colors inline-block mb-2"
+            >
+              Update Photo
+            </label>
+            <p className="text-[0.7rem] text-muted-foreground">JPG, PNG or GIF. Max 2MB.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6 space-y-4">
+        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Account Details</h3>
+        <div className="text-sm text-muted-foreground pb-2 border-b border-border">{user?.email}</div>
+        <InputField label="DISPLAY NAME" value={name} onChange={setName} />
+        <div>
+          <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">ROLE</label>
+          <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors">
+            {ROLES.map((r) => <option key={r}>{r}</option>)}
+          </select>
+        </div>
+        <InputField label="LOCATION" value={location} onChange={setLocation} placeholder="e.g. Mumbai, India" />
+        <div>
+          <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">BIO</label>
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Your bio…" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors resize-y placeholder:text-muted-foreground/40" />
+        </div>
+        <button onClick={handleSaveProfile} disabled={saving} className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-body font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-50">
+          {saving ? "Saving…" : "Save Settings"}
+        </button>
+      </div>
+
+      <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
+        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Change Password</h3>
+        <InputField label="NEW PASSWORD" type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 6 characters" />
+        <button onClick={handleChangePassword} className="border-[1.5px] border-border text-foreground px-8 py-3 rounded-lg font-body font-bold text-sm hover:border-primary hover:text-primary transition-colors">
+          Update Password
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function InputField({ label, value, onChange, placeholder, type = "text" }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">{label}</label>
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40" />
+    </div>
+  );
+}

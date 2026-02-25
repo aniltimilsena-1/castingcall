@@ -1,0 +1,426 @@
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Tables } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Trash2, Edit3, FolderOpen, Layout, Clock, CheckCircle2, X, ImageIcon, Search, MapPin, DollarSign, Briefcase, Users, Eye, Check, UserPlus } from "lucide-react";
+
+type Project = Tables<"projects"> & {
+  thumbnail_url?: string | null;
+  requirements?: string | null;
+  role_category?: string | null;
+  location?: string | null;
+  salary_range?: string | null;
+};
+
+export default function MyProjectsPage() {
+  const { user } = useAuth();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Pipeline State
+  const [viewingApplicantsFor, setViewingApplicantsFor] = useState<Project | null>(null);
+  const [applicants, setApplicants] = useState<any[]>([]);
+  const [applicantsLoading, setApplicantsLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    status: "active",
+    thumbnail_url: "",
+    requirements: "",
+    role_category: "Actor",
+    location: "",
+    salary_range: ""
+  });
+
+  const fetchProjects = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("projects")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      toast.error("Failed to load projects");
+    } else {
+      setProjects(data || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, [user]);
+
+  const fetchApplicants = async (project: Project) => {
+    setApplicantsLoading(true);
+    setViewingApplicantsFor(project);
+    const { data, error } = await supabase
+      .from('applications' as any)
+      .select(`
+        *,
+        profiles:applicant_id (id, name, photo_url, role, location, experience_years)
+      `)
+      .eq('project_id', project.id);
+
+    if (error) {
+      toast.error("Could not load applicants");
+    } else {
+      setApplicants(data || []);
+    }
+    setApplicantsLoading(false);
+  };
+
+  const updateApplicantStatus = async (appId: string, status: string) => {
+    const { error } = await supabase
+      .from('applications' as any)
+      .update({ status } as any)
+      .eq('id', appId);
+
+    if (error) {
+      toast.error("Failed to update status");
+    } else {
+      toast.success(`Applicant marked as ${status}`);
+      setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status } : a));
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user || !formData.title.trim()) {
+      toast.error("Project title is required");
+      return;
+    }
+
+    try {
+      const projectPayload = {
+        user_id: user.id,
+        title: formData.title,
+        description: formData.description,
+        status: formData.status,
+        thumbnail_url: formData.thumbnail_url,
+        requirements: formData.requirements,
+        role_category: formData.role_category,
+        location: formData.location,
+        salary_range: formData.salary_range
+      };
+
+      if (editId) {
+        const { error } = await supabase
+          .from("projects")
+          .update(projectPayload as any)
+          .eq("id", editId);
+
+        if (error) throw error;
+        toast.success("Project updated successfully");
+      } else {
+        const { error } = await supabase.from("projects").insert(projectPayload as any);
+
+        if (error) throw error;
+        toast.success("New casting call published!");
+      }
+      resetForm();
+      fetchProjects();
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this project?")) return;
+    const { error } = await supabase.from("projects").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Project archived");
+      fetchProjects();
+    }
+  };
+
+  const startEdit = (p: Project) => {
+    setEditId(p.id);
+    setFormData({
+      title: p.title,
+      description: p.description || "",
+      status: p.status || "active",
+      thumbnail_url: p.thumbnail_url || "",
+      requirements: p.requirements || "",
+      role_category: p.role_category || "Actor",
+      location: p.location || "",
+      salary_range: p.salary_range || ""
+    });
+    setShowForm(true);
+  };
+
+  const resetForm = () => {
+    setShowForm(false);
+    setEditId(null);
+    setFormData({
+      title: "",
+      description: "",
+      status: "active",
+      thumbnail_url: "",
+      requirements: "",
+      role_category: "Actor",
+      location: "",
+      salary_range: ""
+    });
+  };
+
+  const filteredProjects = projects.filter(p =>
+    p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <motion.div
+      className="max-w-[1000px] mx-auto px-4 py-12"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div>
+          <h1 className="font-display text-5xl text-primary mb-2 tracking-tight">Recruitment</h1>
+          <p className="text-muted-foreground text-sm font-body tracking-wide font-medium">Manage your active casting calls and talent pipeline</p>
+        </div>
+        <button
+          onClick={() => { resetForm(); setShowForm(true); }}
+          className="flex items-center justify-center gap-2 bg-primary text-black px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
+        >
+          <Plus className="w-5 h-5" /> Launch New Project
+        </button>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4 mb-10">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <input
+            type="text"
+            placeholder="Search within your projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-card/50 backdrop-blur-md border-[1.5px] border-card-border rounded-2xl pl-12 pr-5 py-4 text-sm outline-none focus:border-primary transition-all shadow-inner"
+          />
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] p-10 mb-12 shadow-2xl relative overflow-hidden"
+          >
+            {/* Form content remains same as before but refined */}
+            <div className="flex items-center justify-between mb-10">
+              <h3 className="font-display text-3xl text-white flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <Layout className="text-primary w-6 h-6" />
+                </div>
+                {editId ? "Edit Project" : "New Casting Call"}
+              </h3>
+              <button onClick={resetForm} className="p-3 hover:bg-white/5 rounded-full transition-colors text-muted-foreground"><X size={24} /></button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Project Title</label>
+                  <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. Major Action Movie Lead" className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Thumbnail link</label>
+                  <input value={formData.thumbnail_url} onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })} placeholder="https://..." className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Role Category</label>
+                    <select value={formData.role_category} onChange={(e) => setFormData({ ...formData, role_category: e.target.value })} className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all appearance-none cursor-pointer">
+                      <option value="Actor">Actor</option>
+                      <option value="Singer">Singer</option>
+                      <option value="Dancer">Dancer</option>
+                      <option value="Crew">Crew</option>
+                    </select>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Status</label>
+                    <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all appearance-none cursor-pointer">
+                      <option value="active">🟢 Active</option>
+                      <option value="draft">🟡 Draft</option>
+                      <option value="completed">🔵 Closed</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-8">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Location</label>
+                    <input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="City, Country" className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Salary / Budget</label>
+                    <input value={formData.salary_range} onChange={(e) => setFormData({ ...formData, salary_range: e.target.value })} placeholder="$ Range" className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Brief Description</label>
+                  <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="What is this project about?" rows={3} className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all resize-none shadow-inner" />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-6 mt-12 pt-10 border-t border-border/50">
+              <button onClick={resetForm} className="px-8 py-4 rounded-2xl font-bold text-sm text-muted-foreground hover:text-white transition-colors">Discard</button>
+              <button onClick={handleSave} className="bg-primary text-black px-14 py-4 rounded-2xl font-black text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30">{editId ? "Update Project" : "Publish Project"}</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {viewingApplicantsFor && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-card border border-border w-full max-w-4xl max-h-[90vh] rounded-[3rem] overflow-hidden flex flex-col shadow-2xl"
+            >
+              <div className="p-10 border-b border-border flex items-center justify-between bg-secondary/20">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Users className="text-primary w-7 h-7" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-3xl text-white leading-none mb-2">{viewingApplicantsFor.title}</h3>
+                    <p className="text-xs text-muted-foreground font-black uppercase tracking-[2px]">Applicants Pipeline ({applicants.length})</p>
+                  </div>
+                </div>
+                <button onClick={() => setViewingApplicantsFor(null)} className="p-4 hover:bg-white/5 rounded-full transition-colors text-muted-foreground"><X size={24} /></button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-10 space-y-6">
+                {applicantsLoading ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <p className="text-xs font-black tracking-[3px] uppercase text-muted-foreground">Syncing Pipeline...</p>
+                  </div>
+                ) : applicants.length === 0 ? (
+                  <div className="text-center py-20">
+                    <UserPlus className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
+                    <p className="text-muted-foreground text-lg">No one has applied for this role yet.</p>
+                  </div>
+                ) : (
+                  applicants.map((a: any) => (
+                    <div key={a.id} className="group bg-secondary/10 border border-border rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary/40 transition-all">
+                      <div className="w-16 h-16 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0">
+                        <img src={a.profiles?.photo_url || ""} className="w-full h-full object-cover" alt="" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xl font-bold text-white mb-1">{a.profiles?.name}</div>
+                        <div className="text-sm text-primary font-bold uppercase tracking-widest text-[0.7rem] mb-2">{a.profiles?.role}</div>
+                        <div className="flex gap-4 text-xs text-muted-foreground">
+                          <span>📍 {a.profiles?.location || 'Remote'}</span>
+                          <span>⭐ {a.profiles?.experience_years}y Exp</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={a.status}
+                          onChange={(e) => updateApplicantStatus(a.id, e.target.value)}
+                          className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest outline-none border transition-all cursor-pointer ${a.status === 'accepted' ? 'bg-green-500 text-black border-green-500' :
+                              a.status === 'rejected' ? 'bg-red-500 text-white border-red-500' :
+                                'bg-secondary border-border text-white'
+                            }`}
+                        >
+                          <option value="pending">⏳ Pending</option>
+                          <option value="accepted">✅ Hired</option>
+                          <option value="rejected">❌ Rejected</option>
+                        </select>
+                        <button className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5">
+                          <Eye size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-40">
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
+          <FolderOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
+          <p className="text-muted-foreground text-lg mb-2">No projects found.</p>
+          <button onClick={() => setShowForm(true)} className="text-primary font-bold hover:underline">Launch your first casting call →</button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {filteredProjects.map((p) => (
+            <motion.div
+              layout
+              key={p.id}
+              className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] overflow-hidden hover:border-primary/50 transition-all flex flex-col group shadow-lg"
+            >
+              <div className="aspect-[16/9] bg-secondary relative overflow-hidden">
+                {p.thumbnail_url ? (
+                  <img src={p.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-primary/10">
+                    <Layout className="w-24 h-24" />
+                  </div>
+                )}
+                <div className="absolute top-6 left-6">
+                  <span className={`px-4 py-2 rounded-full text-[0.65rem] font-black uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-black' :
+                      p.status === 'completed' ? 'bg-blue-600 text-white' :
+                        'bg-white/10 text-white'
+                    }`}>
+                    {p.status}
+                  </span>
+                </div>
+              </div>
+              <div className="p-8">
+                <div className="flex items-center gap-2 text-[0.6rem] font-black tracking-[3px] text-primary uppercase mb-4 opacity-70">
+                  <Briefcase size={12} /> {p.role_category} Search
+                </div>
+                <h4 className="font-display text-2xl text-white mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
+                <p className="text-muted-foreground text-sm line-clamp-2 mb-8 h-10 leading-relaxed font-body italic opacity-60">"{p.description}"</p>
+
+                <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                  <div className="flex gap-2">
+                    <button onClick={() => startEdit(p)} className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-black rounded-xl transition-all"><Edit3 size={16} /></button>
+                    <button onClick={() => handleDelete(p.id)} className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={16} /></button>
+                  </div>
+                  <button
+                    onClick={() => fetchApplicants(p)}
+                    className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-black uppercase tracking-[2px] hover:bg-primary hover:text-black transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
+                  >
+                    Review Pipeline <Users size={14} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
