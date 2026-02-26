@@ -87,12 +87,12 @@ export default function HomePage({ onCategoryClick, onProfileClick }: HomePagePr
                   )}
                 </div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-bold text-white text-lg">{p.name}</h4>
+                  <h4 className="font-bold text-foreground text-lg">{p.name}</h4>
                   <Crown size={14} className="text-amber-500" />
                 </div>
                 <p className="text-[0.6rem] font-black uppercase tracking-[2px] text-primary/70 mb-4">{p.role}</p>
                 <p className="text-xs text-muted-foreground line-clamp-2 h-8 mb-6 italic">"{p.bio || 'Professional talent available for casting calls.'}"</p>
-                <button className="text-[0.65rem] font-black uppercase tracking-[2px] text-white group-hover:text-primary transition-colors">View Profile →</button>
+                <button className="text-[0.65rem] font-black uppercase tracking-[2px] text-foreground group-hover:text-primary transition-colors">View Profile →</button>
               </div>
             ))}
           </div>

@@ -74,7 +74,7 @@ export default function SavedTalentsPage() {
       ) : talents.length === 0 ? (
         <div className="text-center py-24 bg-card/30 border border-dashed border-border rounded-3xl">
           <Bookmark className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-          <h2 className="text-xl font-display text-white mb-2">No saved profiles yet</h2>
+          <h2 className="text-xl font-medium text-foreground mb-2">No saved profiles yet</h2>
           <p className="text-muted-foreground max-w-sm mx-auto font-body text-sm leading-relaxed">
             When you find a talent you'd like to work with, click the save icon to store them here for quick access.
           </p>
@@ -99,7 +99,7 @@ export default function SavedTalentsPage() {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="font-bold text-base text-white truncate group-hover:text-primary transition-colors">{t.name}</div>
+                  <div className="font-medium text-base text-foreground truncate group-hover:text-primary transition-colors">{t.name}</div>
                   {t.plan === 'pro' && <span className="text-[0.6rem] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20 flex-shrink-0">PRO</span>}
                 </div>
                 <div className="text-sm text-primary font-medium mb-1 line-clamp-1">{t.role}</div>

@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export type PageName =
-  | "home" | "auth" | "profile" | "search"
+  | "home" | "auth" | "profile" | "search" | "feed"
   | "projects" | "notifications" | "messages"
   | "settings" | "saved" | "analytics"
   | "help" | "terms" | "premium";
@@ -45,13 +45,13 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
         onClick={onClose}
       />
 
-      {/* Drawer */}
+      {/* Drawer — 3-layer: sticky header | scrollable content | sticky footer */}
       <div
-        className={`fixed top-0 right-0 h-screen w-[300px] max-w-full bg-card border-l border-border z-[300] flex flex-col overflow-y-auto transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)] ${open ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 h-[100dvh] w-[300px] max-w-full bg-card border-l border-border z-[300] flex flex-col transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)] ${open ? "translate-x-0" : "translate-x-full"
           }`}
       >
-        {/* Header */}
-        <div className="px-6 pt-8 pb-5 border-b border-border flex items-center gap-4 relative">
+        {/* ── Sticky Header ── */}
+        <div className="flex-shrink-0 px-6 pt-8 pb-5 border-b border-border flex items-center gap-4 relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-muted-foreground hover:text-primary transition-colors"
@@ -66,44 +66,52 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
               initials
             )}
           </div>
-          <div>
-            <div className="font-bold text-sm text-foreground">
+          <div className="min-w-0">
+            <div className="font-bold text-sm text-foreground truncate">
               {profile?.name || "Guest"}
             </div>
-            <div className="text-xs text-muted-foreground mt-0.5">
+            <div className="text-xs text-muted-foreground mt-0.5 truncate">
               {profile?.role || (user ? "Member" : "Not signed in")}
             </div>
           </div>
         </div>
 
-        {/* Sections */}
-        <Section label="Account">
-          <Item onClick={() => go("profile")}>My Profile</Item>
-          <Item onClick={() => go("premium")}>Premium</Item>
-          <Item onClick={() => go("projects")}>My Projects</Item>
-          <Item onClick={() => go("notifications")}>Notifications</Item>
-          <Item onClick={() => go("messages")}>Messages</Item>
-        </Section>
-        <Hr />
-        <Section label="General">
-          <Item onClick={() => go("settings")}>Settings</Item>
-          <Item onClick={() => go("saved")}>Saved Talents</Item>
-          <Item onClick={() => go("analytics")}>Analytics</Item>
-        </Section>
-        <Hr />
-        <Section label="Support">
-          <Item onClick={() => go("help")}>Help & Support</Item>
-          <Item onClick={() => go("terms")}>Terms & Privacy</Item>
-        </Section>
-        <Hr />
+        {/* ── Scrollable Nav Items ── */}
+        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
+          <Section label="Discover">
+            <Item onClick={() => go("feed")}>Feed</Item>
+          </Section>
+          <Hr />
+          <Section label="Account">
+            <Item onClick={() => go("profile")}>My Profile</Item>
+            <Item onClick={() => go("premium")}>Premium</Item>
+            <Item onClick={() => go("projects")}>My Projects</Item>
+            <Item onClick={() => go("notifications")}>Notifications</Item>
+            <Item onClick={() => go("messages")}>Messages</Item>
+          </Section>
+          <Hr />
+          <Section label="General">
+            <Item onClick={() => go("settings")}>Settings</Item>
+            <Item onClick={() => go("saved")}>Saved Talents</Item>
+            <Item onClick={() => go("analytics")}>Analytics</Item>
+          </Section>
+          <Hr />
+          <Section label="Support">
+            <Item onClick={() => go("help")}>Help & Support</Item>
+            <Item onClick={() => go("terms")}>Terms & Privacy</Item>
+          </Section>
+        </div>
 
+        {/* ── Sticky Footer — Log Out ── */}
         {user && (
-          <button
-            onClick={handleLogout}
-            className="mx-6 mb-6 mt-auto border-[1.5px] border-border rounded-lg text-destructive font-body font-semibold text-sm py-3 text-center hover:bg-destructive/10 hover:border-destructive transition-colors"
-          >
-            Log Out
-          </button>
+          <div className="flex-shrink-0 px-6 py-5 border-t border-border">
+            <button
+              onClick={handleLogout}
+              className="w-full border-[1.5px] border-border rounded-lg text-destructive font-body font-semibold text-sm py-3 text-center hover:bg-destructive/10 hover:border-destructive transition-colors"
+            >
+              Log Out
+            </button>
+          </div>
         )}
       </div>
     </>

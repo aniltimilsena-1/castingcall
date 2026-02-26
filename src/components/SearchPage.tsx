@@ -133,10 +133,10 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="group relative flex flex-col md:flex-row md:items-center gap-8 bg-card border-[1.5px] border-card-border rounded-[2.5rem] px-10 py-10 hover:border-primary/50 hover:shadow-[0_20px_50px_-15px_rgba(251,191,36,0.15)] transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1"
+                className="group relative flex flex-col md:flex-row md:items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-4 md:px-6 py-4 md:py-5 hover:border-primary/50 hover:shadow-[0_20px_50px_-15px_rgba(251,191,36,0.15)] transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center gap-3 flex-shrink-0 relative">
-                  <div className="w-28 h-28 rounded-full bg-secondary border-[4px] border-primary flex items-center justify-center font-display text-4xl text-primary overflow-hidden shadow-2xl transition-transform duration-500 group-hover:scale-110">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110">
                     {p.photo_url ? (
                       <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
                     ) : (
@@ -148,28 +148,31 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                   )}
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-4 mb-2">
-                    <div className="text-3xl font-bold text-white group-hover:text-primary transition-colors tracking-tight">
+                    <div className="text-base md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate">
                       {p.name || "Unknown"}
                     </div>
                   </div>
-                  <div className="text-primary font-black text-xl mb-6 tracking-wide uppercase text-sm opacity-80">{p.role || "Member"}</div>
-                  <div className="flex flex-wrap gap-8">
+                  <div className="text-primary font-semibold text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>
+                  <div className="flex flex-wrap gap-4 md:gap-8">
                     {p.location && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
                   </div>
-                  {p.bio && <p className="text-sm text-muted-foreground/50 line-clamp-1 mt-5 italic font-body">"{p.bio}"</p>}
+                  {p.bio && <p className="text-sm text-muted-foreground/50 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 flex-shrink-0 self-end md:self-auto mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={(e) => toggleSave(e, p.id)}
-                    className={`p-5 rounded-2xl border transition-all ${savedTalentIds.includes(p.id) ? 'bg-primary/20 border-primary text-primary shadow-xl shadow-primary/10' : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary/50'}`}
+                    className={`p-2 md:p-3 rounded-xl border transition-all ${savedTalentIds.includes(p.id) ? 'bg-primary/20 border-primary text-primary shadow-xl shadow-primary/10' : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary/50'}`}
                   >
-                    <Bookmark size={24} fill={savedTalentIds.includes(p.id) ? "currentColor" : "none"} />
+                    <Bookmark size={20} fill={savedTalentIds.includes(p.id) ? "currentColor" : "none"} />
                   </button>
-                  <button className="bg-primary text-primary-foreground px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30">
+                  <button
+                    onClick={() => onProfileClick(p)}
+                    className="bg-primary text-primary-foreground px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs font-bold uppercase tracking-[1px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
+                  >
                     View Profile
                   </button>
                 </div>
@@ -500,7 +503,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
 
   return (
     <Dialog open={!!url} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-5xl h-[85vh] p-0 bg-background border-none flex flex-col md:flex-row overflow-hidden shadow-2xl rounded-3xl">
+      <DialogContent className="max-w-5xl max-h-[90svh] p-0 bg-background border-none flex flex-col md:flex-row overflow-hidden shadow-2xl rounded-3xl">
         <div className="flex-1 bg-black flex items-center justify-center p-4 relative">
           <img src={url || ""} className="max-w-full max-h-full object-contain" alt="Post" />
           <button onClick={onClose} className="absolute top-4 left-4 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full transition-all"><X size={20} /></button>

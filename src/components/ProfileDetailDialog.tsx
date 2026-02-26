@@ -84,15 +84,19 @@ export default function ProfileDetailDialog({
     return (
         <>
             <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setShowFullProfile(false); }}>
-                <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-background p-0 border-none shadow-2xl rounded-3xl overflow-hidden">
-                    <div className="relative">
-                        <div className="p-8">
+                <DialogContent className="max-w-4xl w-full bg-background p-0 border-none shadow-2xl rounded-3xl flex flex-col" style={{ maxHeight: '95svh', height: 'auto' }}>
+                    {/* Scrollable body — THIS is the scroll container for mobile touch */}
+                    <div
+                        className="overflow-y-auto overscroll-contain"
+                        style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+                    >
+                        <div className="p-5 md:p-8">
                             {!showFullProfile ? (
                                 /* Mini Profile View */
                                 <div className="space-y-8">
-                                    <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+                                    <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
                                         <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                                            <div className="w-40 h-40 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-5xl text-primary shadow-xl shadow-primary/10 overflow-hidden">
+                                            <div className="w-28 h-28 md:w-40 md:h-40 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-4xl md:text-5xl text-primary shadow-xl shadow-primary/10 overflow-hidden">
                                                 {profile?.photo_url ? (
                                                     <img src={profile.photo_url} alt="Profile" className="w-full h-full object-cover rounded-full" />
                                                 ) : (
@@ -316,7 +320,7 @@ export default function ProfileDetailDialog({
                                 </motion.div>
                             )}
                         </div>
-                    </div>
+                    </div>{/* end scrollable body */}
                 </DialogContent>
             </Dialog>
             <PhotoViewer

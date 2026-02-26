@@ -60,16 +60,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, name: string, role: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name } },
+      options: {
+        data: { name, role }, // Passed into auth metadata → DB trigger picks these up
+      },
     });
     if (error) throw error;
-    // Update profile role after signup
-    const { data: { user: newUser } } = await supabase.auth.getUser();
-    if (newUser) {
-      await supabase.from("profiles").update({ name, role }).eq("user_id", newUser.id);
+
+    // Explicitly upsert the profile row with name + role using the returned user ID
+    // This is more reliable than calling getUser() immediately after signUp
+    const newUserId = data.user?.id;
+    if (newUserId) {
+      await supabase
+        .from("profiles")
+        .upsert({ user_id: newUserId, name, role, email }, { onConflict: "user_id" });
     }
   };
 

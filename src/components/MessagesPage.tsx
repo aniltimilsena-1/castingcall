@@ -328,7 +328,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
   };
 
   return (
-    <motion.div className="max-w-[1250px] mx-auto px-4 py-6 h-[calc(100vh-100px)] flex gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+    <motion.div className="max-w-[1250px] mx-auto px-4 py-4 md:py-6 h-[calc(100dvh-116px)] sm:h-[calc(100dvh-64px)] flex gap-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {/* Sidebar - Chats List */}
       <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[350px] bg-[#1c1c1c] border border-border/20 rounded-3xl overflow-hidden flex-col shadow-xl gold-glow`}>
         <div className="p-4 space-y-4">
@@ -443,8 +443,16 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
             {/* Chat Header */}
             <div className="px-4 py-3 flex items-center justify-between border-b border-border/20">
               <div className="flex items-center gap-3">
+                {/* Back button — mobile only */}
+                <button
+                  className="md:hidden p-2 -ml-1 text-muted-foreground hover:text-primary transition-colors"
+                  onClick={() => setSelectedPartner(null)}
+                  aria-label="Back to conversations"
+                >
+                  ←
+                </button>
                 <div
-                  className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border/10 cursor-pointer hover:opacity-80 transition-opacity"
+                  className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border/10 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
                   onClick={() => setShowPartnerProfile(true)}
                 >
                   {partnerProfile?.photo_url ? (

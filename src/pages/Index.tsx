@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Home, Sparkles, Search, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import AppDrawer, { PageName } from "@/components/AppDrawer";
 import HomePage from "@/components/HomePage";
 import AuthPage from "@/components/AuthPage";
 import ProfilePage from "@/components/ProfilePage";
 import SearchPage, { PhotoViewer } from "@/components/SearchPage";
+import FeedPage from "@/components/FeedPage";
 import MyProjectsPage from "@/components/MyProjectsPage";
 import NotificationsPage from "@/components/NotificationsPage";
 import MessagesPage from "@/components/MessagesPage";
@@ -31,6 +33,7 @@ const Index = () => {
   const [selectedProfileForDialog, setSelectedProfileForDialog] = useState<any>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
+  const [feedRefreshKey, setFeedRefreshKey] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -75,6 +78,11 @@ const Index = () => {
       setPage("auth");
       return;
     }
+    // Tapping Feed tab while already on feed → refresh
+    if (p === "feed" && page === "feed") {
+      setFeedRefreshKey(k => k + 1);
+      return;
+    }
     setPage(p);
   };
 
@@ -107,7 +115,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col min-h-screen">
       <Navbar
         onSearch={handleSearch}
         onAuthClick={handleAuthClick}
@@ -122,11 +130,12 @@ const Index = () => {
         onNavigate={navigate}
       />
 
-      <main>
+      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
         {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} />}
         {page === "auth" && <AuthPage onSuccess={() => setPage("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
         {page === "search" && <SearchPage query={searchQuery} role={searchRole} onBack={() => setPage("home")} onProfileClick={handleProfileClick} />}
+        {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} />}
         {page === "projects" && <MyProjectsPage />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
         {page === "messages" && <MessagesPage onNavigate={navigate} />}
@@ -137,6 +146,26 @@ const Index = () => {
         {page === "terms" && <TermsPrivacyPage />}
         {page === "premium" && <PremiumPage />}
       </main>
+
+      {/* ── Mobile Bottom Tab Bar ── */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-[150] bg-card/95 backdrop-blur-md border-t border-border flex items-stretch h-16 safe-area-bottom" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        {([
+          { id: "home", label: "Home", icon: Home },
+          { id: "feed", label: "Feed", icon: Sparkles },
+          { id: "search", label: "Explore", icon: Search },
+          { id: "profile", label: "Profile", icon: User },
+        ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => navigate(id)}
+            className={`flex-1 flex flex-col items-center justify-center gap-1 transition-colors ${page === id ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+          >
+            <Icon size={22} strokeWidth={page === id ? 2.5 : 1.8} />
+            <span className="text-[0.6rem] font-bold tracking-wider uppercase">{label}</span>
+          </button>
+        ))}
+      </nav>
 
       <ProfileDetailDialog
         profile={selectedProfileForDialog}
