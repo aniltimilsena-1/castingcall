@@ -280,44 +280,34 @@ export default function PremiumPage() {
                         </div>
 
                         <p className="text-sm text-muted-foreground mb-12 font-medium max-w-lg mx-auto leading-relaxed">
-                            Upgrade securely via Nepal's leading gateways. Click to initiate the payment process.
+                            Upgrade securely via Stripe. Click to initiate the payment process.
                             <br />
                             <span className="text-primary/60 text-[10px] uppercase font-bold flex items-center justify-center gap-1 mt-2">
-                                <ShieldCheck size={12} /> Powered by eSewa & Khalti
+                                <ShieldCheck size={12} /> Powered by Stripe
                             </span>
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="flex justify-center">
                             <button
-                                onClick={() => initEsewa(499)}
+                                onClick={async () => {
+                                    setIsProcessing(true);
+                                    // Simulated Stripe Checkout Flow for Client-Side Example
+                                    // In production, this would redirect to a Stripe Checkout Session URL
+                                    setTimeout(() => {
+                                        window.location.href = window.location.origin + "/premium?status=success&method=stripe";
+                                    }, 1500);
+                                }}
                                 disabled={isProcessing}
-                                className="flex flex-col items-center justify-center p-8 bg-white/5 border-2 border-white/5 rounded-[2rem] hover:border-[#60bb46] hover:bg-[#60bb46]/5 transition-all group relative overflow-hidden active:scale-95"
+                                className="flex flex-col items-center justify-center p-8 bg-white/5 border-2 border-white/5 rounded-[2rem] hover:border-[#635BFF] hover:bg-[#635BFF]/5 transition-all group relative overflow-hidden active:scale-95 min-w-[280px]"
                             >
-                                {isProcessing && paymentMethod === "esewa" ? (
-                                    <Loader2 className="w-12 h-12 text-[#60bb46] animate-spin mb-3" />
+                                {isProcessing ? (
+                                    <Loader2 className="w-12 h-12 text-[#635BFF] animate-spin mb-3" />
                                 ) : (
-                                    <div className="w-16 h-16 mb-2 flex items-center justify-center font-display text-5xl text-[#60bb46] drop-shadow-[0_0_15px_rgba(96,187,70,0.3)]">
-                                        e
+                                    <div className="w-16 h-16 mb-2 flex items-center justify-center">
+                                        <svg viewBox="0 0 60 25" xmlns="http://www.w3.org/2000/svg" width="60" height="25" className="text-[#635BFF] fill-current drop-shadow-[0_0_15px_rgba(99,91,255,0.3)]"><path d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.04 1.26-.06 1.48zm-5.92-5.62c-1.03 0-2.17.73-2.17 2.58h4.25c0-1.85-1.07-2.58-2.08-2.58zM40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12-.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM40 8.95c-1.68 0-2.88 1.27-2.88 3.58 0 2.46 1.22 3.83 2.82 3.83 1.73 0 2.88-1.52 2.88-3.96 0-2.29-1.12-3.45-2.82-3.45zM30.49 20.06h-4.06V5.57h4.06v14.49zM22.02 5.57h4.5v3.2h-3.32v5.79c0 1.25.47 1.6 1.54 1.6h1.76v3.31l-3.32.06c-3.1 0-4.05-1.34-4.05-4.43V8.77l-1.92-.04v-3.1h1.92V2.83h2.9v2.74zM11.66 20.3c-1.37 0-2.32-.6-2.9-1.04l-.02 1.04H4.96V5.57h3.78l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM10.7 8.95c-1.67 0-2.88 1.27-2.88 3.58 0 2.46 1.21 3.83 2.81 3.83 1.73 0 2.89-1.52 2.89-3.96 0-2.29-1.1-3.45-2.82-3.45zM4.1 8.7c0-1.47-1.1-2.02-2.35-2.02-1.35 0-2.58.55-2.58 1.75 0 1.34 2.89 1.48 2.89 3.69 0 1.83-1.66 2.82-3.57 2.82a6.45 6.45 0 0 1-3.53-.98v-3.37A5.96 5.96 0 0 0 0 11.6c0 1.5 1.1 2.05 2.46 2.05 1.48 0 2.55-.66 2.55-1.89 0-1.44-2.87-1.54-2.87-3.7 0-1.66 1.6-2.6 3.32-2.6A6.27 6.27 0 0 1 8.5 6.3V9.6a6.11 6.11 0 0 0-4.4-2.9zM28.46 3.99c-1.38 0-2.43-1.02-2.43-2.34 0-1.34 1.05-2.35 2.43-2.35 1.35 0 2.4 1 2.4 2.35 0 1.33-1.05 2.34-2.4 2.34z" /></svg>
                                     </div>
                                 )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay with eSewa</span>
-                                <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#60bb46] transition-colors" />
-                            </button>
-
-                            <button
-                                onClick={() => initKhalti()}
-                                disabled={isProcessing}
-                                className="flex flex-col items-center justify-center p-8 bg-white/5 border-2 border-white/5 rounded-[2rem] hover:border-[#5c2d91] hover:bg-[#5c2d91]/5 transition-all group relative overflow-hidden active:scale-95"
-                            >
-                                {isProcessing && paymentMethod === "khalti" ? (
-                                    <Loader2 className="w-12 h-12 text-[#5c2d91] animate-spin mb-3" />
-                                ) : (
-                                    <div className="w-16 h-16 mb-2 flex items-center justify-center font-display text-5xl text-[#5c2d91] drop-shadow-[0_0_15px_rgba(92,45,145,0.3)]">
-                                        K
-                                    </div>
-                                )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Khalti Widget</span>
-                                <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#5c2d91] transition-colors" />
+                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Checkout securely</span>
                             </button>
                         </div>
 
