@@ -424,7 +424,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                 onClick={() => onNavigate?.("premium")}
                 className="w-full bg-[#60bb46] text-white py-2.5 rounded-xl text-[0.65rem] font-black uppercase tracking-[2px] hover:scale-105 transition-all shadow-xl shadow-[#60bb46]/20 relative z-10 flex items-center justify-center gap-2"
               >
-                <img src="https://cdn.esewa.com.np/ui/images/esewa_logo.png" className="h-4 w-auto brightness-0 invert" alt="" />
+                <img src="/esewa-logo.png" className="h-4 w-auto object-contain" alt="" />
                 Pay via eSewa
               </button>
             </div>
