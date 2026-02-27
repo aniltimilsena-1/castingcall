@@ -279,45 +279,44 @@ export default function PremiumPage() {
                             <h3 className="font-display text-3xl text-primary italic">Secure Checkout</h3>
                         </div>
 
-                        <p className="text-sm text-muted-foreground mb-12 font-medium max-w-lg mx-auto leading-relaxed">
-                            Upgrade securely via Nepal's leading gateways. Click to initiate the payment process.
+                        <p className="text-sm text-muted-foreground mb-8 font-medium max-w-lg mx-auto leading-relaxed">
+                            Scan the QR code below using your eSewa, Khalti, or Mobile Banking app to pay directly.
                             <br />
                             <span className="text-primary/60 text-[10px] uppercase font-bold flex items-center justify-center gap-1 mt-2">
-                                <ShieldCheck size={12} /> Powered by eSewa & Khalti
+                                <ShieldCheck size={12} /> Direct QR Payment
                             </span>
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <button
-                                onClick={() => initEsewa(499)}
-                                disabled={isProcessing}
-                                className="flex flex-col items-center justify-center p-8 bg-white/5 border-2 border-white/5 rounded-[2rem] hover:border-[#60bb46] hover:bg-[#60bb46]/5 transition-all group relative overflow-hidden active:scale-95"
-                            >
-                                {isProcessing && paymentMethod === "esewa" ? (
-                                    <Loader2 className="w-12 h-12 text-[#60bb46] animate-spin mb-3" />
-                                ) : (
-                                    <div className="w-16 h-16 mb-2 flex items-center justify-center font-display text-5xl text-[#60bb46] drop-shadow-[0_0_15px_rgba(96,187,70,0.3)]">
-                                        e
-                                    </div>
-                                )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay with eSewa</span>
-                                <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#60bb46] transition-colors" />
-                            </button>
+                        <div className="flex flex-col items-center justify-center gap-6">
+                            <div className="w-56 h-56 bg-white rounded-2xl p-3 shadow-2xl overflow-hidden shadow-primary/20 border-4 border-white">
+                                {/* Simply replace public/qr.png or public/qr.jpg with your own actual QR image */}
+                                <img src="/qr.png" alt="Payment QR Code" className="w-full h-full object-contain" onError={(e) => {
+                                    e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=Please+Upload+qr.png+to+public+folder";
+                                }} />
+                            </div>
+
+                            <p className="text-xs text-muted-foreground font-black uppercase tracking-[2px]">
+                                Amount: <span className="text-xl text-primary font-display ml-1">NPR 499</span>
+                            </p>
 
                             <button
-                                onClick={() => initKhalti()}
+                                onClick={async () => {
+                                    setIsProcessing(true);
+                                    // Delay to simulate processing verification
+                                    setTimeout(() => handleFinalUpgrade("qr"), 2000);
+                                }}
                                 disabled={isProcessing}
-                                className="flex flex-col items-center justify-center p-8 bg-white/5 border-2 border-white/5 rounded-[2rem] hover:border-[#5c2d91] hover:bg-[#5c2d91]/5 transition-all group relative overflow-hidden active:scale-95"
+                                className="mt-4 px-10 py-4 bg-primary text-black font-black uppercase tracking-[3px] text-xs rounded-xl shadow-[0_0_20px_rgba(251,191,36,0.2)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                             >
-                                {isProcessing && paymentMethod === "khalti" ? (
-                                    <Loader2 className="w-12 h-12 text-[#5c2d91] animate-spin mb-3" />
+                                {isProcessing ? (
+                                    <>
+                                        <Loader2 size={16} className="animate-spin" /> Verifying...
+                                    </>
                                 ) : (
-                                    <div className="w-16 h-16 mb-2 flex items-center justify-center font-display text-5xl text-[#5c2d91] drop-shadow-[0_0_15px_rgba(92,45,145,0.3)]">
-                                        K
-                                    </div>
+                                    <>
+                                        <Check size={16} strokeWidth={3} /> I have paid
+                                    </>
                                 )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Khalti Widget</span>
-                                <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#5c2d91] transition-colors" />
                             </button>
                         </div>
 
