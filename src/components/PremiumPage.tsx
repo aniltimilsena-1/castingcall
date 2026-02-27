@@ -294,7 +294,7 @@ export default function PremiumPage() {
                                 ) : (
                                     <div className="w-24 h-16 mb-4 flex items-center justify-center">
                                         <img
-                                            src="/esewa-logo.png"
+                                            src="/esewa.png"
                                             alt="eSewa"
                                             className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(96,187,70,0.3)] group-hover:scale-110 transition-transform"
                                         />
@@ -314,9 +314,9 @@ export default function PremiumPage() {
                                 ) : (
                                     <div className="w-32 h-16 mb-4 flex items-center justify-center">
                                         <img
-                                            src="/khalti-logo.png"
+                                            src="/khalti.jpg"
                                             alt="Khalti"
-                                            className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(92,45,145,0.3)] group-hover:scale-110 transition-transform"
+                                            className="h-12 w-auto object-contain drop-shadow-[0_0_15px_rgba(92,45,145,0.3)] group-hover:scale-110 transition-transform rounded-lg"
                                         />
                                     </div>
                                 )}
