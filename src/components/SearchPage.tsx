@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Edit2, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign } from "lucide-react";
+import { Bookmark, Send, Edit2, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
@@ -29,7 +29,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
     const search = async () => {
       setLoading(true);
       if (searchType === "talents") {
-        let q = supabase.from("profiles").select("*");
+        let q = supabase.from("profiles").select("*").order('plan', { ascending: false });
         if (role) {
           q = q.eq("role", role);
         } else if (query) {
@@ -149,9 +149,10 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-4 mb-2">
-                    <div className="text-base md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="text-base md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
                       {p.name || "Unknown"}
+                      {p.plan === "pro" && <Crown size={14} className="text-amber-500 fill-amber-500/20" />}
                     </div>
                   </div>
                   <div className="text-primary font-semibold text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>

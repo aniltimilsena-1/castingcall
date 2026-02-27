@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Crown, MessageCircle } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -17,6 +19,7 @@ const faqs = [
 ];
 
 export default function HelpSupportPage() {
+  const { profile } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -48,6 +51,36 @@ export default function HelpSupportPage() {
           ))}
         </Accordion>
       </div>
+
+      {profile?.plan === 'pro' ? (
+        <div className="bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 rounded-2xl p-6 mb-6 relative overflow-hidden group">
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
+              <Crown className="text-black w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="font-display text-xl text-amber-500">Priority VIP Support</h3>
+              <p className="text-xs text-amber-200/60 font-medium">As a PRO member, you have direct access to our support team.</p>
+            </div>
+            <a
+              href="https://wa.me/9779800000000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto bg-[#25D366] text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-green-500/20"
+            >
+              <MessageCircle size={16} fill="white" />
+              WhatsApp
+            </a>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-secondary/30 border border-border/50 rounded-2xl p-6 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Crown size={18} className="text-muted-foreground/40" />
+            <p className="text-xs text-muted-foreground font-medium">Want priority support? <button onClick={() => window.location.href = '/premium'} className="text-primary hover:underline italic">Upgrade to PRO</button></p>
+          </div>
+        </div>
+      )}
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
         <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">

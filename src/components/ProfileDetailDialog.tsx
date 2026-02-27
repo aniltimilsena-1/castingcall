@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
 
@@ -103,10 +103,16 @@ export default function ProfileDetailDialog({
                                                     (profile?.name || "U")[0].toUpperCase()
                                                 )}
                                             </div>
-                                            <div className="font-display text-lg text-white uppercase tracking-wider">{profile?.name}</div>
+                                            <div className="font-display text-lg text-white uppercase tracking-wider flex items-center gap-2">
+                                                {profile?.name}
+                                                {profile?.plan === 'pro' && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
+                                            </div>
                                         </div>
                                         <div className="flex-1 text-center md:text-left pt-4">
-                                            <h2 className="font-display text-4xl text-white mb-2">{profile?.name || "Unknown"}</h2>
+                                            <h2 className="font-display text-4xl text-white mb-2 flex items-center gap-3">
+                                                {profile?.name || "Unknown"}
+                                                {profile?.plan === 'pro' && <Crown size={24} className="text-amber-500 fill-amber-500/10" />}
+                                            </h2>
                                             <div className="text-xl text-primary font-medium mb-4">{profile?.role || "Member"}</div>
 
                                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
@@ -189,7 +195,10 @@ export default function ProfileDetailDialog({
                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
                                     <div className="flex items-center justify-between border-b border-border pb-6">
                                         <div className="flex items-center gap-4">
-                                            <h2 className="font-display text-3xl text-white">{profile?.name}</h2>
+                                            <h2 className="font-display text-3xl text-white flex items-center gap-3">
+                                                {profile?.name}
+                                                {profile?.plan === 'pro' && <Crown size={20} className="text-amber-500 fill-amber-500/10" />}
+                                            </h2>
                                             {user?.id !== profile.user_id && (
                                                 <button
                                                     onClick={() => setIsMessaging(!isMessaging)}

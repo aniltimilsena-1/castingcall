@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, Eye, FolderOpen, Activity } from "lucide-react";
+import { BarChart3, Eye, FolderOpen, Activity, Crown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -91,6 +91,30 @@ export default function AnalyticsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
+    );
+  }
+
+  if (profile?.plan !== 'pro') {
+    return (
+      <motion.div
+        className="max-w-[700px] mx-auto px-4 py-24 text-center"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-amber-500/20">
+          <Crown className="w-10 h-10 text-amber-500" />
+        </div>
+        <h2 className="font-display text-4xl text-white mb-4 italic">Advanced Analytics</h2>
+        <p className="text-muted-foreground text-lg mb-10 max-w-md mx-auto leading-relaxed">
+          See who's viewing your profile, track your project reach, and get insights to grow your career.
+        </p>
+        <button
+          onClick={() => window.location.href = "/premium"}
+          className="bg-primary text-black px-10 py-4 rounded-xl font-black text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+        >
+          Upgrade to PRO
+        </button>
+      </motion.div>
     );
   }
 

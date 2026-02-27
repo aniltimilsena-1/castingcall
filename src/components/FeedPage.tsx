@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Send, Play, Bookmark, MoreHorizontal, Sparkles, RefreshCw, ArrowLeft, X } from "lucide-react";
+import { Heart, MessageCircle, Send, Play, Bookmark, MoreHorizontal, Sparkles, RefreshCw, ArrowLeft, X, Crown } from "lucide-react";
 import { toast } from "sonner";
 
 interface FeedItem {
@@ -396,10 +396,11 @@ function FeedCard({
                 </button>
                 <div className="flex-1 min-w-0">
                     <button
-                        className="font-bold text-sm text-foreground hover:text-primary transition-colors text-left truncate block"
+                        className="font-bold text-sm text-foreground hover:text-primary transition-colors text-left truncate flex items-center gap-1.5"
                         onClick={() => onProfileClick?.({ user_id: item.owner.id, name: item.owner.name, photo_url: item.owner.photo_url, role: item.owner.role, plan: item.owner.plan })}
                     >
                         {item.owner.name}
+                        {item.owner.plan === "pro" && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
                     </button>
                     <div className="text-[0.68rem] text-muted-foreground flex items-center gap-1.5">
                         <span className="text-primary/70 font-medium">{item.owner.role || "Member"}</span>
@@ -642,7 +643,10 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
                         }
                     </div>
                     <div className="min-w-0">
-                        <div className="font-bold text-sm text-foreground truncate">{item.owner.name}</div>
+                        <div className="font-bold text-sm text-foreground truncate flex items-center gap-1.5">
+                            {item.owner.name}
+                            {item.owner.plan === "pro" && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
+                        </div>
                         <div className="text-[0.65rem] text-primary/70">{item.owner.role || "Member"}</div>
                     </div>
                 </button>
