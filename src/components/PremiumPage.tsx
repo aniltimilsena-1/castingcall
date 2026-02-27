@@ -292,11 +292,15 @@ export default function PremiumPage() {
                                 {isProcessing && paymentMethod === "esewa" ? (
                                     <Loader2 className="w-12 h-12 text-[#60bb46] animate-spin mb-3" />
                                 ) : (
-                                    <div className="w-16 h-16 mb-2 flex items-center justify-center font-display text-5xl text-[#60bb46] drop-shadow-[0_0_15px_rgba(96,187,70,0.3)]">
-                                        e
+                                    <div className="w-24 h-16 mb-4 flex items-center justify-center">
+                                        <img
+                                            src="https://cdn.esewa.com.np/ui/images/esewa_logo.png"
+                                            alt="eSewa"
+                                            className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(96,187,70,0.3)] group-hover:scale-110 transition-transform"
+                                        />
                                     </div>
                                 )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay with eSewa</span>
+                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via eSewa</span>
                                 <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#60bb46] transition-colors" />
                             </button>
 
@@ -308,11 +312,15 @@ export default function PremiumPage() {
                                 {isProcessing && paymentMethod === "khalti" ? (
                                     <Loader2 className="w-12 h-12 text-[#5c2d91] animate-spin mb-3" />
                                 ) : (
-                                    <div className="w-16 h-16 mb-2 flex items-center justify-center font-display text-5xl text-[#5c2d91] drop-shadow-[0_0_15px_rgba(92,45,145,0.3)]">
-                                        K
+                                    <div className="w-32 h-16 mb-4 flex items-center justify-center">
+                                        <img
+                                            src="https://khalti-web.s3.ap-south-1.amazonaws.com/next-static/v2/images/khalti-logo.svg"
+                                            alt="Khalti"
+                                            className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(92,45,145,0.3)] group-hover:scale-110 transition-transform"
+                                        />
                                     </div>
                                 )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Khalti Widget</span>
+                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via Khalti</span>
                                 <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#5c2d91] transition-colors" />
                             </button>
                         </div>
