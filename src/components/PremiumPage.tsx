@@ -329,13 +329,13 @@ export default function PremiumPage() {
                         ) : (
                             <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in slide-in-from-bottom-4">
                                 <div className="w-56 h-56 bg-white rounded-2xl p-3 shadow-2xl overflow-hidden shadow-primary/20 border-4 border-white">
-                                    <img src="/qr.png" alt="Payment QR Code" className="w-full h-full object-contain" onError={(e) => {
-                                        e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=Please+Upload+qr.png+to+public+folder";
+                                    <img src="/qr.jpeg" alt="Payment QR Code" className="w-full h-full object-contain" onError={(e) => {
+                                        e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=Please+Upload+qr.jpeg+to+public+folder";
                                     }} />
                                 </div>
                                 <a
-                                    href="/qr.png"
-                                    download="casting-call-qr.png"
+                                    href="/qr.jpeg"
+                                    download="casting-call-qr.jpeg"
                                     className="text-[0.65rem] font-black uppercase tracking-[2px] text-primary/80 hover:text-primary transition-colors hover:underline"
                                 >
                                     ↓ Download QR Code
