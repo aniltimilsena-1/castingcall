@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
 
@@ -34,12 +34,17 @@ export default function ProfileDetailDialog({
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
 
+    const [userProjects, setUserProjects] = useState<any[]>([]);
+    const [isInviting, setIsInviting] = useState(false);
+    const [invitingProjectId, setInvitingProjectId] = useState<string | null>(null);
+    const [loadingProjects, setLoadingProjects] = useState(false);
+    const [alreadyAppliedOrInvited, setAlreadyAppliedOrInvited] = useState<string[]>([]);
+
     // Track Profile View for Analytics
     useEffect(() => {
         if (open && profile?.id) {
             const trackView = async () => {
                 try {
-                    // Record the view in Supabase
                     await supabase.from("profile_views" as any).insert({
                         profile_id: profile.id,
                         viewer_id: user?.id || null,
@@ -49,8 +54,53 @@ export default function ProfileDetailDialog({
                 }
             };
             trackView();
+
+            if (user && (currentUserProfile?.role === "Producer" || currentUserProfile?.role === "Director" || currentUserProfile?.role === "Casting Director" || currentUserProfile?.role === "Admin")) {
+                const fetchProjects = async () => {
+                    setLoadingProjects(true);
+                    const { data } = await supabase.from("projects").select("*").eq("user_id", user.id).eq("status", "active");
+                    setUserProjects(data || []);
+
+                    if (data?.length) {
+                        const projectIds = data.map(p => p.id);
+                        const { data: apps } = await supabase.from("applications" as any).select("project_id").in("project_id", projectIds).eq("applicant_id", profile.user_id) as any;
+                        setAlreadyAppliedOrInvited(apps?.map((a: any) => a.project_id) || []);
+                    }
+                    setLoadingProjects(false);
+                };
+                fetchProjects();
+            }
         }
-    }, [open, profile?.id, user?.id]);
+    }, [open, profile?.id, user?.id, currentUserProfile?.role]);
+
+    const handleInvite = async (projectId: string) => {
+        if (!user || alreadyAppliedOrInvited.includes(projectId)) return;
+        setInvitingProjectId(projectId);
+        try {
+            const { error } = await supabase.from("applications" as any).insert({
+                project_id: projectId,
+                applicant_id: profile.user_id,
+                status: "invited"
+            });
+            if (error) throw error;
+
+            // Send Notification
+            await supabase.from("notifications" as any).insert({
+                user_id: profile.user_id,
+                actor_id: user.id,
+                title: "New Project Invitation",
+                message: `${currentUserProfile?.name || 'Someone'} invited you to their project: ${userProjects.find(p => p.id === projectId)?.title}`,
+                is_read: false
+            });
+
+            toast.success("Invitation sent!");
+            setAlreadyAppliedOrInvited(prev => [...prev, projectId]);
+        } catch (err: any) {
+            toast.error(err.message || "Failed to invite");
+        } finally {
+            setInvitingProjectId(null);
+        }
+    };
 
     const handleSendMessage = async () => {
         if (!user) {
@@ -153,7 +203,45 @@ export default function ProfileDetailDialog({
                                                     <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />
                                                     {isSaved ? "Saved to List" : "Save Talent"}
                                                 </button>
+
+                                                {user?.id !== profile.user_id && userProjects.length > 0 && (
+                                                    <button
+                                                        onClick={() => setIsInviting(!isInviting)}
+                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isInviting ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
+                                                    >
+                                                        <UserPlus size={18} />
+                                                        Invite to Project
+                                                    </button>
+                                                )}
                                             </div>
+
+                                            {isInviting && (
+                                                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 space-y-4 text-left bg-card border border-border p-6 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <div className="text-[0.65rem] font-normal text-primary tracking-[2.5px] uppercase">Select Active Project</div>
+                                                        <button onClick={() => setIsInviting(false)} className="text-muted-foreground hover:text-white transition-colors"><X size={16} /></button>
+                                                    </div>
+                                                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                                        {userProjects.map((p) => {
+                                                            const isDone = alreadyAppliedOrInvited.includes(p.id);
+                                                            return (
+                                                                <button
+                                                                    key={p.id}
+                                                                    disabled={isDone || invitingProjectId === p.id}
+                                                                    onClick={() => handleInvite(p.id)}
+                                                                    className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all ${isDone ? 'bg-green-500/5 border-green-500/20 text-green-500/60 cursor-default' : 'bg-secondary/40 border-border/50 text-white hover:border-primary hover:bg-primary/5'}`}
+                                                                >
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-xs text-primary">{p.title[0]}</div>
+                                                                        <span className="text-sm font-normal truncate max-w-[200px]">{p.title}</span>
+                                                                    </div>
+                                                                    {isDone ? <Check size={16} /> : invitingProjectId === p.id ? <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" /> : <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </motion.div>
+                                            )}
 
                                             {isMessaging && !showFullProfile && (
                                                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 space-y-4 text-left bg-secondary/30 p-6 rounded-[2rem] border border-border/50 shadow-inner">

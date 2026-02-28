@@ -21,6 +21,9 @@ export default function MyProjectsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"managed" | "applications">("managed");
+  const [myApplications, setMyApplications] = useState<any[]>([]);
+  const [appsLoading, setAppsLoading] = useState(false);
 
   // Pipeline State
   const [viewingApplicantsFor, setViewingApplicantsFor] = useState<Project | null>(null);
@@ -58,7 +61,37 @@ export default function MyProjectsPage() {
 
   useEffect(() => {
     fetchProjects();
+    fetchMyApplications();
   }, [user]);
+
+  const fetchMyApplications = async () => {
+    if (!user) return;
+    setAppsLoading(true);
+    const { data } = await supabase
+      .from('applications' as any)
+      .select(`
+        *,
+        projects:project_id (title, description, thumbnail_url, role_category, status)
+      `)
+      .eq('applicant_id', user.id)
+      .order('created_at', { ascending: false }) as any;
+    setMyApplications(data || []);
+    setAppsLoading(false);
+  };
+
+  const respondToInvitation = async (appId: string, status: 'accepted' | 'rejected' | 'pending') => {
+    const { error } = await supabase
+      .from('applications' as any)
+      .update({ status } as any)
+      .eq('id', appId);
+
+    if (error) {
+      toast.error("Action failed");
+    } else {
+      toast.success(status === 'accepted' ? "Invitation Accepted!" : "Response recorded");
+      fetchMyApplications();
+    }
+  };
 
   const fetchApplicants = async (project: Project) => {
     setApplicantsLoading(true);
@@ -184,16 +217,35 @@ export default function MyProjectsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h1 className="font-display text-5xl text-primary mb-2 tracking-tight">Recruitment</h1>
-          <p className="text-muted-foreground text-sm font-body tracking-wide font-medium">Manage your active casting calls and talent pipeline</p>
+          <h1 className="font-display text-5xl text-primary mb-2 tracking-tight">Work Center</h1>
+          <p className="text-muted-foreground text-sm font-body tracking-wide font-normal">Manage your casting calls and applications</p>
         </div>
+        {activeTab === "managed" && (
+          <button
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="flex items-center justify-center gap-2 bg-primary text-black px-10 py-4 rounded-2xl font-normal text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
+          >
+            <Plus className="w-5 h-5" /> Launch New Project
+          </button>
+        )}
+      </div>
+
+      <div className="flex gap-4 mb-10 border-b border-border pb-px">
         <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center justify-center gap-2 bg-primary text-black px-10 py-4 rounded-2xl font-normal text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
+          onClick={() => setActiveTab("managed")}
+          className={`px-6 py-4 text-xs font-normal uppercase tracking-widest transition-all relative ${activeTab === "managed" ? "text-primary" : "text-muted-foreground hover:text-white"}`}
         >
-          <Plus className="w-5 h-5" /> Launch New Project
+          My Recruitment
+          {activeTab === "managed" && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+        </button>
+        <button
+          onClick={() => setActiveTab("applications")}
+          className={`px-6 py-4 text-xs font-normal uppercase tracking-widest transition-all relative ${activeTab === "applications" ? "text-primary" : "text-muted-foreground hover:text-white"}`}
+        >
+          My Job Applications
+          {activeTab === "applications" && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
         </button>
       </div>
 
@@ -202,7 +254,7 @@ export default function MyProjectsPage() {
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <input
             type="text"
-            placeholder="Search within your projects..."
+            placeholder={activeTab === 'managed' ? "Search within your projects..." : "Search within your applications..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-card/50 backdrop-blur-md border-[1.5px] border-card-border rounded-2xl pl-12 pr-5 py-4 text-sm outline-none focus:border-primary transition-all shadow-inner"
@@ -362,64 +414,126 @@ export default function MyProjectsPage() {
         )}
       </AnimatePresence>
 
-      {loading ? (
+      {loading || appsLoading ? (
         <div className="flex items-center justify-center py-40">
           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
         </div>
-      ) : filteredProjects.length === 0 ? (
-        <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
-          <FolderOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
-          <p className="text-muted-foreground text-lg mb-2">No projects found.</p>
-          <button onClick={() => setShowForm(true)} className="text-primary font-normal hover:underline">Launch your first casting call →</button>
-        </div>
+      ) : activeTab === "managed" ? (
+        filteredProjects.length === 0 ? (
+          <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
+            <FolderOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
+            <p className="text-muted-foreground text-lg mb-2">No projects found.</p>
+            <button onClick={() => setShowForm(true)} className="text-primary font-normal hover:underline">Launch your first casting call →</button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {filteredProjects.map((p) => (
+              <motion.div
+                layout
+                key={p.id}
+                className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] overflow-hidden hover:border-primary/50 transition-all flex flex-col group shadow-lg"
+              >
+                <div className="aspect-[16/9] bg-secondary relative overflow-hidden">
+                  {p.thumbnail_url ? (
+                    <img src={p.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-primary/10">
+                      <Layout className="w-24 h-24" />
+                    </div>
+                  )}
+                  <div className="absolute top-6 left-6">
+                    <span className={`px-4 py-2 rounded-full text-[0.65rem] font-normal uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-black' :
+                      p.status === 'completed' ? 'bg-blue-600 text-white' :
+                        'bg-white/10 text-white'
+                      }`}>
+                      {p.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <div className="flex items-center gap-2 text-[0.6rem] font-normal tracking-[3px] text-primary uppercase mb-4 opacity-70">
+                    <Briefcase size={12} /> {p.role_category} Search
+                  </div>
+                  <h4 className="font-display text-2xl text-white mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
+                  <p className="text-muted-foreground text-sm line-clamp-2 mb-8 h-10 leading-relaxed font-body italic opacity-60">"{p.description}"</p>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                    <div className="flex gap-2">
+                      <button onClick={() => startEdit(p)} className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-black rounded-xl transition-all"><Edit3 size={16} /></button>
+                      <button onClick={() => handleDelete(p.id)} className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={16} /></button>
+                    </div>
+                    <button
+                      onClick={() => fetchApplicants(p)}
+                      className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] hover:bg-primary hover:text-black transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
+                    >
+                      Review Pipeline <Users size={14} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {filteredProjects.map((p) => (
-            <motion.div
-              layout
-              key={p.id}
-              className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] overflow-hidden hover:border-primary/50 transition-all flex flex-col group shadow-lg"
-            >
-              <div className="aspect-[16/9] bg-secondary relative overflow-hidden">
-                {p.thumbnail_url ? (
-                  <img src={p.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-primary/10">
-                    <Layout className="w-24 h-24" />
+        /* Applications Tab */
+        myApplications.length === 0 ? (
+          <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
+            <Layout className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
+            <p className="text-muted-foreground text-lg mb-2">You haven't applied to any projects yet.</p>
+            <p className="text-sm text-muted-foreground/50">Explore talents and projects to find opportunities!</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {myApplications.filter(a => a.projects?.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((app) => (
+              <div key={app.id} className="bg-card border-[1.5px] border-card-border rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary transition-all">
+                <div className="w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex-shrink-0">
+                  {app.projects?.thumbnail_url ? (
+                    <img src={app.projects.thumbnail_url} className="w-full h-full object-cover" alt="" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-primary/20"><Briefcase size={24} /></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <h3 className="font-display text-2xl text-white">{app.projects?.title}</h3>
+                    <span className={`px-3 py-1 rounded-full text-[0.6rem] font-normal uppercase tracking-widest ${app.status === 'accepted' ? 'bg-green-500 text-black' :
+                        app.status === 'invited' ? 'bg-amber-500 text-black gold-glow animate-pulse' :
+                          app.status === 'rejected' ? 'bg-red-500 text-white' :
+                            'bg-secondary text-muted-foreground'
+                      }`}>
+                      {app.status === 'invited' ? 'PROJECT INVITATION' : app.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-1 mb-3">Looking for: {app.projects?.role_category} • Status: {app.projects?.status}</p>
+                  <p className="text-xs text-muted-foreground/40 font-medium uppercase tracking-wider">Applied on {new Date(app.created_at).toLocaleDateString()}</p>
+                </div>
+
+                {app.status === 'invited' && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => respondToInvitation(app.id, 'accepted')}
+                      className="bg-green-500 text-black px-6 py-3 rounded-xl text-xs font-normal uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-green-500/20"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => respondToInvitation(app.id, 'rejected')}
+                      className="bg-secondary border border-border text-white px-6 py-3 rounded-xl text-xs font-normal uppercase tracking-widest hover:border-red-500/50 transition-all"
+                    >
+                      Decline
+                    </button>
                   </div>
                 )}
-                <div className="absolute top-6 left-6">
-                  <span className={`px-4 py-2 rounded-full text-[0.65rem] font-normal uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-black' :
-                    p.status === 'completed' ? 'bg-blue-600 text-white' :
-                      'bg-white/10 text-white'
-                    }`}>
-                    {p.status}
-                  </span>
-                </div>
-              </div>
-              <div className="p-8">
-                <div className="flex items-center gap-2 text-[0.6rem] font-normal tracking-[3px] text-primary uppercase mb-4 opacity-70">
-                  <Briefcase size={12} /> {p.role_category} Search
-                </div>
-                <h4 className="font-display text-2xl text-white mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
-                <p className="text-muted-foreground text-sm line-clamp-2 mb-8 h-10 leading-relaxed font-body italic opacity-60">"{p.description}"</p>
 
-                <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                  <div className="flex gap-2">
-                    <button onClick={() => startEdit(p)} className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-black rounded-xl transition-all"><Edit3 size={16} /></button>
-                    <button onClick={() => handleDelete(p.id)} className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={16} /></button>
+                {app.status !== 'invited' && (
+                  <div className="text-muted-foreground flex items-center gap-2 text-sm italic opacity-50">
+                    {app.status === 'pending' ? 'Application being reviewed...' : app.status === 'accepted' ? 'You were selected!' : 'Application closed'}
                   </div>
-                  <button
-                    onClick={() => fetchApplicants(p)}
-                    className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] hover:bg-primary hover:text-black transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
-                  >
-                    Review Pipeline <Users size={14} />
-                  </button>
-                </div>
+                )}
               </div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       )}
     </motion.div>
   );
