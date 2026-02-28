@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Edit2, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2 } from "lucide-react";
+import { Bookmark, Send, Edit2, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
@@ -205,6 +205,8 @@ function ProjectCard({ project }: { project: any }) {
   const { user } = useAuth();
   const [applied, setApplied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   useEffect(() => {
     if (user && project.id) {
@@ -225,10 +227,22 @@ function ProjectCard({ project }: { project: any }) {
 
     setLoading(true);
     try {
+      let videoUrl = null;
+      if (videoFile) {
+        setUploadingVideo(true);
+        const fileExt = videoFile.name.split('.').pop();
+        const filePath = `auditions/${user.id}/${project.id}-${Math.random()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, videoFile);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+        videoUrl = publicUrl;
+      }
+
       const { error } = await supabase.from('applications' as any).insert({
         project_id: project.id,
         applicant_id: user.id,
-        status: 'pending'
+        status: 'pending',
+        video_url: videoUrl
       });
       if (error) throw error;
       setApplied(true);
@@ -237,6 +251,7 @@ function ProjectCard({ project }: { project: any }) {
       toast.error(err.message || "Failed to submit application");
     } finally {
       setLoading(false);
+      setUploadingVideo(false);
     }
   };
 
@@ -274,6 +289,48 @@ function ProjectCard({ project }: { project: any }) {
         <p className="text-sm text-muted-foreground/60 line-clamp-2 mb-8 leading-relaxed font-body">
           {project.description || "No detailed description provided for this casting call."}
         </p>
+
+        {!applied && (
+          <div className="mb-8">
+            <label className="block text-[0.65rem] font-normal tracking-[2px] uppercase text-primary mb-3">
+              Upload Video Audition (Self-Tape)
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                className="hidden"
+                id={`video-upload-${project.id}`}
+              />
+              <label
+                htmlFor={`video-upload-${project.id}`}
+                className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed transition-all cursor-pointer ${videoFile ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+              >
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary">
+                  {videoFile ? <Check size={20} /> : <Plus size={20} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-normal truncate">
+                    {videoFile ? videoFile.name : "Select self-tape video..."}
+                  </div>
+                  <div className="text-[0.6rem] text-muted-foreground/50 uppercase tracking-wider">
+                    {videoFile ? `${(videoFile.size / 1024 / 1024).toFixed(1)} MB` : "MP4, MOV, WebM · Max 50MB"}
+                  </div>
+                </div>
+                {videoFile && (
+                  <button
+                    onClick={(e) => { e.preventDefault(); setVideoFile(null); }}
+                    className="p-2 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </label>
+            </div>
+          </div>
+        )}
+
         <button
           onClick={handleApply}
           disabled={applied || loading}
@@ -282,7 +339,7 @@ function ProjectCard({ project }: { project: any }) {
             : 'bg-secondary/80 backdrop-blur-sm border-2 border-border group-hover:border-primary/50 text-white hover:bg-primary hover:text-black hover:border-primary'
             }`}
         >
-          {loading ? 'Submitting...' : applied ? 'Application Sent' : 'Apply for this role'}
+          {uploadingVideo ? 'Uploading Self-Tape...' : loading ? 'Submitting...' : applied ? 'Application Sent' : 'Apply for this role'}
         </button>
       </div>
     </motion.div>
