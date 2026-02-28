@@ -27,7 +27,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
   const [signupRole, setSignupRole] = useState("");
   const [showPass, setShowPass] = useState(false);
 
-  const handleOAuthClick = async (provider: 'google' | 'facebook') => {
+  const handleOAuthClick = async (provider: 'google') => {
     setLoading(true);
     try {
       await signInWithOAuth(provider);
@@ -76,22 +76,14 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         </div>
 
         {/* OAuth Buttons */}
-        <div className="grid grid-cols-2 gap-3 mb-7">
+        <div className="mb-7">
           <button
             onClick={() => handleOAuthClick('google')}
             disabled={loading}
-            className="flex items-center justify-center gap-2 py-2.5 border-[1.5px] border-border rounded-lg bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-2.5 border-[1.5px] border-border rounded-lg bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
           >
             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-wider">Google</span>
-          </button>
-          <button
-            onClick={() => handleOAuthClick('facebook')}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 py-2.5 border-[1.5px] border-border rounded-lg bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
-          >
-            <img src="https://www.facebook.com/favicon.ico" alt="Facebook" className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-wider">Facebook</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Continue with Google</span>
           </button>
         </div>
 
