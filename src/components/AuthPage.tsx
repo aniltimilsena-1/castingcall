@@ -83,13 +83,13 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
             className="w-full flex items-center justify-center gap-2 py-2.5 border-[1.5px] border-border rounded-lg bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
           >
             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-wider">Continue with Google</span>
+            <span className="text-xs font-normal uppercase tracking-wider">Continue with Google</span>
           </button>
         </div>
 
         <div className="relative mb-7">
           <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-          <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-bold tracking-widest">Or continue with</span></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-normal tracking-widest">Or continue with</span></div>
         </div>
 
         {/* Tabs */}
@@ -98,7 +98,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-2.5 border-[1.5px] rounded-lg font-body text-sm font-semibold transition-all ${tab === t
+              className={`flex-1 py-2.5 border-[1.5px] rounded-lg font-body text-sm font-normal transition-all ${tab === t
                 ? "border-primary text-primary bg-primary/5"
                 : "border-border text-muted-foreground"
                 }`}
@@ -157,7 +157,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
               placeholder="Repeat password"
             />
             <div>
-              <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">YOUR ROLE</label>
+              <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">YOUR ROLE</label>
               <select
                 value={signupRole}
                 onChange={(e) => setSignupRole(e.target.value)}
@@ -173,7 +173,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full bg-primary text-primary-foreground rounded-lg py-3 font-body font-bold text-base mt-5 hover:opacity-85 transition-opacity disabled:opacity-50"
+          className="w-full bg-primary text-primary-foreground rounded-lg py-3 font-body font-normal text-base mt-5 hover:opacity-85 transition-opacity disabled:opacity-50"
         >
           {loading ? "Please wait…" : tab === "login" ? "Sign In" : "Create Account"}
         </button>
@@ -189,7 +189,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">{label}</label>
+      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
       <div className="relative flex items-center">
         <input
           type={type}

@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
         </p>
         <button
           onClick={() => window.location.href = "/premium"}
-          className="bg-primary text-black px-10 py-4 rounded-xl font-black text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+          className="bg-primary text-black px-10 py-4 rounded-xl font-normal text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
         >
           Upgrade to PRO
         </button>
@@ -139,7 +139,7 @@ export default function AnalyticsPage() {
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-6">
           <BarChart3 className="w-5 h-5 text-primary" />
-          <h3 className="font-bold text-sm">Profile Views This Week</h3>
+          <h3 className="font-normal text-sm">Profile Views This Week</h3>
         </div>
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={viewStats.chartData}>

@@ -165,7 +165,7 @@ const Index = () => {
               }`}
           >
             <Icon size={22} strokeWidth={page === id ? 2.5 : 1.8} />
-            <span className="text-[0.6rem] font-bold tracking-wider uppercase">{label}</span>
+            <span className="text-[0.6rem] font-normal tracking-wider uppercase">{label}</span>
           </button>
         ))}
       </nav>

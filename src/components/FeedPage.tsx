@@ -300,7 +300,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                     <button
                         onClick={handleRefresh}
                         disabled={refreshing}
-                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors text-xs font-semibold disabled:opacity-40"
+                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors text-xs font-normal disabled:opacity-40"
                     >
                         <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
                         {refreshing ? "Refreshing…" : "Refresh"}
@@ -396,7 +396,7 @@ function FeedCard({
                 </button>
                 <div className="flex-1 min-w-0">
                     <button
-                        className="font-bold text-sm text-foreground hover:text-primary transition-colors text-left truncate flex items-center gap-1.5"
+                        className="font-normal text-sm text-foreground hover:text-primary transition-colors text-left truncate flex items-center gap-1.5"
                         onClick={() => onProfileClick?.({ user_id: item.owner.id, name: item.owner.name, photo_url: item.owner.photo_url, role: item.owner.role, plan: item.owner.plan })}
                     >
                         {item.owner.name}
@@ -409,7 +409,7 @@ function FeedCard({
                         {item.owner.plan === "pro" && (
                             <>
                                 <span>·</span>
-                                <span className="text-amber-500 font-bold text-[0.6rem] uppercase tracking-wider">PRO</span>
+                                <span className="text-amber-500 font-normal text-[0.6rem] uppercase tracking-wider">PRO</span>
                             </>
                         )}
                     </div>
@@ -484,7 +484,7 @@ function FeedCard({
                         fill={likeData.liked ? "currentColor" : "none"}
                         className="transition-transform active:scale-125"
                     />
-                    <span className="text-sm font-bold">{likeData.count > 0 ? likeData.count : ""}</span>
+                    <span className="text-sm font-normal">{likeData.count > 0 ? likeData.count : ""}</span>
                 </button>
 
                 <button
@@ -492,7 +492,7 @@ function FeedCard({
                     className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
                 >
                     <MessageCircle size={22} />
-                    <span className="text-sm font-bold">{commentList.length > 0 ? commentList.length : ""}</span>
+                    <span className="text-sm font-normal">{commentList.length > 0 ? commentList.length : ""}</span>
                 </button>
 
                 <div className="flex-1" />
@@ -506,7 +506,7 @@ function FeedCard({
             {item.caption && (
                 <div className="px-4 pb-3 pt-1">
                     <span className="text-sm text-foreground">
-                        <span className="font-bold mr-1.5">{item.owner.name}</span>
+                        <span className="font-normal mr-1.5">{item.owner.name}</span>
                         {item.caption}
                     </span>
                 </div>
@@ -528,14 +528,14 @@ function FeedCard({
                             )}
                             {commentList.map((c) => (
                                 <div key={c.id} className="flex gap-2.5">
-                                    <div className="w-7 h-7 rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0 flex items-center justify-center text-[0.6rem] font-bold text-primary">
+                                    <div className="w-7 h-7 rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0 flex items-center justify-center text-[0.6rem] font-normal text-primary">
                                         {c.commenter_photo
                                             ? <img src={c.commenter_photo} className="w-full h-full object-cover" alt="" />
                                             : c.commenter?.[0]?.toUpperCase()
                                         }
                                     </div>
                                     <div className="flex-1">
-                                        <span className="font-bold text-xs text-foreground mr-1.5">{c.commenter}</span>
+                                        <span className="font-normal text-xs text-foreground mr-1.5">{c.commenter}</span>
                                         <span className="text-xs text-foreground/80">{c.content}</span>
                                         <div className="text-[0.6rem] text-muted-foreground/50 mt-0.5">{timeAgo(c.created_at)}</div>
                                     </div>
@@ -643,7 +643,7 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
                         }
                     </div>
                     <div className="min-w-0">
-                        <div className="font-bold text-sm text-foreground truncate flex items-center gap-1.5">
+                        <div className="font-normal text-sm text-foreground truncate flex items-center gap-1.5">
                             {item.owner.name}
                             {item.owner.plan === "pro" && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
                         </div>
@@ -656,7 +656,7 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
                     className={`flex items-center gap-1 transition-all ${likeData.liked ? "text-red-500" : "text-muted-foreground hover:text-red-400"}`}
                 >
                     <Heart size={20} fill={likeData.liked ? "currentColor" : "none"} />
-                    {likeData.count > 0 && <span className="text-sm font-bold">{likeData.count}</span>}
+                    {likeData.count > 0 && <span className="text-sm font-normal">{likeData.count}</span>}
                 </button>
             </div>
 
@@ -697,7 +697,7 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
             {/* Caption */}
             {item.caption && (
                 <div className="px-4 py-3 border-b border-border/30 flex-shrink-0">
-                    <span className="text-sm"><span className="font-bold mr-1.5">{item.owner.name}</span>{item.caption}</span>
+                    <span className="text-sm"><span className="font-normal mr-1.5">{item.owner.name}</span>{item.caption}</span>
                 </div>
             )}
 
@@ -708,14 +708,14 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
                 )}
                 {commentList.map((c) => (
                     <div key={c.id} className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0 flex items-center justify-center text-[0.65rem] font-bold text-primary">
+                        <div className="w-8 h-8 rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0 flex items-center justify-center text-[0.65rem] font-normal text-primary">
                             {c.commenter_photo
                                 ? <img src={c.commenter_photo} className="w-full h-full object-cover" alt="" />
                                 : c.commenter?.[0]?.toUpperCase()
                             }
                         </div>
                         <div className="flex-1 bg-secondary/20 rounded-2xl px-3 py-2">
-                            <span className="font-bold text-xs text-foreground mr-1.5">{c.commenter}</span>
+                            <span className="font-normal text-xs text-foreground mr-1.5">{c.commenter}</span>
                             <span className="text-xs text-foreground/80">{c.content}</span>
                             <div className="text-[0.6rem] text-muted-foreground/50 mt-1">{timeAgo(c.created_at)}</div>
                         </div>

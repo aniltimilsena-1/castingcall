@@ -92,20 +92,20 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <button
           onClick={onBack}
-          className="inline-block border-[1.5px] border-border rounded-xl text-muted-foreground px-5 py-2.5 font-bold text-sm hover:border-primary hover:text-primary transition-all self-start"
+          className="inline-block border-[1.5px] border-border rounded-xl text-muted-foreground px-5 py-2.5 font-normal text-sm hover:border-primary hover:text-primary transition-all self-start"
         >
           ← Back
         </button>
         <div className="flex bg-secondary/50 backdrop-blur-md p-1.5 rounded-2xl border border-border shadow-inner self-center md:self-auto">
           <button
             onClick={() => setSearchType("talents")}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-black uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-black shadow-2xl shadow-primary/20 scale-105" : "text-muted-foreground hover:text-white"}`}
+            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-black shadow-2xl shadow-primary/20 scale-105" : "text-muted-foreground hover:text-white"}`}
           >
             Talents
           </button>
           <button
             onClick={() => setSearchType("projects")}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-black uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-black shadow-2xl shadow-primary/20 scale-105" : "text-muted-foreground hover:text-white"}`}
+            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-black shadow-2xl shadow-primary/20 scale-105" : "text-muted-foreground hover:text-white"}`}
           >
             Casting Calls
           </button>
@@ -119,7 +119,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6">
           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground text-[0.65rem] font-black tracking-[4px] uppercase animate-pulse">Syncing Database...</p>
+          <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Syncing Database...</p>
         </div>
       ) : searchType === "talents" ? (
         results.length === 0 ? (
@@ -144,7 +144,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                     )}
                   </div>
                   {p.plan === "pro" && (
-                    <div className="absolute -bottom-2 bg-primary text-black text-[0.55rem] font-black px-3 py-1 rounded-full shadow-lg tracking-tighter">PREMIUM</div>
+                    <div className="absolute -bottom-2 bg-primary text-black text-[0.55rem] font-normal px-3 py-1 rounded-full shadow-lg tracking-tighter">PREMIUM</div>
                   )}
                 </div>
 
@@ -155,7 +155,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                       {p.plan === "pro" && <Crown size={14} className="text-amber-500 fill-amber-500/20" />}
                     </div>
                   </div>
-                  <div className="text-primary font-semibold text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>
+                  <div className="text-primary font-normal text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>
                   <div className="flex flex-wrap gap-4 md:gap-8">
                     {p.location && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
@@ -172,7 +172,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                   </button>
                   <button
                     onClick={() => onProfileClick(p)}
-                    className="bg-primary text-primary-foreground px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs font-bold uppercase tracking-[1px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
+                    className="bg-primary text-primary-foreground px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs font-normal uppercase tracking-[1px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
                   >
                     View Profile
                   </button>
@@ -254,11 +254,11 @@ function ProjectCard({ project }: { project: any }) {
           </div>
         )}
         <div className="absolute top-6 left-6 flex gap-2">
-          <div className="bg-primary/90 backdrop-blur-md text-black px-5 py-2.5 rounded-full text-[0.7rem] font-black uppercase tracking-[2px] shadow-2xl border border-white/10">
+          <div className="bg-primary/90 backdrop-blur-md text-black px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-white/10">
             {project.role_category || 'Talent'} Call
           </div>
           {applied && (
-            <div className="bg-green-500/90 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-[0.7rem] font-black uppercase tracking-[2px] shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-300">
+            <div className="bg-green-500/90 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-300">
               Applied
             </div>
           )}
@@ -266,7 +266,7 @@ function ProjectCard({ project }: { project: any }) {
       </div>
       <div className="p-10">
         <h4 className="font-display text-3xl text-white mb-4 group-hover:text-primary transition-colors leading-tight">{project.title}</h4>
-        <div className="flex flex-wrap items-center gap-6 text-[0.65rem] text-muted-foreground mb-8 font-black uppercase tracking-[2px]">
+        <div className="flex flex-wrap items-center gap-6 text-[0.65rem] text-muted-foreground mb-8 font-normal uppercase tracking-[2px]">
           <span className="flex items-center gap-2.5"><MapPin size={16} className="text-primary" /> {project.location || 'Remote'}</span>
           <span className="flex items-center gap-2.5"><DollarSign size={16} className="text-primary" /> {project.salary_range || 'Competitive'}</span>
         </div>
@@ -276,7 +276,7 @@ function ProjectCard({ project }: { project: any }) {
         <button
           onClick={handleApply}
           disabled={applied || loading}
-          className={`w-full py-5 rounded-2xl text-[0.7rem] font-black uppercase tracking-[3px] transition-all shadow-xl ${applied
+          className={`w-full py-5 rounded-2xl text-[0.7rem] font-normal uppercase tracking-[3px] transition-all shadow-xl ${applied
             ? 'bg-green-500/10 text-green-500 border-2 border-green-500/20 cursor-default'
             : 'bg-secondary/80 backdrop-blur-sm border-2 border-border group-hover:border-primary/50 text-white hover:bg-primary hover:text-black hover:border-primary'
             }`}
@@ -468,7 +468,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <div className="text-sm font-bold text-white">{c.profiles?.name}</div>
+          <div className="text-sm font-normal text-white">{c.profiles?.name}</div>
           <div className="text-[0.65rem] text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</div>
         </div>
 
@@ -476,8 +476,8 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
           <div className="space-y-2">
             <textarea value={editingContent} onChange={(e) => setEditingContent(e.target.value)} className="w-full bg-secondary border border-primary/20 rounded-lg px-3 py-2 text-sm text-foreground outline-none" rows={2} />
             <div className="flex gap-2">
-              <button onClick={() => handleUpdateComment(c.id)} className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-bold">Save</button>
-              <button onClick={() => setEditingCommentId(null)} className="text-muted-foreground hover:text-white px-3 py-1 text-xs font-bold">Cancel</button>
+              <button onClick={() => handleUpdateComment(c.id)} className="bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-normal">Save</button>
+              <button onClick={() => setEditingCommentId(null)} className="text-muted-foreground hover:text-white px-3 py-1 text-xs font-normal">Cancel</button>
             </div>
           </div>
         ) : (
@@ -485,11 +485,11 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
         )}
 
         <div className="mt-2 flex items-center gap-3">
-          <button onClick={() => handleLikeComment(c.id)} className={`flex items-center gap-1 text-[0.65rem] font-bold transition-colors ${commentLikes[c.id]?.userLiked ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+          <button onClick={() => handleLikeComment(c.id)} className={`flex items-center gap-1 text-[0.65rem] font-normal transition-colors ${commentLikes[c.id]?.userLiked ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
             <Heart size={12} fill={commentLikes[c.id]?.userLiked ? "currentColor" : "none"} />
             {commentLikes[c.id]?.count || 0}
           </button>
-          {!isReply && <button onClick={() => handleReply(c)} className="text-[0.65rem] font-bold text-muted-foreground hover:text-primary">Reply</button>}
+          {!isReply && <button onClick={() => handleReply(c)} className="text-[0.65rem] font-normal text-muted-foreground hover:text-primary">Reply</button>}
 
           {user && user.id === c.user_id && (
             <div className="flex items-center gap-2 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
@@ -516,7 +516,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
               {owner?.photo_url ? <img src={owner.photo_url} className="w-full h-full object-cover" alt="" /> : (owner?.name?.[0] || '?')}
             </div>
             <div>
-              <div className="font-bold text-lg text-white leading-none mb-1">{owner?.name || "Member"}</div>
+              <div className="font-normal text-lg text-white leading-none mb-1">{owner?.name || "Member"}</div>
               <div className="text-xs text-primary font-body uppercase tracking-wider">{owner?.role || "Talent"}</div>
             </div>
           </div>
@@ -528,7 +528,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
               <div className="flex items-center gap-2">
                 <button onClick={handleLike} className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all ${userLiked ? "bg-primary text-primary-foreground border-primary" : "bg-secondary border-border text-muted-foreground hover:border-primary/50"}`}>
                   <Heart size={18} fill={userLiked ? "currentColor" : "none"} />
-                  <span className="font-bold text-sm">{likes}</span>
+                  <span className="font-normal text-sm">{likes}</span>
                 </button>
               </div>
               <div className="text-xs text-muted-foreground font-medium uppercase tracking-widest">{comments.length} Comments</div>
@@ -546,7 +546,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
 
           <div className="p-6 border-t border-border bg-card/80 backdrop-blur-sm">
             {replyTo && (
-              <div className="mb-3 flex items-center justify-between bg-primary/10 px-3 py-1.5 rounded text-xs text-primary font-bold">
+              <div className="mb-3 flex items-center justify-between bg-primary/10 px-3 py-1.5 rounded text-xs text-primary font-normal">
                 <span>Replying to {replyTo.name}</span>
                 <button onClick={() => setReplyTo(null)} className="text-primary hover:text-white transition-colors"><X size={14} /></button>
               </div>
@@ -562,7 +562,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
               <button
                 onClick={submitComment}
                 disabled={loading || !newComment.trim()}
-                className="bg-primary text-primary-foreground p-2 px-4 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+                className="bg-primary text-primary-foreground p-2 px-4 rounded-xl font-normal text-sm hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
               >
                 <Send size={16} />
               </button>

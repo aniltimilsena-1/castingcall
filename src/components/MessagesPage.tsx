@@ -333,7 +333,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
       <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[350px] bg-[#1c1c1c] border border-border/20 rounded-3xl overflow-hidden flex-col shadow-xl gold-glow`}>
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between px-2">
-            <h1 className="text-2xl font-bold text-white">Chats</h1>
+            <h1 className="text-2xl font-normal text-white">Chats</h1>
             <div className="flex gap-2">
             </div>
           </div>
@@ -348,7 +348,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
 
           <div className="flex gap-2 px-1 overflow-x-auto no-scrollbar pb-1">
             {['All', 'Unread'].map((tab) => (
-              <button key={tab} className={`px-5 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${tab === 'All' ? 'bg-primary/20 text-primary' : 'bg-secondary/30 text-white/70 hover:bg-secondary/50'}`}>
+              <button key={tab} className={`px-5 py-2 rounded-full text-xs font-normal transition-all whitespace-nowrap ${tab === 'All' ? 'bg-primary/20 text-primary' : 'bg-secondary/30 text-white/70 hover:bg-secondary/50'}`}>
                 {tab}
               </button>
             ))}
@@ -382,12 +382,12 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex justify-between items-center">
-                    <div className={`font-bold text-[15px] truncate ${c.unread > 0 ? "text-white" : "text-white/90"}`}>
+                    <div className={`font-normal text-[15px] truncate ${c.unread > 0 ? "text-white" : "text-white/90"}`}>
                       {c.partnerName}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className={`text-[13px] truncate flex-1 ${c.unread > 0 ? "font-bold text-white" : "text-muted-foreground"}`}>
+                    <div className={`text-[13px] truncate flex-1 ${c.unread > 0 ? "font-normal text-white" : "text-muted-foreground"}`}>
                       {c.lastMessage}
                     </div>
                     <div className="text-[11px] text-muted-foreground whitespace-nowrap">
@@ -416,13 +416,13 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                   <Crown className="text-black w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-white font-bold text-sm mb-0.5">Upgrade for NPR 499</p>
+                  <p className="text-white font-normal text-sm mb-0.5">Upgrade for NPR 499</p>
                   <p className="text-[0.65rem] text-muted-foreground font-medium">Unlock Unlimited Messages & Advanced Analytics</p>
                 </div>
               </div>
               <button
                 onClick={() => onNavigate?.("premium")}
-                className="w-full bg-[#60bb46] text-white py-2.5 rounded-xl text-[0.65rem] font-black uppercase tracking-[2px] hover:scale-105 transition-all shadow-xl shadow-[#60bb46]/20 relative z-10 flex items-center justify-center gap-2"
+                className="w-full bg-[#60bb46] text-white py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px] hover:scale-105 transition-all shadow-xl shadow-[#60bb46]/20 relative z-10 flex items-center justify-center gap-2"
               >
                 <img src="/esewa.png" className="h-4 w-auto object-contain" alt="" />
                 Pay via eSewa
@@ -463,7 +463,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                   )}
                 </div>
                 <div className="cursor-pointer" onClick={() => setShowPartnerProfile(true)}>
-                  <div className="font-bold text-base text-white leading-tight hover:underline">{partnerProfile?.name}</div>
+                  <div className="font-normal text-base text-white leading-tight hover:underline">{partnerProfile?.name}</div>
                   <div className="text-[12px] text-muted-foreground">Active now</div>
                 </div>
               </div>
@@ -490,7 +490,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="text-[10px] text-muted-foreground/60 font-bold mb-1 px-10"
+                          className="text-[10px] text-muted-foreground/60 font-normal mb-1 px-10"
                         >
                           {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </motion.div>
@@ -508,7 +508,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                             senderPhoto ? (
                               <img src={senderPhoto} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-[0.6rem] font-bold text-primary">
+                              <div className="w-full h-full flex items-center justify-center text-[0.6rem] font-normal text-primary">
                                 {partnerProfile?.name?.[0]}
                               </div>
                             )
@@ -524,7 +524,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                           const repliedMsg = thread.find(t => t.id === m.reply_to_id);
                           return (
                             <div className={`text-[11px] opacity-70 mb-1 px-3 py-2 bg-white/5 rounded-t-xl border-l-[3px] border-primary/50 flex flex-col gap-0.5 max-w-[250px] ${isMine ? 'items-end' : 'items-start'}`}>
-                              <div className="flex items-center gap-1.5 font-bold text-primary/80">
+                              <div className="flex items-center gap-1.5 font-normal text-primary/80">
                                 <Reply size={10} />
                                 <span>{repliedMsg?.sender_id === user?.id ? "You" : partnerProfile?.name}</span>
                               </div>
@@ -556,7 +556,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                                 <PlusCircle size={20} className={isMine ? 'text-black' : 'text-primary'} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[0.7rem] font-bold uppercase tracking-wider truncate mb-0.5">Attachment</p>
+                                <p className="text-[0.7rem] font-normal uppercase tracking-wider truncate mb-0.5">Attachment</p>
                                 <p className="text-[0.65rem] opacity-60 truncate">{m.content.split('|')[0].replace('[FILE]:', '')}</p>
                               </div>
                             </a>
@@ -578,7 +578,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                               <button
                                 key={emoji}
                                 onClick={() => reactToMessage(m.id, emoji)}
-                                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold transition-all ${(users as string[]).includes(user?.id || '') ? 'bg-primary/20 border border-primary/30 text-primary' : 'bg-secondary/80 border border-white/5 text-white/70'}`}
+                                className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-normal transition-all ${(users as string[]).includes(user?.id || '') ? 'bg-primary/20 border border-primary/30 text-primary' : 'bg-secondary/80 border border-white/5 text-white/70'}`}
                               >
                                 <span>{emoji}</span>
                                 {(users as string[]).length > 1 && <span>{(users as string[]).length}</span>}
@@ -633,7 +633,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                     className="flex items-center justify-between bg-white/5 border-l-4 border-primary px-4 py-2 rounded-lg mb-2"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Replying to</p>
+                      <p className="text-[10px] font-normal text-primary uppercase tracking-widest">Replying to</p>
                       <p className="text-xs text-muted-foreground truncate">
                         {replyingTo.content.startsWith('[IMAGE]:') ? '📷 Photo' :
                           replyingTo.content.startsWith('[FILE]:') ? '📎 Attachment' :
@@ -651,7 +651,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                     className="flex items-center justify-between bg-primary/10 border-l-4 border-primary px-4 py-2 rounded-lg mb-2"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Editing Message</p>
+                      <p className="text-[10px] font-normal text-primary uppercase tracking-widest">Editing Message</p>
                       <p className="text-xs text-muted-foreground truncate">{editingMessage.content}</p>
                     </div>
                     <button onClick={() => { setEditingMessage(null); setNewMessage(""); }} className="p-1 hover:bg-white/10 rounded-full"><X size={14} /></button>
@@ -700,7 +700,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                             className="absolute bottom-full right-0 mb-4 bg-black/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-5 shadow-2xl gold-glow z-50 min-w-[280px]"
                           >
-                            <div className="text-[0.65rem] font-black text-primary/50 tracking-[2px] uppercase mb-4 px-2">Choose Reaction</div>
+                            <div className="text-[0.65rem] font-normal text-primary/50 tracking-[2px] uppercase mb-4 px-2">Choose Reaction</div>
                             <div className="grid grid-cols-6 gap-3">
                               {EMOJIS.map(emoji => (
                                 <button

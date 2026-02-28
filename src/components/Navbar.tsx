@@ -63,7 +63,7 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
           {!isPro && (
             <button
               onClick={onPremiumClick}
-              className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-amber-500 hover:bg-amber-500/10 transition-colors font-body font-bold text-xs uppercase tracking-wider"
+              className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-amber-500 hover:bg-amber-500/10 transition-colors font-body font-normal text-xs uppercase tracking-wider"
             >
               <Crown className="w-4 h-4" />
               Premium
@@ -72,7 +72,7 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
 
           <button
             onClick={onAuthClick}
-            className={`relative px-4 py-2 rounded-lg font-body font-bold text-sm transition-all flex items-center gap-2 ${isPro
+            className={`relative px-4 py-2 rounded-lg font-body font-normal text-sm transition-all flex items-center gap-2 ${isPro
               ? "border-2 border-amber-500/50 text-amber-500 hover:bg-amber-500/5 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]"
               : "bg-primary text-primary-foreground hover:opacity-85"
               }`}

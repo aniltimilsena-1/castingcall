@@ -1,4 +1,4 @@
-import { Video, Clapperboard, Music, PersonStanding, Crown, Star } from "lucide-react";
+import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,8 @@ const categories = [
   { role: "Director", icon: Clapperboard, delay: 0.16 },
   { role: "Singer", icon: Music, delay: 0.24 },
   { role: "Choreographer", icon: PersonStanding, delay: 0.32 },
+  { role: "Producer", icon: Film, delay: 0.40 },
+  { role: "Casting Director", icon: Users, delay: 0.48 },
 ];
 
 export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick }: HomePageProps) {
@@ -44,7 +46,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         </h1>
       </motion.section>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-[1200px] mx-auto px-6 md:px-4 pb-20">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-[1200px] mx-auto px-6 md:px-4 pb-20">
         {categories.map((cat) => (
           <motion.button
             key={cat.role}
@@ -67,7 +69,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           animate={{ opacity: 1 }}
         >
           <div className="flex items-center gap-6 mb-12">
-            <div className="flex items-center gap-2 text-amber-500 font-black text-xs uppercase tracking-[3px]">
+            <div className="flex items-center gap-2 text-amber-500 font-normal text-xs uppercase tracking-[3px]">
               <Star fill="currentColor" size={14} /> Featured Talent
             </div>
             <div className="flex-1 h-px bg-white/5" />
@@ -88,12 +90,12 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   )}
                 </div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-bold text-foreground text-lg">{p.name}</h4>
+                  <h4 className="font-normal text-foreground text-lg">{p.name}</h4>
                   <Crown size={14} className="text-amber-500" />
                 </div>
-                <p className="text-[0.6rem] font-black uppercase tracking-[2px] text-primary/70 mb-4">{p.role}</p>
+                <p className="text-[0.6rem] font-normal uppercase tracking-[2px] text-primary/70 mb-4">{p.role}</p>
                 <p className="text-xs text-muted-foreground line-clamp-2 h-8 mb-6 italic">"{p.bio || 'Professional talent available for casting calls.'}"</p>
-                <button className="text-[0.65rem] font-black uppercase tracking-[2px] text-foreground group-hover:text-primary transition-colors">View Profile →</button>
+                <button className="text-[0.65rem] font-normal uppercase tracking-[2px] text-foreground group-hover:text-primary transition-colors">View Profile →</button>
               </div>
             ))}
           </div>
@@ -101,7 +103,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       )}
 
       <footer className="mt-20 border-t border-border/10 pt-10 text-center space-y-4">
-        <div className="flex justify-center gap-6 text-xs uppercase tracking-widest font-black">
+        <div className="flex justify-center gap-6 text-xs uppercase tracking-widest font-normal">
           <a href="/privacy" onClick={(e) => { e.preventDefault(); onTermsClick(); }} className="text-foreground hover:text-primary transition-colors cursor-pointer border-b border-border/20 pb-1">Privacy Policy</a>
           <a href="/terms" onClick={(e) => { e.preventDefault(); onTermsClick(); }} className="text-foreground hover:text-primary transition-colors cursor-pointer border-b border-border/20 pb-1">Terms of Service</a>
         </div>

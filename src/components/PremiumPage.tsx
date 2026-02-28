@@ -183,7 +183,7 @@ export default function PremiumPage() {
                 </p>
                 <button
                     onClick={() => window.location.href = "/"}
-                    className="bg-primary text-black px-12 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
+                    className="bg-primary text-black px-12 py-4 rounded-2xl font-normal text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
                 >
                     Back to Dashboard
                 </button>
@@ -201,7 +201,7 @@ export default function PremiumPage() {
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[0.65rem] font-black tracking-[2px] uppercase mb-6 border border-primary/20"
+                    className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[0.65rem] font-normal tracking-[2px] uppercase mb-6 border border-primary/20"
                 >
                     <Crown className="w-4 h-4" />
                     Casting Hub Elite
@@ -222,18 +222,18 @@ export default function PremiumPage() {
                             }`}
                     >
                         {plan.popular && (
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-black px-6 py-1.5 rounded-full text-[0.6rem] font-black tracking-[2px] uppercase shadow-xl">
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-black px-6 py-1.5 rounded-full text-[0.6rem] font-normal tracking-[2px] uppercase shadow-xl">
                                 Recommended
                             </div>
                         )}
 
                         <div className="mb-10">
-                            <h3 className="text-[0.65rem] font-black tracking-[3px] uppercase text-primary/60 mb-3">
+                            <h3 className="text-[0.65rem] font-normal tracking-[3px] uppercase text-primary/60 mb-3">
                                 {plan.name} PLAN
                             </h3>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-5xl font-display text-white italic">NPR {plan.price}</span>
-                                <span className="text-muted-foreground text-sm font-bold">/ MONTH</span>
+                                <span className="text-muted-foreground text-sm font-normal">/ MONTH</span>
                             </div>
                         </div>
 
@@ -253,7 +253,7 @@ export default function PremiumPage() {
                             onClick={() => {
                                 if (idx === 1) document.getElementById('payment-section')?.scrollIntoView({ behavior: 'smooth' });
                             }}
-                            className={`w-full py-5 rounded-2xl font-black text-xs uppercase tracking-[3px] transition-all shadow-xl ${plan.current
+                            className={`w-full py-5 rounded-2xl font-normal text-xs uppercase tracking-[3px] transition-all shadow-xl ${plan.current
                                 ? "bg-secondary/40 text-muted-foreground cursor-default border border-white/5"
                                 : "bg-primary text-black hover:scale-105 active:scale-95 shadow-primary/20"
                                 }`}
@@ -300,7 +300,7 @@ export default function PremiumPage() {
                                         />
                                     </div>
                                 )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via eSewa</span>
+                                <span className="text-[0.65rem] font-normal tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via eSewa</span>
                                 <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#60bb46] transition-colors" />
                             </button>
 
@@ -320,12 +320,12 @@ export default function PremiumPage() {
                                         />
                                     </div>
                                 )}
-                                <span className="text-[0.65rem] font-black tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via Khalti</span>
+                                <span className="text-[0.65rem] font-normal tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via Khalti</span>
                                 <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#5c2d91] transition-colors" />
                             </button>
                         </div>
 
-                        <div className="mt-12 flex items-center justify-center gap-3 text-[0.6rem] text-muted-foreground uppercase tracking-[3px] font-black opacity-60">
+                        <div className="mt-12 flex items-center justify-center gap-3 text-[0.6rem] text-muted-foreground uppercase tracking-[3px] font-normal opacity-60">
                             <CreditCard className="w-4 h-4 text-primary" />
                             Encrypted 256-bit Secure Checkout
                         </div>

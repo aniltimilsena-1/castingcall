@@ -103,7 +103,7 @@ export default function NotificationsPage({ onOpenPhoto }: NotificationsPageProp
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{n.title}</div>
+                <div className="font-normal text-sm text-foreground group-hover:text-primary transition-colors">{n.title}</div>
                 {n.message && <div className="text-xs text-muted-foreground mt-1 leading-relaxed">{n.message}</div>}
                 <div className="text-[0.65rem] text-muted-foreground/50 mt-2 font-medium uppercase tracking-wider">{new Date(n.created_at).toLocaleString()}</div>
               </div>

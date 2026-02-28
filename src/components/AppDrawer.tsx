@@ -67,7 +67,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             )}
           </div>
           <div className="min-w-0">
-            <div className="font-bold text-sm text-foreground truncate">
+            <div className="font-normal text-sm text-foreground truncate">
               {profile?.name || "Guest"}
             </div>
             <div className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -93,7 +93,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           <Section label="General">
             {profile?.role === "Admin" && (
               <Item onClick={() => go("admin")}>
-                <span className="text-primary font-bold">Admin Panel</span>
+                <span className="text-primary font-normal">Admin Panel</span>
               </Item>
             )}
             <Item onClick={() => go("settings")}>Settings</Item>
@@ -112,7 +112,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           <div className="flex-shrink-0 px-6 py-5 border-t border-border">
             <button
               onClick={handleLogout}
-              className="w-full border-[1.5px] border-border rounded-lg text-destructive font-body font-semibold text-sm py-3 text-center hover:bg-destructive/10 hover:border-destructive transition-colors"
+              className="w-full border-[1.5px] border-border rounded-lg text-destructive font-body font-normal text-sm py-3 text-center hover:bg-destructive/10 hover:border-destructive transition-colors"
             >
               Log Out
             </button>
@@ -126,7 +126,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="px-6 pt-4 pb-1">
-      <div className="text-[0.65rem] font-bold tracking-[1.6px] uppercase text-muted-foreground/40 mb-1">
+      <div className="text-[0.65rem] font-normal tracking-[1.6px] uppercase text-muted-foreground/40 mb-1">
         {label}
       </div>
       {children}

@@ -57,7 +57,7 @@ export default function SettingsPage() {
       <p className="text-muted-foreground text-sm mb-8">Manage your account preferences</p>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6">
-        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Profile Photo</h3>
+        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Profile Photo</h3>
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0 flex items-center justify-center font-display text-2xl text-primary">
             {profile?.photo_url ? (
@@ -107,7 +107,7 @@ export default function SettingsPage() {
             />
             <label
               htmlFor="settings-photo-upload"
-              className="bg-secondary text-primary px-4 py-2 rounded-lg font-body font-bold text-xs cursor-pointer hover:bg-secondary/80 transition-colors inline-block mb-2"
+              className="bg-secondary text-primary px-4 py-2 rounded-lg font-body font-normal text-xs cursor-pointer hover:bg-secondary/80 transition-colors inline-block mb-2"
             >
               Update Photo
             </label>
@@ -117,29 +117,29 @@ export default function SettingsPage() {
       </div>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6 space-y-4">
-        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Account Details</h3>
+        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Account Details</h3>
         <div className="text-sm text-muted-foreground pb-2 border-b border-border">{user?.email}</div>
         <InputField label="DISPLAY NAME" value={name} onChange={setName} />
         <div>
-          <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">ROLE</label>
+          <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">ROLE</label>
           <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors">
             {ROLES.map((r) => <option key={r}>{r}</option>)}
           </select>
         </div>
         <InputField label="LOCATION" value={location} onChange={setLocation} placeholder="e.g. Mumbai, India" />
         <div>
-          <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">BIO</label>
+          <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">BIO</label>
           <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Your bio…" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors resize-y placeholder:text-muted-foreground/40" />
         </div>
-        <button onClick={handleSaveProfile} disabled={saving} className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-body font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-50">
+        <button onClick={handleSaveProfile} disabled={saving} className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-body font-normal text-sm hover:opacity-85 transition-opacity disabled:opacity-50">
           {saving ? "Saving…" : "Save Settings"}
         </button>
       </div>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
-        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Change Password</h3>
+        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Change Password</h3>
         <InputField label="NEW PASSWORD" type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 6 characters" />
-        <button onClick={handleChangePassword} className="border-[1.5px] border-border text-foreground px-8 py-3 rounded-lg font-body font-bold text-sm hover:border-primary hover:text-primary transition-colors">
+        <button onClick={handleChangePassword} className="border-[1.5px] border-border text-foreground px-8 py-3 rounded-lg font-body font-normal text-sm hover:border-primary hover:text-primary transition-colors">
           Update Password
         </button>
       </div>
@@ -152,7 +152,7 @@ function InputField({ label, value, onChange, placeholder, type = "text" }: {
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">{label}</label>
+      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40" />
     </div>
   );

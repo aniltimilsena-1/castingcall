@@ -170,12 +170,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <button onClick={onBack} className="text-muted-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
+          <button onClick={onBack} className="text-muted-foreground hover:text-primary transition-colors text-sm font-normal flex items-center gap-1.5">
             ← Back
           </button>
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-muted-foreground px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
+            className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-muted-foreground px-5 py-2.5 rounded-xl font-normal text-sm transition-all"
           >
             <Edit2 size={15} />
             Edit Profile
@@ -198,7 +198,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
             {/* Photo upload button */}
             <label className="absolute bottom-3 left-40 md:left-44 cursor-pointer">
-              <div className="bg-secondary/80 backdrop-blur-sm border border-border text-muted-foreground hover:text-primary hover:border-primary px-3 py-1.5 rounded-full text-[0.65rem] font-bold flex items-center gap-1.5 transition-all">
+              <div className="bg-secondary/80 backdrop-blur-sm border border-border text-muted-foreground hover:text-primary hover:border-primary px-3 py-1.5 rounded-full text-[0.65rem] font-normal flex items-center gap-1.5 transition-all">
                 <Camera size={12} />
                 Change Photo
               </div>
@@ -234,12 +234,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             <div className="flex flex-wrap items-start gap-3 mb-2">
               <h1 className="font-body font-normal text-3xl md:text-4xl text-foreground tracking-normal">{profile?.name || "Your Name"}</h1>
               {profile?.plan === 'pro' && (
-                <span className="bg-amber-500/10 text-amber-500 border border-amber-500/30 px-3 py-1 rounded-full text-[0.6rem] font-black tracking-widest uppercase flex items-center gap-1.5 mt-1">
+                <span className="bg-amber-500/10 text-amber-500 border border-amber-500/30 px-3 py-1 rounded-full text-[0.6rem] font-normal tracking-widest uppercase flex items-center gap-1.5 mt-1">
                   <Crown size={11} strokeWidth={3} /> PRO Member
                 </span>
               )}
             </div>
-            <div className="text-primary font-bold text-sm uppercase tracking-[2px] mb-4">{profile?.role || "Role not set"}</div>
+            <div className="text-primary font-normal text-sm uppercase tracking-[2px] mb-4">{profile?.role || "Role not set"}</div>
 
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-5">
               {profile?.location && (
@@ -268,7 +268,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Stats row */}
         {(profile?.height || profile?.age || profile?.gender || profile?.hair_color || profile?.eye_color) && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-black tracking-[2px] uppercase text-muted-foreground/50 mb-4">Physical Attributes</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Physical Attributes</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {profile?.height && <Stat label="Height" value={profile.height} />}
               {profile?.age != null && <Stat label="Age" value={`${profile.age} yrs`} />}
@@ -282,7 +282,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Skills */}
         {profile?.skills && profile.skills.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-black tracking-[2px] uppercase text-muted-foreground/50 mb-4">Skills & Specialties</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Skills & Specialties</h3>
             <div className="flex flex-wrap gap-2">
               {profile.skills.map((skill) => (
                 <span key={skill} className="bg-primary/5 text-primary text-xs font-medium px-3 py-1.5 rounded-xl border border-primary/20">
@@ -296,7 +296,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Photos */}
         {(profile as any)?.photos?.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-black tracking-[2px] uppercase text-muted-foreground/50 mb-4">Portfolio Photos</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Portfolio Photos</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {(profile as any).photos.map((url: string, i: number) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border">
@@ -310,7 +310,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Videos */}
         {(profile as any)?.videos?.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-black tracking-[2px] uppercase text-muted-foreground/50 mb-4">Video Reel</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Video Reel</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {(profile as any).videos.map((url: string, i: number) => (
                 <video key={i} src={url} controls className="w-full rounded-xl border border-border bg-black" />
@@ -323,7 +323,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         <div className="flex justify-center pt-4">
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-10 py-3.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+            className="flex items-center gap-2 bg-primary text-primary-foreground px-10 py-3.5 rounded-xl font-normal text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
           >
             <Edit2 size={16} />
             Edit My Profile
@@ -351,7 +351,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         </div>
         <button
           onClick={handleCancelEdit}
-          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm font-bold"
+          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm font-normal"
         >
           <X size={16} />
           Cancel
@@ -361,7 +361,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       <div className="space-y-6">
         {/* Profile Photo Section */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Profile Photo</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Profile Photo</h3>
           <div className="flex items-center gap-6">
             <div className="flex flex-col items-center gap-3">
               <div className="w-32 h-32 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0 flex items-center justify-center font-display text-4xl text-primary shadow-lg shadow-primary/10">
@@ -402,7 +402,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <div className="space-y-3">
                 <label
                   htmlFor="photo-upload-profile"
-                  className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-body font-bold text-xs cursor-pointer hover:opacity-90 transition-all shadow-md shadow-primary/10 inline-flex items-center gap-2"
+                  className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-body font-normal text-xs cursor-pointer hover:opacity-90 transition-all shadow-md shadow-primary/10 inline-flex items-center gap-2"
                 >
                   <Plus size={16} /> Update Profile Photo
                 </label>
@@ -417,8 +417,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* ── Photos Section ── */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40">Portfolio Photos</h3>
-            <span className="text-[0.65rem] font-bold text-muted-foreground/50">
+            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40">Portfolio Photos</h3>
+            <span className="text-[0.65rem] font-normal text-muted-foreground/50">
               {(profile as any)?.photos?.length || 0} / {profile?.plan === 'pro' ? '∞' : '3'}
             </span>
           </div>
@@ -458,7 +458,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             {(profile?.plan === 'pro' || ((profile as any)?.photos?.length || 0) < 3) ? (
               <label className="aspect-square rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary group">
                 <Plus size={24} className="group-hover:scale-110 transition-transform" />
-                <span className="text-[0.65rem] font-bold uppercase tracking-wider">Add Photo</span>
+                <span className="text-[0.65rem] font-normal uppercase tracking-wider">Add Photo</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -494,7 +494,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               /* Locked slot — upgrade CTA */
               <div className="aspect-square rounded-xl border-2 border-dashed border-amber-500/30 bg-amber-500/5 flex flex-col items-center justify-center gap-2 text-center p-2">
                 <Crown size={20} className="text-amber-500" />
-                <span className="text-[0.6rem] font-bold text-amber-500 uppercase tracking-wider leading-tight">3/3 Photos<br />Upgrade for more</span>
+                <span className="text-[0.6rem] font-normal text-amber-500 uppercase tracking-wider leading-tight">3/3 Photos<br />Upgrade for more</span>
               </div>
             )}
           </div>
@@ -503,7 +503,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           {profile?.plan !== 'pro' && ((profile as any)?.photos?.length || 0) >= 3 && (
             <div className="mt-4 flex items-center gap-3 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3">
               <Crown size={16} className="text-amber-500 flex-shrink-0" />
-              <p className="text-xs text-amber-200/80 flex-1">Upgrade to <strong>PRO</strong> to upload unlimited photos.</p>
+              <p className="text-xs text-amber-200/80 flex-1">Upgrade to <span className="font-normal uppercase text-amber-400">PRO</span> to upload unlimited photos.</p>
             </div>
           )}
         </div>
@@ -511,8 +511,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* ── Video Reel Section ── */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40">Video Reel</h3>
-            <span className="text-[0.65rem] font-bold text-muted-foreground/50">
+            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40">Video Reel</h3>
+            <span className="text-[0.65rem] font-normal text-muted-foreground/50">
               {(profile as any)?.videos?.length || 0} / {profile?.plan === 'pro' ? '∞' : '1'}
             </span>
           </div>
@@ -547,7 +547,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 <Plus size={20} className="group-hover:scale-110 transition-transform" />
               </div>
               <div>
-                <div className="text-sm font-bold">Upload Video</div>
+                <div className="text-sm font-normal">Upload Video</div>
                 <div className="text-[0.68rem] text-muted-foreground/60">MP4, MOV, WebM · Max 100MB</div>
               </div>
               <input
@@ -590,8 +590,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             <div className="flex items-center gap-4 border-2 border-dashed border-amber-500/30 bg-amber-500/5 rounded-xl px-5 py-4">
               <Crown size={22} className="text-amber-500 flex-shrink-0" />
               <div className="flex-1">
-                <div className="text-sm font-bold text-amber-400">Video limit reached</div>
-                <div className="text-[0.68rem] text-amber-200/70 mt-0.5">Upgrade to <strong>PRO</strong> to upload unlimited videos and stand out to casting directors.</div>
+                <div className="text-sm font-normal text-amber-400">Video limit reached</div>
+                <div className="text-[0.68rem] text-amber-200/70 mt-0.5">Upgrade to <span className="font-normal uppercase text-amber-400">PRO</span> to upload unlimited videos and stand out to casting directors.</div>
               </div>
             </div>
           )}
@@ -599,7 +599,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Basic Info */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Basic Information</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="FULL NAME" value={name} onChange={setName} />
             <SelectField label="PRIMARY ROLE" value={role} onChange={setRole} options={ROLES} />
@@ -607,7 +607,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             <Field label="EMAIL (READ ONLY)" value={profile?.email || ""} onChange={() => { }} disabled />
           </div>
           <div className="mt-4">
-            <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">BIO</label>
+            <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">BIO</label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -620,7 +620,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Physical Attributes */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Physical Attributes</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Physical Attributes</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field label="HEIGHT" value={height} onChange={setHeight} placeholder="e.g. 5'10" />
             <Field label="AGE" value={age} onChange={setAge} type="number" placeholder="Years" />
@@ -632,17 +632,17 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Professional */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Professional Experience</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Professional Experience</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Field label="YEARS OF EXPERIENCE" value={experienceYears} onChange={setExperienceYears} type="number" />
             <Field label="PORTFOLIO / IMDB URL" value={portfolioUrl} onChange={setPortfolioUrl} placeholder="https://..." />
           </div>
 
           <div>
-            <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-2">SKILLS & SPECIALTIES</label>
+            <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-2">SKILLS & SPECIALTIES</label>
             <div className="flex flex-wrap gap-2 mb-4">
               {skills.map((skill) => (
-                <span key={skill} className="bg-primary border border-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-sm animate-in fade-in zoom-in duration-200">
+                <span key={skill} className="bg-primary border border-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-normal flex items-center gap-2 shadow-sm animate-in fade-in zoom-in duration-200">
                   {skill}
                   <X size={14} className="cursor-pointer hover:text-white/70" onClick={() => removeSkill(skill)} />
                 </span>
@@ -659,17 +659,17 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               />
               <button
                 onClick={addSkill}
-                className="bg-secondary text-primary px-4 py-2 rounded-lg font-bold text-xs hover:bg-secondary/80 border-[1.5px] border-border hover:border-primary/30 transition-all"
+                className="bg-secondary text-primary px-4 py-2 rounded-lg font-normal text-xs hover:bg-secondary/80 border-[1.5px] border-border hover:border-primary/30 transition-all"
               >
                 <Plus size={18} />
               </button>
             </div>
 
             <div className="space-y-5 bg-secondary/20 p-5 rounded-2xl border border-border/50">
-              <h4 className="text-[0.65rem] font-black tracking-[2px] uppercase text-muted-foreground/60">Quick Add Skills</h4>
+              <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/60">Quick Add Skills</h4>
               {Object.entries(RECOMMENDED_SKILLS).map(([category, categorySkills]) => (
                 <div key={category}>
-                  <div className="text-[0.7rem] font-bold text-primary/80 mb-2 flex items-center gap-2">
+                  <div className="text-[0.7rem] font-normal text-primary/80 mb-2 flex items-center gap-2">
                     <span className="w-1 h-1 rounded-full bg-primary/40" />
                     {category}
                   </div>
@@ -700,14 +700,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         <div className="flex items-center justify-between pt-4 pb-8 gap-4">
           <button
             onClick={handleCancelEdit}
-            className="px-8 py-3 rounded-xl border border-border text-muted-foreground hover:text-white hover:border-white/20 transition-all font-bold text-sm"
+            className="px-8 py-3 rounded-xl border border-border text-muted-foreground hover:text-white hover:border-white/20 transition-all font-normal text-sm"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-primary text-primary-foreground rounded-xl px-12 py-3.5 font-body font-bold text-sm hover:opacity-85 transition-opacity disabled:opacity-50 shadow-lg shadow-primary/20"
+            className="bg-primary text-primary-foreground rounded-xl px-12 py-3.5 font-body font-normal text-sm hover:opacity-85 transition-opacity disabled:opacity-50 shadow-lg shadow-primary/20"
           >
             {saving ? "Saving…" : "Save Profile"}
           </button>
@@ -724,8 +724,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-background/50 border border-border rounded-xl px-4 py-3 text-center">
-      <div className="text-[0.6rem] font-black tracking-[2px] uppercase text-muted-foreground/50 mb-1">{label}</div>
-      <div className="text-sm font-bold text-foreground">{value}</div>
+      <div className="text-[0.6rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-1">{label}</div>
+      <div className="text-sm font-normal text-foreground">{value}</div>
     </div>
   );
 }
@@ -735,7 +735,7 @@ function Field({ label, value, onChange, placeholder, type = "text", disabled = 
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">{label}</label>
+      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
       <input
         type={type}
         value={value}
@@ -753,7 +753,7 @@ function SelectField({ label, value, onChange, options }: {
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-bold tracking-wider mb-1">{label}</label>
+      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}

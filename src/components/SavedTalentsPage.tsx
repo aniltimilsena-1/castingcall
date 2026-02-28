@@ -63,7 +63,7 @@ export default function SavedTalentsPage() {
     <motion.div className="max-w-[1000px] mx-auto px-4 py-12" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
       <div className="flex items-center justify-between mb-8">
         <h1 className="font-display text-4xl text-primary">Saved Talents</h1>
-        <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{talents.length} Profiles Saved</div>
+        <div className="text-xs font-normal text-muted-foreground uppercase tracking-widest">{talents.length} Profiles Saved</div>
       </div>
 
       {loading ? (

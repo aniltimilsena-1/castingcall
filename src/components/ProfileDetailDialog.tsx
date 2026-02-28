@@ -116,7 +116,7 @@ export default function ProfileDetailDialog({
                                             <div className="text-xl text-primary font-medium mb-4">{profile?.role || "Member"}</div>
 
                                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
-                                                <span className="text-xs font-bold px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-full">
+                                                <span className="text-xs font-normal px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-full">
                                                     {profile?.plan === "pro" ? "PRO MEMBER" : "FREE MEMBER"}
                                                 </span>
                                                 {profile?.experience_years !== null && (
@@ -133,14 +133,14 @@ export default function ProfileDetailDialog({
                                             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                                                 <button
                                                     onClick={() => setShowFullProfile(true)}
-                                                    className="bg-primary text-primary-foreground px-10 py-3.5 rounded-xl font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                                                    className="bg-primary text-primary-foreground px-10 py-3.5 rounded-xl font-normal text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
                                                 >
                                                     View All Profile Details
                                                 </button>
                                                 {user?.id !== profile.user_id && (
                                                     <button
                                                         onClick={() => setIsMessaging(!isMessaging)}
-                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
+                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
                                                     >
                                                         <MessageCircle size={18} />
                                                         {isMessaging ? "Cancel Message" : "Send Message"}
@@ -148,7 +148,7 @@ export default function ProfileDetailDialog({
                                                 )}
                                                 <button
                                                     onClick={(e) => onToggleSave(e, profile.id)}
-                                                    className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all border ${isSaved ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
+                                                    className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSaved ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
                                                 >
                                                     <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />
                                                     {isSaved ? "Saved to List" : "Save Talent"}
@@ -159,7 +159,7 @@ export default function ProfileDetailDialog({
                                                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 space-y-4 text-left bg-secondary/30 p-6 rounded-[2rem] border border-border/50 shadow-inner">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                                        <div className="text-[0.65rem] font-bold text-primary tracking-[2.5px] uppercase">Direct Message</div>
+                                                        <div className="text-[0.65rem] font-normal text-primary tracking-[2.5px] uppercase">Direct Message</div>
                                                     </div>
                                                     <div className="relative">
                                                         <textarea
@@ -172,14 +172,14 @@ export default function ProfileDetailDialog({
                                                     <div className="flex justify-end gap-3">
                                                         <button
                                                             onClick={() => setIsMessaging(false)}
-                                                            className="px-5 py-2 text-xs font-bold text-muted-foreground hover:text-white transition-colors"
+                                                            className="px-5 py-2 text-xs font-normal text-muted-foreground hover:text-white transition-colors"
                                                         >
                                                             Cancel
                                                         </button>
                                                         <button
                                                             onClick={handleSendMessage}
                                                             disabled={sending || !message.trim()}
-                                                            className="bg-primary text-primary-foreground px-8 py-2.5 rounded-full font-bold text-xs flex items-center gap-2 hover:scale-105 transition-all disabled:opacity-50 gold-glow"
+                                                            className="bg-primary text-primary-foreground px-8 py-2.5 rounded-full font-normal text-xs flex items-center gap-2 hover:scale-105 transition-all disabled:opacity-50 gold-glow"
                                                         >
                                                             {sending ? "Sending..." : "Send"}
                                                             <Send size={14} className="fill-primary-foreground" />
@@ -202,14 +202,14 @@ export default function ProfileDetailDialog({
                                             {user?.id !== profile.user_id && (
                                                 <button
                                                     onClick={() => setIsMessaging(!isMessaging)}
-                                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary'}`}
+                                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-normal transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary'}`}
                                                 >
                                                     <MessageCircle size={14} />
                                                     {isMessaging ? "Discard Message" : "Message"}
                                                 </button>
                                             )}
                                         </div>
-                                        <button onClick={() => { setShowFullProfile(false); setIsMessaging(false); }} className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
+                                        <button onClick={() => { setShowFullProfile(false); setIsMessaging(false); }} className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
                                             <span>←</span> Back to summary
                                         </button>
                                     </div>
@@ -217,7 +217,7 @@ export default function ProfileDetailDialog({
                                     {isMessaging && showFullProfile && (
                                         <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-secondary/30 border border-primary/20 rounded-3xl p-8 space-y-6">
                                             <div className="flex items-center justify-between">
-                                                <div className="text-[0.7rem] font-bold text-primary tracking-[3px] uppercase">New Message to {profile.name}</div>
+                                                <div className="text-[0.7rem] font-normal text-primary tracking-[3px] uppercase">New Message to {profile.name}</div>
                                                 <button onClick={() => setIsMessaging(false)} className="text-muted-foreground hover:text-primary transition-colors">
                                                     <X size={20} />
                                                 </button>
@@ -229,11 +229,11 @@ export default function ProfileDetailDialog({
                                                 className="w-full bg-background border border-border rounded-xl px-6 py-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all resize-none h-40"
                                             />
                                             <div className="flex justify-end items-center gap-6">
-                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-bold text-muted-foreground hover:text-white transition-colors">Cancel</button>
+                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-normal text-muted-foreground hover:text-white transition-colors">Cancel</button>
                                                 <button
                                                     onClick={handleSendMessage}
                                                     disabled={sending || !message.trim()}
-                                                    className="bg-primary text-primary-foreground px-10 py-4 rounded-xl font-bold text-sm flex items-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-xl shadow-primary/20"
+                                                    className="bg-primary text-primary-foreground px-10 py-4 rounded-xl font-normal text-sm flex items-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-xl shadow-primary/20"
                                                 >
                                                     {sending ? "Sending..." : "Send Direct Message"}
                                                     <Send size={18} />
@@ -260,7 +260,7 @@ export default function ProfileDetailDialog({
 
                                         <div className="lg:col-span-8 space-y-10">
                                             <div>
-                                                <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-muted-foreground/50 mb-4 flex items-center gap-2">
+                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4 flex items-center gap-2">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Photos
                                                 </h3>
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -277,7 +277,7 @@ export default function ProfileDetailDialog({
                                             </div>
 
                                             <div className="space-y-6 bg-secondary/10 p-8 rounded-3xl border border-border/50">
-                                                <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-muted-foreground/50 mb-2">Basic Information</h3>
+                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-2">Basic Information</h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                     <Detail label="FULL NAME" value={profile?.name} />
                                                     <Detail label="PRIMARY ROLE" value={profile?.role} />
@@ -294,7 +294,7 @@ export default function ProfileDetailDialog({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         {(profile?.height || profile?.age || profile?.gender || profile?.hair_color || profile?.eye_color) && (
                                             <div className="space-y-6">
-                                                <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-muted-foreground/50 mb-4">Physical Attributes</h3>
+                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Physical Attributes</h3>
                                                 <div className="grid grid-cols-2 gap-8 bg-card border border-border p-8 rounded-3xl shadow-sm">
                                                     <Detail label="HEIGHT" value={profile?.height} />
                                                     <Detail label="AGE" value={profile?.age ? `${profile.age} Years` : null} />
@@ -307,7 +307,7 @@ export default function ProfileDetailDialog({
                                         <div className="space-y-10">
                                             {(profile?.experience_years !== null || profile?.portfolio_url) && (
                                                 <div>
-                                                    <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-muted-foreground/50 mb-4">Professional Experience</h3>
+                                                    <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Professional Experience</h3>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 bg-card border border-border p-8 rounded-3xl shadow-sm">
                                                         <Detail label="YEARS OF EXPERIENCE" value={profile?.experience_years !== null ? `${profile?.experience_years} Years` : null} />
                                                         <Detail label="PORTFOLIO URL" value={profile?.portfolio_url} isLink />
@@ -316,7 +316,7 @@ export default function ProfileDetailDialog({
                                             )}
                                             {profile?.skills && profile.skills.length > 0 && (
                                                 <div>
-                                                    <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-muted-foreground/50 mb-4">Skills & Specialties</h3>
+                                                    <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Skills & Specialties</h3>
                                                     <div className="flex flex-wrap gap-2.5">
                                                         {profile.skills.map((skill) => (
                                                             <span key={skill} className="bg-primary/5 text-primary text-[0.75rem] font-medium px-4 py-2 rounded-xl border border-primary/20 shadow-sm shadow-primary/5">{skill}</span>
@@ -352,7 +352,7 @@ function Detail({ label, value, fullWidth = false, isLink = false }: {
     if (!value) return null;
     return (
         <div className={fullWidth ? "col-span-full" : ""}>
-            <div className="text-[0.65rem] font-bold text-muted-foreground tracking-[2px] uppercase mb-1.5 opacity-50">{label}</div>
+            <div className="text-[0.65rem] font-normal text-muted-foreground tracking-[2px] uppercase mb-1.5 opacity-50">{label}</div>
             {isLink ? (
                 <a href={value.toString()} target="_blank" rel="noopener noreferrer" className="text-sm font-normal text-primary hover:underline break-all">
                     {value}

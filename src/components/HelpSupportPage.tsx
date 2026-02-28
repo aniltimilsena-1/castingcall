@@ -35,7 +35,7 @@ export default function HelpSupportPage() {
       <h1 className="font-display text-4xl text-primary mb-8">Help & Support</h1>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6">
-        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-4">
+        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-4">
           Frequently Asked Questions
         </h3>
         <Accordion type="single" collapsible className="space-y-2">
@@ -66,7 +66,7 @@ export default function HelpSupportPage() {
               href="https://wa.me/9779800000000"
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto bg-[#25D366] text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-green-500/20"
+              className="ml-auto bg-[#25D366] text-white px-5 py-2.5 rounded-xl text-xs font-normal flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-green-500/20"
             >
               <MessageCircle size={16} fill="white" />
               WhatsApp
@@ -83,13 +83,13 @@ export default function HelpSupportPage() {
       )}
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
-        <h3 className="text-[0.7rem] font-bold tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">
+        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">
           Contact Us
         </h3>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors" />
         <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" type="email" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors" />
         <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="How can we help?" rows={4} className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors resize-y" />
-        <button onClick={handleSubmit} className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-body font-bold text-sm hover:opacity-85 transition-opacity">
+        <button onClick={handleSubmit} className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-body font-normal text-sm hover:opacity-85 transition-opacity">
           Send Message
         </button>
       </div>

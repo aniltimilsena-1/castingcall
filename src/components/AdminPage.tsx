@@ -48,7 +48,7 @@ export default function AdminPage() {
                     <div className="p-2 bg-primary/10 rounded-lg text-primary">
                         <Shield size={24} />
                     </div>
-                    <h1 className="text-3xl font-display font-bold tracking-tight">Admin Dashboard</h1>
+                    <h1 className="text-3xl font-display font-normal tracking-tight">Admin Dashboard</h1>
                 </motion.div>
                 <p className="text-muted-foreground">Manage users, roles, and platform activity.</p>
             </header>
@@ -61,7 +61,7 @@ export default function AdminPage() {
 
             <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
                 <div className="p-4 border-b border-border bg-muted/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h2 className="font-bold flex items-center gap-2">
+                    <h2 className="font-normal flex items-center gap-2">
                         <Users size={18} />
                         User Management
                     </h2>
@@ -104,17 +104,17 @@ export default function AdminPage() {
                                                     {p.photo_url ? (
                                                         <img src={p.photo_url} alt="" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <span className="font-bold text-xs uppercase">{p.name?.[0] || '?'}</span>
+                                                        <span className="font-normal text-xs uppercase">{p.name?.[0] || '?'}</span>
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="font-semibold text-foreground leading-tight">{p.name || 'Anonymous'}</p>
+                                                    <p className="font-normal text-foreground leading-tight">{p.name || 'Anonymous'}</p>
                                                     <p className="text-muted-foreground text-[0.75rem]">{p.email}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-[0.7rem] font-bold uppercase tracking-wider ${p.role === 'Admin' ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
+                                            <span className={`px-2 py-1 rounded-full text-[0.7rem] font-normal uppercase tracking-wider ${p.role === 'Admin' ? 'bg-primary/10 text-primary' : 'bg-secondary text-secondary-foreground'
                                                 }`}>
                                                 {p.role}
                                             </span>
@@ -158,7 +158,7 @@ function StatsCard({ icon, label, value }: { icon: React.ReactNode; label: strin
             </div>
             <div>
                 <p className="text-muted-foreground text-sm font-medium">{label}</p>
-                <p className="text-2xl font-display font-bold">{value}</p>
+                <p className="text-2xl font-display font-normal">{value}</p>
             </div>
         </motion.div>
     );

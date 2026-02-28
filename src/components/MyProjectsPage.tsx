@@ -191,7 +191,7 @@ export default function MyProjectsPage() {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center justify-center gap-2 bg-primary text-black px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
+          className="flex items-center justify-center gap-2 bg-primary text-black px-10 py-4 rounded-2xl font-normal text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
         >
           <Plus className="w-5 h-5" /> Launch New Project
         </button>
@@ -232,16 +232,16 @@ export default function MyProjectsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
               <div className="space-y-8">
                 <div className="space-y-3">
-                  <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Project Title</label>
+                  <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Project Title</label>
                   <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. Major Action Movie Lead" className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Thumbnail link</label>
+                  <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Thumbnail link</label>
                   <input value={formData.thumbnail_url} onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })} placeholder="https://..." className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Role Category</label>
+                    <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Role Category</label>
                     <select value={formData.role_category} onChange={(e) => setFormData({ ...formData, role_category: e.target.value })} className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all appearance-none cursor-pointer">
                       <option value="Actor">Actor</option>
                       <option value="Singer">Singer</option>
@@ -250,7 +250,7 @@ export default function MyProjectsPage() {
                     </select>
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Status</label>
+                    <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Status</label>
                     <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all appearance-none cursor-pointer">
                       <option value="active">🟢 Active</option>
                       <option value="draft">🟡 Draft</option>
@@ -262,23 +262,23 @@ export default function MyProjectsPage() {
               <div className="space-y-8">
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Location</label>
+                    <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Location</label>
                     <input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="City, Country" className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Salary / Budget</label>
+                    <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Salary / Budget</label>
                     <input value={formData.salary_range} onChange={(e) => setFormData({ ...formData, salary_range: e.target.value })} placeholder="$ Range" className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <label className="text-[0.6rem] font-black tracking-[3px] uppercase text-primary/60 ml-1">Brief Description</label>
+                  <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Brief Description</label>
                   <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="What is this project about?" rows={3} className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all resize-none shadow-inner" />
                 </div>
               </div>
             </div>
             <div className="flex justify-end gap-6 mt-12 pt-10 border-t border-border/50">
-              <button onClick={resetForm} className="px-8 py-4 rounded-2xl font-bold text-sm text-muted-foreground hover:text-white transition-colors">Discard</button>
-              <button onClick={handleSave} className="bg-primary text-black px-14 py-4 rounded-2xl font-black text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30">{editId ? "Update Project" : "Publish Project"}</button>
+              <button onClick={resetForm} className="px-8 py-4 rounded-2xl font-normal text-sm text-muted-foreground hover:text-white transition-colors">Discard</button>
+              <button onClick={handleSave} className="bg-primary text-black px-14 py-4 rounded-2xl font-normal text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30">{editId ? "Update Project" : "Publish Project"}</button>
             </div>
           </motion.div>
         )}
@@ -304,7 +304,7 @@ export default function MyProjectsPage() {
                   </div>
                   <div>
                     <h3 className="font-display text-3xl text-white leading-none mb-2">{viewingApplicantsFor.title}</h3>
-                    <p className="text-xs text-muted-foreground font-black uppercase tracking-[2px]">Applicants Pipeline ({applicants.length})</p>
+                    <p className="text-xs text-muted-foreground font-normal uppercase tracking-[2px]">Applicants Pipeline ({applicants.length})</p>
                   </div>
                 </div>
                 <button onClick={() => setViewingApplicantsFor(null)} className="p-4 hover:bg-white/5 rounded-full transition-colors text-muted-foreground"><X size={24} /></button>
@@ -314,7 +314,7 @@ export default function MyProjectsPage() {
                 {applicantsLoading ? (
                   <div className="flex flex-col items-center justify-center py-20 gap-4">
                     <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                    <p className="text-xs font-black tracking-[3px] uppercase text-muted-foreground">Syncing Pipeline...</p>
+                    <p className="text-xs font-normal tracking-[3px] uppercase text-muted-foreground">Syncing Pipeline...</p>
                   </div>
                 ) : applicants.length === 0 ? (
                   <div className="text-center py-20">
@@ -328,8 +328,8 @@ export default function MyProjectsPage() {
                         <img src={a.profiles?.photo_url || ""} className="w-full h-full object-cover" alt="" />
                       </div>
                       <div className="flex-1">
-                        <div className="text-xl font-bold text-white mb-1">{a.profiles?.name}</div>
-                        <div className="text-sm text-primary font-bold uppercase tracking-widest text-[0.7rem] mb-2">{a.profiles?.role}</div>
+                        <div className="text-xl font-normal text-white mb-1">{a.profiles?.name}</div>
+                        <div className="text-sm text-primary font-normal uppercase tracking-widest text-[0.7rem] mb-2">{a.profiles?.role}</div>
                         <div className="flex gap-4 text-xs text-muted-foreground">
                           <span>📍 {a.profiles?.location || 'Remote'}</span>
                           <span>⭐ {a.profiles?.experience_years}y Exp</span>
@@ -340,9 +340,9 @@ export default function MyProjectsPage() {
                         <select
                           value={a.status}
                           onChange={(e) => updateApplicantStatus(a.id, e.target.value)}
-                          className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest outline-none border transition-all cursor-pointer ${a.status === 'accepted' ? 'bg-green-500 text-black border-green-500' :
-                              a.status === 'rejected' ? 'bg-red-500 text-white border-red-500' :
-                                'bg-secondary border-border text-white'
+                          className={`px-4 py-2.5 rounded-xl text-xs font-normal uppercase tracking-widest outline-none border transition-all cursor-pointer ${a.status === 'accepted' ? 'bg-green-500 text-black border-green-500' :
+                            a.status === 'rejected' ? 'bg-red-500 text-white border-red-500' :
+                              'bg-secondary border-border text-white'
                             }`}
                         >
                           <option value="pending">⏳ Pending</option>
@@ -370,7 +370,7 @@ export default function MyProjectsPage() {
         <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
           <FolderOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
           <p className="text-muted-foreground text-lg mb-2">No projects found.</p>
-          <button onClick={() => setShowForm(true)} className="text-primary font-bold hover:underline">Launch your first casting call →</button>
+          <button onClick={() => setShowForm(true)} className="text-primary font-normal hover:underline">Launch your first casting call →</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -389,16 +389,16 @@ export default function MyProjectsPage() {
                   </div>
                 )}
                 <div className="absolute top-6 left-6">
-                  <span className={`px-4 py-2 rounded-full text-[0.65rem] font-black uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-black' :
-                      p.status === 'completed' ? 'bg-blue-600 text-white' :
-                        'bg-white/10 text-white'
+                  <span className={`px-4 py-2 rounded-full text-[0.65rem] font-normal uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-black' :
+                    p.status === 'completed' ? 'bg-blue-600 text-white' :
+                      'bg-white/10 text-white'
                     }`}>
                     {p.status}
                   </span>
                 </div>
               </div>
               <div className="p-8">
-                <div className="flex items-center gap-2 text-[0.6rem] font-black tracking-[3px] text-primary uppercase mb-4 opacity-70">
+                <div className="flex items-center gap-2 text-[0.6rem] font-normal tracking-[3px] text-primary uppercase mb-4 opacity-70">
                   <Briefcase size={12} /> {p.role_category} Search
                 </div>
                 <h4 className="font-display text-2xl text-white mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
@@ -411,7 +411,7 @@ export default function MyProjectsPage() {
                   </div>
                   <button
                     onClick={() => fetchApplicants(p)}
-                    className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-black uppercase tracking-[2px] hover:bg-primary hover:text-black transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
+                    className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] hover:bg-primary hover:text-black transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
                   >
                     Review Pipeline <Users size={14} />
                   </button>
