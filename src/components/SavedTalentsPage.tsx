@@ -100,7 +100,11 @@ export default function SavedTalentsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="font-medium text-base text-foreground truncate group-hover:text-primary transition-colors">{t.name}</div>
-                  {t.plan === 'pro' && <span className="text-[0.6rem] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20 flex-shrink-0">PRO</span>}
+                  {(t.plan === 'pro' || t.role === 'Admin') && (
+                    <span className="text-[0.6rem] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20 flex-shrink-0">
+                      {t.role === 'Admin' ? 'ADMIN' : 'PRO'}
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm text-primary font-medium mb-1 line-clamp-1">{t.role}</div>
                 {t.location && <div className="text-[0.7rem] text-muted-foreground/60 flex items-center gap-1 font-medium italic">📍 {t.location}</div>}

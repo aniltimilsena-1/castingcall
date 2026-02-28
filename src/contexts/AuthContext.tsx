@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
+  isPremium: boolean;
   signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithOAuth: (provider: 'google' | 'facebook') => Promise<void>;
@@ -104,8 +105,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await fetchProfile(user.id);
   };
 
+  const isPremium = profile?.role === "Admin" || profile?.plan === "pro";
+
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signUp, signIn, signInWithOAuth, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, isPremium, signUp, signIn, signInWithOAuth, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

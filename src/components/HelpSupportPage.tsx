@@ -19,7 +19,7 @@ const faqs = [
 ];
 
 export default function HelpSupportPage() {
-  const { profile } = useAuth();
+  const { profile, isPremium } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -52,7 +52,7 @@ export default function HelpSupportPage() {
         </Accordion>
       </div>
 
-      {profile?.plan === 'pro' ? (
+      {isPremium ? (
         <div className="bg-gradient-to-br from-amber-500/20 to-amber-500/5 border border-amber-500/30 rounded-2xl p-6 mb-6 relative overflow-hidden group">
           <div className="flex items-center gap-4 relative z-10">
             <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/20">
@@ -60,7 +60,7 @@ export default function HelpSupportPage() {
             </div>
             <div>
               <h3 className="font-display text-xl text-amber-500">Priority VIP Support</h3>
-              <p className="text-xs text-amber-200/60 font-normal">As a PRO member, you have direct access to our support team.</p>
+              <p className="text-xs text-amber-200/60 font-normal">As a {profile?.role === 'Admin' ? 'Super Admin' : 'PRO member'}, you have direct access to our support team.</p>
             </div>
             <a
               href="https://wa.me/9779800000000"

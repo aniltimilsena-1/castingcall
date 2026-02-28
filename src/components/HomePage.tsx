@@ -97,7 +97,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 </div>
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-normal text-foreground text-lg">{p.name}</h4>
-                  {p.plan === 'pro' && <Crown size={14} className="text-amber-500" />}
+                  {(p.plan === 'pro' || p.role === 'Admin') && <Crown size={14} className="text-amber-500" />}
                   {(p as any).is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
                 </div>
                 <p className="text-[0.6rem] font-normal uppercase tracking-[2px] text-primary/70 mb-4">{p.role}</p>

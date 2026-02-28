@@ -152,7 +152,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                   <div className="flex items-center gap-3 mb-2">
                     <div className="text-base md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
                       {p.name || "Unknown"}
-                      {p.plan === "pro" && <Crown size={14} className="text-amber-500 fill-amber-500/20" />}
+                      {(p.plan === "pro" || p.role === "Admin") && <Crown size={14} className="text-amber-500 fill-amber-500/20" />}
                       {(p as any).is_verified && <CheckCircle2 size={16} className="text-blue-500 fill-blue-500/10" />}
                     </div>
                   </div>

@@ -155,20 +155,20 @@ export default function ProfileDetailDialog({
                                             </div>
                                             <div className="font-display text-lg text-white uppercase tracking-wider flex items-center gap-2">
                                                 {profile?.name}
-                                                {profile?.plan === 'pro' && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
+                                                {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
                                             </div>
                                         </div>
                                         <div className="flex-1 text-center md:text-left pt-4">
                                             <h2 className="font-display text-4xl text-white mb-2 flex items-center gap-3">
                                                 {profile?.name || "Unknown"}
-                                                {profile?.plan === 'pro' && <Crown size={24} className="text-amber-500 fill-amber-500/10" />}
+                                                {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={24} className="text-amber-500 fill-amber-500/10" />}
                                                 {(profile as any).is_verified && <CheckCircle2 size={20} className="text-blue-500 fill-blue-500/10" />}
                                             </h2>
                                             <div className="text-xl text-primary font-medium mb-4">{profile?.role || "Member"}</div>
 
                                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
                                                 <span className="text-xs font-normal px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-full">
-                                                    {profile?.plan === "pro" ? "PRO MEMBER" : "FREE MEMBER"}
+                                                    {(profile?.plan === "pro" || profile?.role === "Admin") ? (profile?.role === "Admin" ? "ADMIN PRO" : "PRO MEMBER") : "FREE MEMBER"}
                                                 </span>
                                                 {profile?.experience_years !== null && (
                                                     <span className="text-xs font-medium px-3 py-1 bg-secondary border border-border rounded-full text-muted-foreground">
@@ -297,7 +297,7 @@ export default function ProfileDetailDialog({
                                         <div className="flex items-center gap-4">
                                             <h2 className="font-display text-3xl text-white flex items-center gap-3">
                                                 {profile?.name}
-                                                {profile?.plan === 'pro' && <Crown size={20} className="text-amber-500 fill-amber-500/10" />}
+                                                {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={20} className="text-amber-500 fill-amber-500/10" />}
                                             </h2>
                                             {user?.id !== profile.user_id && (
                                                 <button

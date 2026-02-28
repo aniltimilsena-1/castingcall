@@ -6,12 +6,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, Crown, CreditCard, Loader2, PartyPopper, Wallet, ExternalLink, ShieldCheck } from "lucide-react";
 
 export default function PremiumPage() {
-    const { user, profile, refreshProfile } = useAuth();
+    const { user, profile, isPremium, refreshProfile } = useAuth();
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<"esewa" | "khalti" | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const isPro = profile?.plan === "pro";
+    const isPro = isPremium;
 
     // Handle eSewa Redirect Success/Failure from URL
     useEffect(() => {

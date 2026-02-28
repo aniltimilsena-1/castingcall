@@ -45,7 +45,7 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, isPremium, refreshProfile } = useAuth();
 
   // Mode
   const [isEditing, setIsEditing] = useState(false);
@@ -233,9 +233,9 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           <div className="pt-16 pb-8 px-6 md:px-10">
             <div className="flex flex-wrap items-start gap-3 mb-2">
               <h1 className="font-body font-normal text-3xl md:text-4xl text-foreground tracking-normal">{profile?.name || "Your Name"}</h1>
-              {profile?.plan === 'pro' && (
+              {isPremium && (
                 <span className="bg-amber-500/10 text-amber-500 border border-amber-500/30 px-3 py-1 rounded-full text-[0.6rem] font-normal tracking-widest uppercase flex items-center gap-1.5 mt-1">
-                  <Crown size={11} strokeWidth={3} /> PRO Member
+                  <Crown size={11} strokeWidth={3} /> {profile?.role === 'Admin' ? 'ADMIN PRO' : 'PRO Member'}
                 </span>
               )}
             </div>
