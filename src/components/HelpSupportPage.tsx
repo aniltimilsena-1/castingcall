@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Crown, MessageCircle } from "lucide-react";
+import { Crown, MessageCircle, Mail } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -86,6 +86,10 @@ export default function HelpSupportPage() {
         <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">
           Contact Us
         </h3>
+        <div className="flex items-center gap-2 mb-6">
+          <Mail size={16} className="text-primary" />
+          <p className="text-sm text-muted-foreground">Email us: <a href="mailto:support@castingcall.com" className="hover:text-primary transition-colors">support@castingcall.com</a></p>
+        </div>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors" />
         <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" type="email" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors" />
         <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="How can we help?" rows={4} className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors resize-y" />
