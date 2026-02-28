@@ -88,7 +88,7 @@ export default function HelpSupportPage() {
         </h3>
         <div className="flex items-center gap-2 mb-6">
           <Mail size={16} className="text-primary" />
-          <p className="text-sm text-muted-foreground">Email us: <a href="mailto:support@castingcall.com" className="hover:text-primary transition-colors">support@castingcall.com</a></p>
+          <p className="text-sm text-muted-foreground">Email us: <a href="mailto:aniltimilsena53@gmail.com" className="hover:text-primary transition-colors">aniltimilsena53@gmail.com</a></p>
         </div>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors" />
         <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email" type="email" className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors" />
