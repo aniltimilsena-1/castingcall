@@ -21,7 +21,9 @@ import TermsPrivacyPage from "@/components/TermsPrivacyPage";
 import PremiumPage from "@/components/PremiumPage";
 import ProfileDetailDialog from "@/components/ProfileDetailDialog";
 
-const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "messages", "settings", "saved", "analytics"];
+import AdminPage from "@/components/AdminPage";
+
+const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "messages", "settings", "saved", "analytics", "admin"];
 
 const Index = () => {
   const { user, profile: currentUserProfile, loading } = useAuth();
@@ -131,7 +133,7 @@ const Index = () => {
       />
 
       <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
-        {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} />}
+        {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} />}
         {page === "auth" && <AuthPage onSuccess={() => setPage("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
         {page === "search" && <SearchPage query={searchQuery} role={searchRole} onBack={() => setPage("home")} onProfileClick={handleProfileClick} />}
@@ -145,6 +147,7 @@ const Index = () => {
         {page === "help" && <HelpSupportPage />}
         {page === "terms" && <TermsPrivacyPage />}
         {page === "premium" && <PremiumPage />}
+        {page === "admin" && currentUserProfile?.role === "Admin" && <AdminPage />}
       </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}

@@ -12,6 +12,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithOAuth: (provider: 'google' | 'facebook') => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, name: string, role: string) => {
+    if (role === "Admin") throw new Error("Unauthorized role");
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -84,6 +86,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const signInWithOAuth = async (provider: 'google' | 'facebook') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin,
+      }
+    });
+    if (error) throw error;
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -93,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signUp, signIn, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, signUp, signIn, signInWithOAuth, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

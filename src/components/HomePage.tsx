@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface HomePageProps {
   onCategoryClick: (role: string) => void;
   onProfileClick: (profile: any) => void;
+  onTermsClick: () => void;
 }
 
 const categories = [
@@ -15,7 +16,7 @@ const categories = [
   { role: "Choreographer", icon: PersonStanding, delay: 0.32 },
 ];
 
-export default function HomePage({ onCategoryClick, onProfileClick }: HomePageProps) {
+export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick }: HomePageProps) {
   const [featured, setFeatured] = useState<any[]>([]);
 
   useEffect(() => {
@@ -98,6 +99,14 @@ export default function HomePage({ onCategoryClick, onProfileClick }: HomePagePr
           </div>
         </motion.div>
       )}
+
+      <footer className="mt-20 border-t border-border/10 pt-10 text-center space-y-4">
+        <div className="flex justify-center gap-6 text-xs uppercase tracking-widest text-muted-foreground font-black">
+          <button onClick={onTermsClick} className="hover:text-primary transition-colors">Privacy Policy</button>
+          <button onClick={onTermsClick} className="hover:text-primary transition-colors">Terms of Service</button>
+        </div>
+        <p className="text-[0.6rem] text-muted-foreground/50 uppercase tracking-[2px]">© 2026 CastingCall. All Rights Reserved.</p>
+      </footer>
     </div>
   );
 }

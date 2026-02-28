@@ -11,7 +11,7 @@ interface AuthPageProps {
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
 
 export default function AuthPage({ onSuccess }: AuthPageProps) {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signInWithOAuth } = useAuth();
   const [tab, setTab] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
 
@@ -26,6 +26,16 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
   const [signupConfirmPass, setSignupConfirmPass] = useState("");
   const [signupRole, setSignupRole] = useState("");
   const [showPass, setShowPass] = useState(false);
+
+  const handleOAuthClick = async (provider: 'google' | 'facebook') => {
+    setLoading(true);
+    try {
+      await signInWithOAuth(provider);
+    } catch (e: any) {
+      toast.error(e.message);
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -63,6 +73,31 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
           <p className="text-muted-foreground text-sm mt-2 font-medium">
             Connect with top talent and industry professionals
           </p>
+        </div>
+
+        {/* OAuth Buttons */}
+        <div className="grid grid-cols-2 gap-3 mb-7">
+          <button
+            onClick={() => handleOAuthClick('google')}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 py-2.5 border-[1.5px] border-border rounded-lg bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
+          >
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-wider">Google</span>
+          </button>
+          <button
+            onClick={() => handleOAuthClick('facebook')}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 py-2.5 border-[1.5px] border-border rounded-lg bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
+          >
+            <img src="https://www.facebook.com/favicon.ico" alt="Facebook" className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-wider">Facebook</span>
+          </button>
+        </div>
+
+        <div className="relative mb-7">
+          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-bold tracking-widest">Or continue with</span></div>
         </div>
 
         {/* Tabs */}

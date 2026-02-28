@@ -6,7 +6,7 @@ export type PageName =
   | "home" | "auth" | "profile" | "search" | "feed"
   | "projects" | "notifications" | "messages"
   | "settings" | "saved" | "analytics"
-  | "help" | "terms" | "premium";
+  | "help" | "terms" | "premium" | "admin";
 
 interface AppDrawerProps {
   open: boolean;
@@ -91,6 +91,11 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           </Section>
           <Hr />
           <Section label="General">
+            {profile?.role === "Admin" && (
+              <Item onClick={() => go("admin")}>
+                <span className="text-primary font-bold">Admin Panel</span>
+              </Item>
+            )}
             <Item onClick={() => go("settings")}>Settings</Item>
             <Item onClick={() => go("saved")}>Saved Talents</Item>
             <Item onClick={() => go("analytics")}>Analytics</Item>
