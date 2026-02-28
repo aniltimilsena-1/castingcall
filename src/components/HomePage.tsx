@@ -102,8 +102,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       <footer className="mt-20 border-t border-border/10 pt-10 text-center space-y-4">
         <div className="flex justify-center gap-6 text-xs uppercase tracking-widest text-muted-foreground font-black">
-          <button onClick={onTermsClick} className="hover:text-primary transition-colors">Privacy Policy</button>
-          <button onClick={onTermsClick} className="hover:text-primary transition-colors">Terms of Service</button>
+          <a href="#" onClick={(e) => { e.preventDefault(); onTermsClick(); }} className="hover:text-primary transition-colors cursor-pointer">Privacy Policy</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); onTermsClick(); }} className="hover:text-primary transition-colors cursor-pointer">Terms of Service</a>
         </div>
         <p className="text-[0.6rem] text-muted-foreground/50 uppercase tracking-[2px]">© 2026 CastingCall. All Rights Reserved.</p>
       </footer>
