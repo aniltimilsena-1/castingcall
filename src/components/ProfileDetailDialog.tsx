@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
 
@@ -162,6 +162,7 @@ export default function ProfileDetailDialog({
                                             <h2 className="font-display text-4xl text-white mb-2 flex items-center gap-3">
                                                 {profile?.name || "Unknown"}
                                                 {profile?.plan === 'pro' && <Crown size={24} className="text-amber-500 fill-amber-500/10" />}
+                                                {(profile as any).is_verified && <CheckCircle2 size={20} className="text-blue-500 fill-blue-500/10" />}
                                             </h2>
                                             <div className="text-xl text-primary font-medium mb-4">{profile?.role || "Member"}</div>
 
@@ -213,6 +214,17 @@ export default function ProfileDetailDialog({
                                                         Invite to Project
                                                     </button>
                                                 )}
+                                                <button
+                                                    onClick={() => {
+                                                        const url = `${window.location.origin}/?profile=${profile.id}`;
+                                                        navigator.clipboard.writeText(url);
+                                                        toast.success("Profile link copied to clipboard!");
+                                                    }}
+                                                    className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border bg-secondary border-border text-white hover:border-primary"
+                                                >
+                                                    <Share2 size={18} />
+                                                    Share Profile
+                                                </button>
                                             </div>
 
                                             {isInviting && (
@@ -419,7 +431,7 @@ export default function ProfileDetailDialog({
                         </div>
                     </div>{/* end scrollable body */}
                 </DialogContent>
-            </Dialog>
+            </Dialog >
             <PhotoViewer
                 url={viewingPhoto}
                 onClose={() => setViewingPhoto(null)}

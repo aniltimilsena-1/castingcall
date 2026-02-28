@@ -1,4 +1,4 @@
-import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users } from "lucide-react";
+import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,13 +20,19 @@ const categories = [
 
 export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick }: HomePageProps) {
   const [featured, setFeatured] = useState<any[]>([]);
+  const [recentProjects, setRecentProjects] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchFeatured = async () => {
       const { data } = await supabase.from('profiles').select('*').eq('plan', 'pro').limit(4);
       setFeatured(data || []);
     };
+    const fetchRecentProjects = async () => {
+      const { data } = await supabase.from('projects').select('*').eq('status', 'active').order('created_at', { ascending: false }).limit(3);
+      setRecentProjects(data || []);
+    };
     fetchFeatured();
+    fetchRecentProjects();
   }, []);
 
   return (
@@ -91,11 +97,49 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 </div>
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-normal text-foreground text-lg">{p.name}</h4>
-                  <Crown size={14} className="text-amber-500" />
+                  {p.plan === 'pro' && <Crown size={14} className="text-amber-500" />}
+                  {(p as any).is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
                 </div>
                 <p className="text-[0.6rem] font-normal uppercase tracking-[2px] text-primary/70 mb-4">{p.role}</p>
                 <p className="text-xs text-muted-foreground line-clamp-2 h-8 mb-6 italic">"{p.bio || 'Professional talent available for casting calls.'}"</p>
                 <button className="text-[0.65rem] font-normal uppercase tracking-[2px] text-foreground group-hover:text-primary transition-colors">View Profile →</button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {recentProjects.length > 0 && (
+        <motion.div
+          className="max-w-[1200px] mx-auto px-6 md:px-4 mt-24"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="flex items-center gap-6 mb-12">
+            <div className="flex items-center gap-2 text-primary font-normal text-xs uppercase tracking-[3px]">
+              <Briefcase size={14} /> Recent Casting Calls
+            </div>
+            <div className="flex-1 h-px bg-white/5" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {recentProjects.map((proj) => (
+              <div
+                key={proj.id}
+                onClick={() => onCategoryClick(proj.role_category || 'Actor')}
+                className="bg-card/30 border border-border/10 rounded-3xl p-8 hover:border-primary/30 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-3 text-[0.6rem] font-normal tracking-[2px] text-primary/60 uppercase mb-4">
+                  <MapPin size={12} /> {proj.location || 'Remote'}
+                </div>
+                <h4 className="font-display text-xl text-white mb-3 group-hover:text-primary transition-colors">{proj.title}</h4>
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-6 font-body italic opacity-60">Looking for: {proj.role_category}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.6rem] font-normal uppercase tracking-[2px] text-foreground/40">Apply Now →</span>
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Star size={12} className="text-primary" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
