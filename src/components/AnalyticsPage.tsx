@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AnalyticsPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, isPremium } = useAuth();
   const [loading, setLoading] = useState(true);
   const [viewStats, setViewStats] = useState({
     totalViews: 0,
@@ -94,7 +94,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (profile?.plan !== 'pro') {
+  if (!isPremium) {
     return (
       <motion.div
         className="max-w-[700px] mx-auto px-4 py-24 text-center"

@@ -48,7 +48,7 @@ interface MessagesPageProps {
 }
 
 export default function MessagesPage({ onNavigate }: MessagesPageProps) {
-  const { user, profile: currentUserProfile } = useAuth();
+  const { user, profile: currentUserProfile, isPremium } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<any>(null);
@@ -407,7 +407,7 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
           )}
         </div>
 
-        {currentUserProfile?.plan !== 'pro' && (
+        {!isPremium && (
           <div className="p-4 mt-auto border-t border-white/5">
             <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 rounded-2xl p-5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 blur-3xl rounded-full -mr-10 -mt-10" />

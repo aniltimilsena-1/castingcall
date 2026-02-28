@@ -400,16 +400,16 @@ function FeedCard({
                         onClick={() => onProfileClick?.({ user_id: item.owner.id, name: item.owner.name, photo_url: item.owner.photo_url, role: item.owner.role, plan: item.owner.plan })}
                     >
                         {item.owner.name}
-                        {item.owner.plan === "pro" && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
+                        {(item.owner.plan === "pro" || item.owner.role === "Admin") && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
                     </button>
                     <div className="text-[0.68rem] text-muted-foreground flex items-center gap-1.5">
                         <span className="text-primary/70 font-medium">{item.owner.role || "Member"}</span>
                         <span>·</span>
                         <span>{timeAgo(item.createdAt)}</span>
-                        {item.owner.plan === "pro" && (
+                        {(item.owner.plan === "pro" || item.owner.role === "Admin") && (
                             <>
                                 <span>·</span>
-                                <span className="text-amber-500 font-normal text-[0.6rem] uppercase tracking-wider">PRO</span>
+                                <span className="text-amber-500 font-normal text-[0.6rem] uppercase tracking-wider">{item.owner.role === "Admin" ? "ADMIN" : "PRO"}</span>
                             </>
                         )}
                     </div>
@@ -645,7 +645,7 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
                     <div className="min-w-0">
                         <div className="font-normal text-sm text-foreground truncate flex items-center gap-1.5">
                             {item.owner.name}
-                            {item.owner.plan === "pro" && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
+                            {(item.owner.plan === "pro" || item.owner.role === "Admin") && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
                         </div>
                         <div className="text-[0.65rem] text-primary/70">{item.owner.role || "Member"}</div>
                     </div>

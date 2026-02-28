@@ -15,7 +15,7 @@ interface AppDrawerProps {
 }
 
 export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps) {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isPremium, signOut } = useAuth();
 
   const initials = (profile?.name || user?.email || "?")
     .split(" ")
@@ -84,7 +84,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           <Hr />
           <Section label="Account">
             <Item onClick={() => go("profile")}>My Profile</Item>
-            <Item onClick={() => go("premium")}>Premium</Item>
+            {!isPremium && <Item onClick={() => go("premium")}>Premium</Item>}
             <Item onClick={() => go("projects")}>My Projects</Item>
             <Item onClick={() => go("notifications")}>Notifications</Item>
             <Item onClick={() => go("messages")}>Messages</Item>
