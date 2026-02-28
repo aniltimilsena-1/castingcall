@@ -32,13 +32,13 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
   return (
     <div className="min-h-[calc(100vh-64px)] pb-32">
       <motion.section
-        className="text-center py-16 md:py-20 px-6 md:px-4"
+        className="text-center py-8 md:py-12 px-6 md:px-4"
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-center mb-10">
-          <img src="/logo.png" alt="CastingCall Logo" className="h-40 w-auto animate-fade-in" />
+        <div className="flex justify-center mb-6">
+          <img src="/logo.png" alt="CastingCall Logo" className="h-28 w-auto animate-fade-in" />
         </div>
         <h1 className="font-display text-[clamp(2.5rem,5vw,4rem)] text-primary tracking-wider uppercase flex flex-col items-center gap-2">
           <span>Find Your Next Star</span>
