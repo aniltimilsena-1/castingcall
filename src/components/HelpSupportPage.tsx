@@ -41,7 +41,7 @@ export default function HelpSupportPage() {
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((f, i) => (
             <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-              <AccordionTrigger className="text-sm font-medium text-foreground hover:text-primary py-3">
+              <AccordionTrigger className="text-sm font-normal text-foreground hover:text-primary py-3">
                 {f.q}
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground pb-3">
@@ -60,7 +60,7 @@ export default function HelpSupportPage() {
             </div>
             <div>
               <h3 className="font-display text-xl text-amber-500">Priority VIP Support</h3>
-              <p className="text-xs text-amber-200/60 font-medium">As a PRO member, you have direct access to our support team.</p>
+              <p className="text-xs text-amber-200/60 font-normal">As a PRO member, you have direct access to our support team.</p>
             </div>
             <a
               href="https://wa.me/9779800000000"
@@ -77,7 +77,7 @@ export default function HelpSupportPage() {
         <div className="bg-secondary/30 border border-border/50 rounded-2xl p-6 mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Crown size={18} className="text-muted-foreground/40" />
-            <p className="text-xs text-muted-foreground font-medium">Want priority support? <button onClick={() => window.location.href = '/premium'} className="text-primary hover:underline italic">Upgrade to PRO</button></p>
+            <p className="text-xs text-muted-foreground font-normal">Want priority support? <button onClick={() => window.location.href = '/premium'} className="text-primary hover:underline italic">Upgrade to PRO</button></p>
           </div>
         </div>
       )}
