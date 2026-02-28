@@ -2,6 +2,7 @@ import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, C
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface HomePageProps {
   onCategoryClick: (role: string) => void;
@@ -19,12 +20,17 @@ const categories = [
 ];
 
 export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick }: HomePageProps) {
+  const { profile: currentUserProfile } = useAuth();
   const [featured, setFeatured] = useState<any[]>([]);
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchFeatured = async () => {
-      const { data } = await supabase.from('profiles').select('*').eq('plan', 'pro').limit(4);
+      let q = supabase.from('profiles').select('*').eq('plan', 'pro');
+      if (currentUserProfile?.role !== 'Admin') {
+        q = q.neq('role', 'Admin');
+      }
+      const { data } = await q.limit(4);
       setFeatured(data || []);
     };
     const fetchRecentProjects = async () => {

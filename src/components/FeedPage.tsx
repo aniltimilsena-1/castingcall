@@ -25,7 +25,7 @@ interface FeedPageProps {
 }
 
 export default function FeedPage({ onProfileClick }: FeedPageProps) {
-    const { user } = useAuth();
+    const { user, profile: currentUserProfile } = useAuth();
     const [feed, setFeed] = useState<FeedItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -53,10 +53,15 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
             setLoading(true);
             try {
                 // 1. Fetch all profiles with their photos
-                const { data: profiles, error } = await supabase
+                let q = supabase
                     .from("profiles")
-                    .select("id, user_id, name, photo_url, role, plan, photos, created_at")
-                    .order("created_at", { ascending: false });
+                    .select("id, user_id, name, photo_url, role, plan, photos, created_at");
+
+                if (currentUserProfile?.role !== 'Admin') {
+                    q = q.neq('role', 'Admin');
+                }
+
+                const { data: profiles, error } = await q.order("created_at", { ascending: false });
 
                 if (error) throw error;
 

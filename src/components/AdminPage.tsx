@@ -113,17 +113,29 @@ export default function AdminPage() {
                         </p>
                     </motion.div>
 
-                    <nav className="flex flex-wrap items-center gap-2 bg-white/[0.03] border border-white/5 p-1.5 rounded-2xl backdrop-blur-3xl">
-                        {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances'] as AdminTab[]).map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => { setActiveTab(tab); setSearchTerm(""); }}
-                                className={`px-5 py-2.5 rounded-xl text-[0.6rem] font-normal uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-black shadow-lg shadow-primary/20 scale-105' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </nav>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => toast.success("Retrieving system logs... synchronized with server.")}
+                            className="bg-amber-500 text-black px-8 py-3.5 rounded-2xl font-display text-[0.7rem] font-bold uppercase tracking-[2px] shadow-lg shadow-amber-500/20 flex items-center gap-3 border border-amber-400/50"
+                        >
+                            <Activity size={18} />
+                            SYSTEM LOGS
+                        </motion.button>
+
+                        <nav className="flex flex-wrap items-center gap-2 bg-white/[0.03] border border-white/5 p-1.5 rounded-2xl backdrop-blur-3xl">
+                            {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances'] as AdminTab[]).map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => { setActiveTab(tab); setSearchTerm(""); }}
+                                    className={`px-5 py-2.5 rounded-xl text-[0.6rem] font-normal uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-black shadow-lg shadow-primary/20 scale-105' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
@@ -181,26 +193,40 @@ export default function AdminPage() {
                                             <tr key={p.id} className="hover:bg-white/[0.02] transition-all group">
                                                 <td className="px-10 py-6">
                                                     <div className="flex items-center gap-4">
-                                                        <img src={p.photo_url || ""} className="w-12 h-12 rounded-xl bg-secondary border border-white/10 object-cover shadow-md" />
-                                                        <div><p className="text-white text-lg">{p.name}</p><p className="text-xs text-muted-foreground/40">{p.email}</p></div>
+                                                        <div className="w-12 h-12 rounded-xl bg-secondary border border-white/10 overflow-hidden shadow-md group-hover:scale-105 transition-transform">
+                                                            {p.photo_url ? <img src={p.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary font-display">{p.name?.[0]}</div>}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-white text-lg font-normal tracking-tight">{p.name}</p>
+                                                            <p className="text-[0.65rem] text-muted-foreground/40 uppercase tracking-widest">{p.email}</p>
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-10 py-6">
-                                                    <button onClick={() => toggleVerification(p)} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[0.6rem] uppercase tracking-widest border transition-all ${(p as any).is_verified ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-white/5 text-muted-foreground border-white/10 hover:border-primary'}`}>
-                                                        <UserCheck size={14} /> {(p as any).is_verified ? 'Verified' : 'Verify'}
+                                                    <button
+                                                        onClick={() => toggleVerification(p)}
+                                                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-[0.65rem] font-bold uppercase tracking-widest border transition-all duration-300 ${(p as any).is_verified ? 'bg-blue-500 text-white border-blue-400/50 shadow-lg shadow-blue-500/20' : 'bg-white/5 text-muted-foreground border-white/10 hover:border-primary hover:text-primary'}`}
+                                                    >
+                                                        <UserCheck size={14} className={(p as any).is_verified ? "animate-bounce" : ""} />
+                                                        {(p as any).is_verified ? 'VERIFIED' : 'VERIFY TALENT'}
                                                     </button>
                                                 </td>
-                                                <td className="px-10 py-6 text-xs text-primary uppercase tracking-widest">{p.role || 'Member'}</td>
-                                                <td className="px-10 py-6 text-xs text-muted-foreground/20 italic">{new Date(p.created_at).toLocaleDateString()}</td>
+                                                <td className="px-10 py-6 text-[0.7rem] text-amber-500 font-bold uppercase tracking-[2px]">{p.role || 'Member'}</td>
+                                                <td className="px-10 py-6 text-[0.7rem] text-muted-foreground/60 italic font-body">{p.location || 'Undisclosed'}</td>
                                                 <td className="px-10 py-6 text-right">
                                                     <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
                                                         <button
-                                                            onClick={() => toast.info(`Directing to ${p.name} 's profile editor...`)}
-                                                            className="p-3 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-white rounded-xl transition-all border border-transparent hover:border-white/10"
+                                                            onClick={() => toast.info(`Viewing details for ${p.name}...`)}
+                                                            className="w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-white rounded-xl transition-all border border-transparent hover:border-white/10"
                                                         >
                                                             <MoreVertical size={16} />
                                                         </button >
-                                                        <button onClick={() => handleDelete('profiles', p.id)} className="p-3 bg-red-500/10 text-red-500/20 hover:text-red-500 hover:bg-red-500/20 rounded-xl transition-all"><Ban size={16} /></button>
+                                                        <button
+                                                            onClick={() => handleDelete('profiles', p.id)}
+                                                            className="w-10 h-10 flex items-center justify-center bg-red-500/10 text-red-500/30 hover:text-red-500 hover:bg-red-500/20 rounded-xl transition-all border border-transparent hover:border-red-500/30"
+                                                        >
+                                                            <Ban size={16} />
+                                                        </button>
                                                     </div >
                                                 </td>
                                             </tr>

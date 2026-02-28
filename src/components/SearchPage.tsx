@@ -35,6 +35,11 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
         } else if (query) {
           q = q.or(`name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
         }
+
+        // Hide admins from regular users
+        if (currentUserProfile?.role !== 'Admin') {
+          q = q.neq('role', 'Admin');
+        }
         const { data } = await q;
         setResults(data || []);
       } else {

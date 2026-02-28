@@ -31,7 +31,11 @@ export default function SavedTalentsPage() {
     }
 
     const profileIds = savedRows.map((s) => s.talent_profile_id);
-    const { data: profiles } = await supabase.from("profiles").select("*").in("id", profileIds);
+    let q = supabase.from("profiles").select("*").in("id", profileIds);
+    if (currentUserProfile?.role !== 'Admin') {
+      q = q.neq('role', 'Admin');
+    }
+    const { data: profiles } = await q;
 
     const merged = (profiles || []).map((p) => ({
       ...p,
