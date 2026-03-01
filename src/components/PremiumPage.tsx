@@ -3,13 +3,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Crown, CreditCard, Loader2, PartyPopper, Wallet, ExternalLink, ShieldCheck } from "lucide-react";
+import { Check, Crown, CreditCard, Loader2, PartyPopper, Wallet, ExternalLink, ShieldCheck, Upload, QrCode, Hourglass, Landmark } from "lucide-react";
 
 export default function PremiumPage() {
     const { user, profile, isPremium, refreshProfile } = useAuth();
     const [isProcessing, setIsProcessing] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState<"esewa" | "khalti" | null>(null);
+    const [paymentMethod, setPaymentMethod] = useState<"esewa" | "khalti" | "manual" | null>(null);
     const [success, setSuccess] = useState(false);
+    const [screenshot, setScreenshot] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [pendingVerification, setPendingVerification] = useState<any>(null);
 
     const isPro = isPremium;
 
@@ -17,15 +20,27 @@ export default function PremiumPage() {
     useEffect(() => {
         const query = new URLSearchParams(window.location.search);
         const status = query.get("status");
-        const esewaResult = query.get("q"); // eSewa returns su or fu in q parameter sometimes
+        const esewaResult = query.get("q");
 
         if (status === "success" || esewaResult === "su") {
             handleFinalUpgrade("esewa");
-            // Clean URL
             window.history.replaceState({}, document.title, "/premium");
         } else if (status === "failed" || esewaResult === "fu") {
             toast.error("Payment was cancelled or failed via eSewa");
             window.history.replaceState({}, document.title, "/premium");
+        }
+
+        if (user) {
+            const checkPending = async () => {
+                const { data } = await supabase
+                    .from("payment_verifications" as any)
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .eq("status", "pending")
+                    .single();
+                setPendingVerification(data);
+            };
+            checkPending();
         }
     }, [user]);
 
@@ -136,6 +151,45 @@ export default function PremiumPage() {
             checkout.show({ amount: 49900 }); // Amount in paisa
         } catch (err) {
             toast.error("Could not initialize Khalti Widget");
+        }
+    };
+
+    const handleManualSubmit = async () => {
+        if (!user || !screenshot) return;
+        setUploading(true);
+        try {
+            const fileExt = screenshot.name.split('.').pop();
+            const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('payments')
+                .upload(fileName, screenshot);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('payments')
+                .getPublicUrl(fileName);
+
+            const { error: dbError } = await supabase
+                .from('payment_verifications' as any)
+                .insert({
+                    user_id: user.id,
+                    screenshot_url: publicUrl,
+                    amount: 499,
+                    payment_method: 'qr'
+                } as any);
+
+            if (dbError) throw dbError;
+
+            toast.success("Verification request submitted! We will review it shortly.");
+            setPendingVerification({ status: 'pending' });
+            setPaymentMethod(null);
+            setScreenshot(null);
+        } catch (err: any) {
+            toast.error("Failed to submit request: " + err.message);
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -320,10 +374,83 @@ export default function PremiumPage() {
                                         />
                                     </div>
                                 )}
-                                <span className="text-[0.65rem] font-normal tracking-[4px] uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via Khalti</span>
+                                <span className="text-[0.65rem] font-normal tracking-widest uppercase opacity-40 group-hover:opacity-100 transition-opacity">Pay via Khalti</span>
                                 <ExternalLink size={12} className="absolute top-4 right-4 text-white/20 group-hover:text-[#5c2d91] transition-colors" />
                             </button>
+
+                            <button
+                                onClick={() => setPaymentMethod(paymentMethod === "manual" ? null : "manual")}
+                                disabled={isProcessing || uploading || pendingVerification}
+                                className={`flex flex-col items-center justify-center p-8 bg-white/5 border-2 rounded-[2rem] transition-all group relative overflow-hidden active:scale-95 sm:col-span-2 ${paymentMethod === 'manual' ? 'border-primary bg-primary/5' : 'border-white/5 hover:border-primary/50'}`}
+                            >
+                                {pendingVerification ? (
+                                    <>
+                                        <Hourglass className="w-12 h-12 text-primary animate-pulse mb-3" />
+                                        <span className="text-[0.65rem] font-normal tracking-widest uppercase text-primary">Verification Pending</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="w-12 h-12 mb-4 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-all">
+                                            <QrCode size={24} />
+                                        </div>
+                                        <span className="text-[0.65rem] font-normal tracking-widest uppercase opacity-40 group-hover:opacity-100 transition-opacity">Direct QR / Bank Transfer</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
+
+                        {paymentMethod === "manual" && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-10 p-8 bg-black/40 rounded-[2rem] border border-primary/20 text-left">
+                                <div className="grid md:grid-cols-2 gap-10">
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <QrCode className="text-primary" size={20} />
+                                            <h4 className="text-sm font-normal text-white uppercase tracking-widest">Step 1: Scan & Pay</h4>
+                                        </div>
+                                        <div className="aspect-square w-full max-w-[200px] bg-white p-4 rounded-2xl mx-auto shadow-2xl">
+                                            {/* Admin QR Code Placeholder */}
+                                            <div className="w-full h-full bg-black/5 rounded-lg flex flex-col items-center justify-center text-black text-center gap-2">
+                                                <QrCode size={40} className="mb-2" />
+                                                <span className="text-[0.5rem] font-display font-medium uppercase leading-tight">FonePay / ConnectIPS<br />Casting Hub Pvt Ltd</span>
+                                            </div>
+                                        </div>
+                                        <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4">
+                                            <Landmark size={20} className="text-primary shrink-0" />
+                                            <div className="text-[0.65rem] text-muted-foreground uppercase leading-relaxed">
+                                                Bank: <span className="text-white">Global IME Bank</span><br />
+                                                A/C: <span className="text-white">012345678901234</span><br />
+                                                Name: <span className="text-white">Casting Hub Nepal</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-3">
+                                            <Upload className="text-primary" size={20} />
+                                            <h4 className="text-sm font-normal text-white uppercase tracking-widest">Step 2: Upload Screenshot</h4>
+                                        </div>
+                                        <div className="relative aspect-video rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center bg-white/5 overflow-hidden">
+                                            {screenshot ? (
+                                                <img src={URL.createObjectURL(screenshot)} className="w-full h-full object-cover" alt="Screenshot" />
+                                            ) : (
+                                                <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-colors p-4 block">
+                                                    <Upload size={24} className="text-muted-foreground mb-3" />
+                                                    <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest">Select Image</span>
+                                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => setScreenshot(e.target.files?.[0] || null)} />
+                                                </label>
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={handleManualSubmit}
+                                            disabled={!screenshot || uploading}
+                                            className="w-full bg-primary text-black py-4 rounded-xl font-normal text-xs uppercase tracking-[3px] disabled:opacity-50 hover:scale-[1.02] transition-all flex items-center justify-center gap-3"
+                                        >
+                                            {uploading ? <Loader2 size={16} className="animate-spin" /> : <><ShieldCheck size={16} /> Submit for Review</>}
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
 
                         <div className="mt-12 flex items-center justify-center gap-3 text-[0.6rem] text-muted-foreground uppercase tracking-[3px] font-normal opacity-60">
                             <CreditCard className="w-4 h-4 text-primary" />

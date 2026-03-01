@@ -9,7 +9,7 @@ type Profile = Tables<"profiles">;
 type Project = Tables<"projects">;
 type FeedPost = Tables<"photo_captions">;
 
-type AdminTab = "talents" | "projects" | "feed" | "applications" | "schedules" | "finances";
+type AdminTab = "talents" | "projects" | "feed" | "applications" | "schedules" | "finances" | "verifications";
 
 export default function AdminPage() {
     const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -18,6 +18,7 @@ export default function AdminPage() {
     const [applications, setApplications] = useState<any[]>([]);
     const [schedules, setSchedules] = useState<any[]>([]);
     const [finances, setFinances] = useState<any[]>([]);
+    const [verifications, setVerifications] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<AdminTab>("talents");
@@ -30,13 +31,14 @@ export default function AdminPage() {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [pRes, prRes, fRes, aRes, sRes, tRes] = await Promise.all([
+            const [pRes, prRes, fRes, aRes, sRes, tRes, vRes] = await Promise.all([
                 supabase.from("profiles").select("*").order("created_at", { ascending: false }),
                 supabase.from("projects").select("*").order("created_at", { ascending: false }),
                 supabase.from("photo_captions").select("*").order("created_at", { ascending: false }),
                 supabase.from("applications" as any).select("*, projects:project_id(title), profiles:applicant_id(name, email)").order("created_at", { ascending: false }),
                 supabase.from("audition_slots" as any).select("*, projects:project_id(title), profiles:talent_id(name)").order("start_time", { ascending: true }),
-                supabase.from("transactions" as any).select("*, profiles:user_id(name, email)").order("created_at", { ascending: false })
+                supabase.from("transactions" as any).select("*, profiles:user_id(name, email)").order("created_at", { ascending: false }),
+                supabase.from("payment_verifications" as any).select("*, profiles:user_id(name, email)").order("created_at", { ascending: false })
             ]);
 
             if (pRes.data) setProfiles(pRes.data);
@@ -45,6 +47,7 @@ export default function AdminPage() {
             if (aRes.data) setApplications(aRes.data);
             if (sRes.data) setSchedules(sRes.data);
             if (tRes.data) setFinances(tRes.data);
+            if (vRes.data) setVerifications(vRes.data);
 
         } catch (err) {
             console.error("Fetch error:", err);
@@ -81,12 +84,51 @@ export default function AdminPage() {
         }
     };
 
+    const handleApprovePayment = async (v: any) => {
+        try {
+            // 1. Update verification status
+            const { error: vError } = await supabase.from("payment_verifications" as any).update({ status: 'approved' }).eq("id", v.id);
+            if (vError) throw vError;
+
+            // 2. Upgrade user to PRO
+            const { error: pError } = await supabase.from("profiles").update({ plan: 'pro' } as any).eq("user_id", v.user_id);
+            if (pError) throw pError;
+
+            // 3. Add to transactions for history
+            const { error: tError } = await supabase.from("transactions" as any).insert({
+                user_id: v.user_id,
+                amount: v.amount,
+                currency: 'NPR',
+                plan_type: 'pro',
+                payment_method: 'qr_manual'
+            } as any);
+
+            toast.success("Payment approved! Talent upgraded to PRO.");
+            fetchAllData();
+        } catch (err: any) {
+            toast.error("Approval failed: " + err.message);
+        }
+    };
+
+    const handleRejectPayment = async (id: string) => {
+        if (!confirm("Reject this payment?")) return;
+        try {
+            const { error } = await supabase.from("payment_verifications" as any).update({ status: 'rejected' }).eq("id", id);
+            if (error) throw error;
+            toast.info("Payment rejected.");
+            fetchAllData();
+        } catch (err: any) {
+            toast.error("Action failed.");
+        }
+    };
+
     const filteredProfiles = profiles.filter(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()) || p.email?.toLowerCase().includes(searchTerm.toLowerCase()));
     const filteredProjects = projects.filter(p => p.title?.toLowerCase().includes(searchTerm.toLowerCase()));
     const filteredFeed = feedPosts.filter(p => p.description?.toLowerCase().includes(searchTerm.toLowerCase()));
     const filteredApps = applications.filter(a => a.projects?.title?.toLowerCase().includes(searchTerm.toLowerCase()) || a.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
     const filteredSchedules = schedules.filter(s => s.projects?.title?.toLowerCase().includes(searchTerm.toLowerCase()) || s.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
     const filteredFinances = finances.filter(f => f.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || f.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredVerifications = verifications.filter(v => v.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || v.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const totalRevenue = finances.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
@@ -125,7 +167,7 @@ export default function AdminPage() {
                         </motion.button>
 
                         <nav className="flex flex-wrap items-center gap-2 bg-white/[0.03] border border-white/5 p-1.5 rounded-2xl backdrop-blur-3xl">
-                            {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances'] as AdminTab[]).map((tab) => (
+                            {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances', 'verifications'] as AdminTab[]).map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => { setActiveTab(tab); setSearchTerm(""); }}
@@ -155,6 +197,7 @@ export default function AdminPage() {
                                 {activeTab === 'applications' && <FileText className="text-green-500" size={24} />}
                                 {activeTab === 'schedules' && <Calendar className="text-blue-500" size={24} />}
                                 {activeTab === 'finances' && <DollarSign className="text-green-500" size={24} />}
+                                {activeTab === 'verifications' && <Shield className="text-primary" size={24} />}
                             </div>
                             <div>
                                 <h2 className="text-2xl font-display font-normal text-white uppercase tracking-tight">{activeTab} Oversight</h2>
@@ -325,11 +368,41 @@ export default function AdminPage() {
                                                 <td className="px-10 py-6">
                                                     <div><p className="text-white text-lg font-normal">{f.profiles?.name}</p><p className="text-xs text-muted-foreground/40 font-body">{f.profiles?.email}</p></div>
                                                 </td>
-                                                <td className="px-10 py-6"><span className="px-4 py-1.5 bg-green-500/10 text-green-400 rounded-full text-[0.6rem] uppercase tracking-widest border border-green-500/20">+ ${f.amount} {f.currency}</span></td>
+                                                <td className="px-10 py-6"><span className="px-4 py-1.5 bg-green-500/10 text-green-400 rounded-full text-[0.6rem] uppercase tracking-widest border border-green-500/20">+ {f.amount} {f.currency}</span></td>
                                                 <td className="px-10 py-6"><span className="text-[0.65rem] text-amber-500 uppercase tracking-[2px] font-medium">{f.plan_type} Subscription</span></td>
                                                 <td className="px-10 py-6 text-xs text-muted-foreground/30">{new Date(f.created_at).toLocaleDateString()}</td>
                                                 <td className="px-10 py-6 text-right">
                                                     <button onClick={() => handleDelete('transactions', f.id)} className="p-3 bg-white/5 text-muted-foreground/30 hover:text-white rounded-xl transition-all"><ExternalLink size={16} /></button>
+                                                </td>
+                                            </tr>
+                                        ))}
+
+                                        {activeTab === 'verifications' && filteredVerifications.map(v => (
+                                            <tr key={v.id} className="hover:bg-white/[0.02] transition-all group">
+                                                <td className="px-10 py-6">
+                                                    <div><p className="text-white text-lg font-normal">{v.profiles?.name}</p><p className="text-xs text-muted-foreground/40 font-body">{v.profiles?.email}</p></div>
+                                                </td>
+                                                <td className="px-10 py-6">
+                                                    <span className={`px-4 py-1.5 rounded-full text-[0.6rem] uppercase tracking-widest border ${v.status === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : v.status === 'approved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                                                        {v.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-10 py-6">
+                                                    <a href={v.screenshot_url} target="_blank" className="flex items-center gap-2 p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all border border-white/5 w-fit">
+                                                        <div className="w-8 h-10 bg-black/40 rounded flex items-center justify-center overflow-hidden">
+                                                            <img src={v.screenshot_url} className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <span className="text-[0.55rem] uppercase tracking-widest text-muted-foreground">View Slip</span>
+                                                    </a>
+                                                </td>
+                                                <td className="px-10 py-6 text-xs text-muted-foreground/30">{new Date(v.created_at).toLocaleDateString()}</td>
+                                                <td className="px-10 py-6 text-right">
+                                                    {v.status === 'pending' && (
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button onClick={() => handleApprovePayment(v)} className="px-4 py-2 bg-green-500 text-black rounded-xl text-[0.6rem] font-bold uppercase tracking-widest hover:scale-105 transition-all">Approve</button>
+                                                            <button onClick={() => handleRejectPayment(v.id)} className="px-4 py-2 bg-red-500/10 text-red-500 rounded-xl text-[0.6rem] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">Reject</button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
