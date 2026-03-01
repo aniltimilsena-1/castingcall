@@ -6,8 +6,16 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, TrendingUp } from "lucide-react";
 
-type Profile = Tables<"profiles">;
+type Profile = Tables<"profiles"> & {
+    mood_tags?: string[];
+    style_tags?: string[];
+    personality_traits?: string[];
+    looks_like?: string[];
+    trending_score?: number;
+};
 
 interface ProfileDetailDialogProps {
     profile: Profile | null;
@@ -129,13 +137,25 @@ export default function ProfileDetailDialog({
         }
     };
 
+    const trackPortfolioInteraction = async (url: string, type: 'photo' | 'video' = 'photo') => {
+        try {
+            await supabase.from("portfolio_interactions" as any).insert({
+                user_id: profile.user_id,
+                interactor_id: user?.id || null,
+                item_url: url,
+                item_type: type
+            } as any);
+        } catch (err) {
+            console.error("Failed to track interaction:", err);
+        }
+    };
+
     if (!profile) return null;
 
     return (
         <>
             <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setShowFullProfile(false); }}>
                 <DialogContent className="max-w-4xl w-full bg-background p-0 border-none shadow-2xl rounded-3xl flex flex-col" style={{ maxHeight: '95svh', height: 'auto' }}>
-                    {/* Scrollable body — THIS is the scroll container for mobile touch */}
                     <div
                         className="overflow-y-auto overscroll-contain"
                         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
@@ -177,9 +197,21 @@ export default function ProfileDetailDialog({
                                                 )}
                                             </div>
 
-                                            <p className="text-lg text-foreground/70 leading-relaxed mb-8 max-w-lg">
+                                            <p className="text-lg text-foreground/70 leading-relaxed mb-6 max-w-lg">
                                                 {profile?.bio || "This user hasn't added a bio yet."}
                                             </p>
+
+                                            <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-8">
+                                                {(profile as any).mood_tags?.map((t: string) => (
+                                                    <Badge key={t} variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-normal uppercase tracking-tighter text-[0.6rem]">{t}</Badge>
+                                                ))}
+                                                {(profile as any).personality_traits?.map((t: string) => (
+                                                    <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal uppercase tracking-tighter text-[0.6rem]">{t}</Badge>
+                                                ))}
+                                                {(profile as any).trending_score > 80 && (
+                                                    <Badge className="bg-orange-500 text-white border-none font-normal tracking-widest text-[0.6rem]"><TrendingUp size={10} className="mr-1" /> Trending</Badge>
+                                                )}
+                                            </div>
 
                                             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                                                 <button
@@ -366,8 +398,8 @@ export default function ProfileDetailDialog({
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                                     {(profile as any)?.photos?.length > 0 ? (
                                                         (profile as any).photos.map((url: string, i: number) => (
-                                                            <div key={i} onClick={() => setViewingPhoto(url)} className="aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition-colors cursor-pointer group relative">
-                                                                <img src={url} alt={`Gallery ${i}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                            <div key={i} onClick={() => { setViewingPhoto(url); trackPortfolioInteraction(url); }} className="aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition-colors cursor-pointer group relative">
+                                                                <img src={url} alt={`Gallery ${i}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                             </div>
                                                         ))
                                                     ) : (
@@ -386,6 +418,17 @@ export default function ProfileDetailDialog({
                                                 </div>
                                                 <div className="pt-6 border-t border-border/20">
                                                     <Detail label="BIO" value={profile?.bio || "No professional summary provided."} fullWidth />
+                                                </div>
+                                                <div className="pt-6 border-t border-border/20">
+                                                    <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-primary mb-4 flex items-center gap-2">
+                                                        <Sparkles size={14} /> Smart Search Tags
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <Detail label="VISUAL MOODS" value={(profile as any).mood_tags?.join(', ')} />
+                                                        <Detail label="STYLE AESTHETIC" value={(profile as any).style_tags?.join(', ')} />
+                                                        <Detail label="PERSONALITY" value={(profile as any).personality_traits?.join(', ')} />
+                                                        <Detail label="LOOKS LIKE" value={(profile as any).looks_like?.join(', ')} />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -430,7 +473,7 @@ export default function ProfileDetailDialog({
                             )}
                         </div>
                     </div>{/* end scrollable body */}
-                </DialogContent>
+                </DialogContent >
             </Dialog >
             <PhotoViewer
                 url={viewingPhoto}

@@ -8,7 +8,19 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
 
-type Profile = Tables<"profiles">;
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Sparkles, TrendingUp, Search, SlidersHorizontal, Image as ImageIcon } from "lucide-react";
+
+type Profile = Tables<"profiles"> & {
+  mood_tags?: string[];
+  style_tags?: string[];
+  personality_traits?: string[];
+  looks_like?: string[];
+  trending_score?: number;
+  visual_search_keywords?: string;
+};
 
 interface SearchPageProps {
   query?: string;
@@ -22,18 +34,56 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
   const [searchType, setSearchType] = useState<"talents" | "projects">("talents");
   const [results, setResults] = useState<Profile[]>([]);
   const [projectResults, setProjectResults] = useState<any[]>([]);
+  const [trendingResults, setTrendingResults] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
+
+  // Smart Search States
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  const [looksLikeQuery, setLooksLikeQuery] = useState("");
+  const [isTrending, setIsTrending] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [visualSearchMode, setVisualSearchMode] = useState(false);
+
+  const moods = ['Energetic', 'Dark', 'Calm', 'Mysterious', 'Happy', 'Emotional', 'Professional'];
+  const styles = ['Luxury', 'Street', 'Vintage', 'Modern', 'Minimalist', 'Commercial', 'Editorial'];
+  const traits = ['Extrovert', 'Introvert', 'Charismatic', 'Thoughtful', 'Relatable', 'Bold'];
 
   useEffect(() => {
     const search = async () => {
       setLoading(true);
       if (searchType === "talents") {
-        let q = supabase.from("profiles").select("*").order('plan', { ascending: false });
+        let q = supabase.from("profiles").select("*");
+
+        if (isTrending) {
+          q = q.order('trending_score', { ascending: false });
+        } else {
+          q = q.order('plan', { ascending: false });
+        }
+
         if (role) {
           q = q.eq("role", role);
         } else if (query) {
           q = q.or(`name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
+        }
+
+        if (selectedMoods.length > 0) {
+          q = q.overlaps('mood_tags', selectedMoods.map(m => m.toLowerCase()));
+        }
+        if (selectedStyles.length > 0) {
+          q = q.overlaps('style_tags', selectedStyles.map(s => s.toLowerCase()));
+        }
+        if (selectedTraits.length > 0) {
+          q = q.overlaps('personality_traits', selectedTraits.map(t => t.toLowerCase()));
+        }
+        if (looksLikeQuery) {
+          q = q.overlaps('looks_like', [looksLikeQuery]);
+        }
+        if (visualSearchMode) {
+          // Mocking visual search logic - find by keywords or high trending
+          q = q.order('trending_score', { ascending: false });
         }
 
         // Hide admins from regular users
@@ -41,7 +91,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
           q = q.neq('role', 'Admin');
         }
         const { data } = await q;
-        setResults(data || []);
+        setResults((data as Profile[]) || []);
       } else {
         let q = supabase.from("projects").select("*").eq("status", "active");
         if (query) {
@@ -61,7 +111,13 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
       };
       fetchSaved();
     }
-  }, [query, role, user, searchType]);
+
+    const fetchTrending = async () => {
+      const { data } = await supabase.from("profiles").select("*").order('trending_score', { ascending: false }).limit(6);
+      setTrendingResults((data as Profile[]) || []);
+    };
+    fetchTrending();
+  }, [query, role, user, searchType, selectedMoods, selectedStyles, selectedTraits, isTrending, looksLikeQuery, visualSearchMode]);
 
   const toggleSave = async (e: React.MouseEvent, profileId: string) => {
     e.stopPropagation();
@@ -101,24 +157,193 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
         >
           ← Back
         </button>
-        <div className="flex bg-secondary/50 backdrop-blur-md p-1.5 rounded-2xl border border-border shadow-inner self-center md:self-auto">
+        <div className="flex bg-secondary/30 backdrop-blur-xl p-1.5 rounded-2xl border border-white/5 shadow-2xl self-center md:self-auto">
           <button
             onClick={() => setSearchType("talents")}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-black shadow-2xl shadow-primary/20 scale-105" : "text-muted-foreground hover:text-white"}`}
+            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-black shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-white"}`}
           >
             Talents
           </button>
           <button
             onClick={() => setSearchType("projects")}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-black shadow-2xl shadow-primary/20 scale-105" : "text-muted-foreground hover:text-white"}`}
+            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-black shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-white"}`}
           >
             Casting Calls
           </button>
         </div>
       </div>
 
-      <h2 className="font-display text-5xl text-primary mb-12 tracking-tight">
-        {searchType === 'talents' ? title : `Open Casting Calls`}
+      {searchType === 'talents' && (
+        <div className="mb-12 space-y-8 p-8 rounded-[2.5rem] bg-gradient-to-br from-card to-secondary/20 border border-white/5 shadow-2xl overflow-hidden relative group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Sparkles size={120} className="text-primary" />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-6">
+              <h3 className="font-display text-2xl text-white flex items-center gap-3">
+                <SlidersHorizontal className="text-primary" size={20} />
+                Smart Filters
+              </h3>
+              <div className="flex items-center gap-3 bg-secondary/50 px-4 py-2 rounded-full border border-white/5">
+                <TrendingUp size={16} className={isTrending ? "text-primary" : "text-muted-foreground"} />
+                <span className="text-[0.65rem] font-normal uppercase tracking-widest text-muted-foreground">Trending</span>
+                <Switch
+                  checked={isTrending}
+                  onCheckedChange={setIsTrending}
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                <input
+                  type="text"
+                  placeholder="Looks like..."
+                  value={looksLikeQuery}
+                  onChange={(e) => setLooksLikeQuery(e.target.value)}
+                  className="bg-secondary/50 border border-white/5 rounded-full pl-12 pr-6 py-2.5 text-sm outline-none focus:border-primary/50 transition-all w-48 md:w-64"
+                />
+              </div>
+              <button
+                onClick={() => setVisualSearchMode(!visualSearchMode)}
+                className={`p-2.5 rounded-full border border-white/5 transition-all ${visualSearchMode ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'bg-secondary/50 text-muted-foreground hover:text-white'}`}
+                title="AI Visual Search"
+              >
+                <Sparkles size={20} />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+            <div>
+              <label className="block text-[0.6rem] font-normal tracking-[3px] uppercase text-primary mb-4">Mood</label>
+              <div className="flex flex-wrap gap-2">
+                {moods.map(m => (
+                  <Badge
+                    key={m}
+                    variant={selectedMoods.includes(m) ? "default" : "outline"}
+                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedMoods.includes(m) ? 'bg-primary text-black' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
+                    onClick={() => setSelectedMoods(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])}
+                  >
+                    {m}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[0.6rem] font-normal tracking-[3px] uppercase text-primary mb-4">Style</label>
+              <div className="flex flex-wrap gap-2">
+                {styles.map(s => (
+                  <Badge
+                    key={s}
+                    variant={selectedStyles.includes(s) ? "default" : "outline"}
+                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedStyles.includes(s) ? 'bg-primary text-black' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
+                    onClick={() => setSelectedStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
+                  >
+                    {s}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[0.6rem] font-normal tracking-[3px] uppercase text-primary mb-4">Trait</label>
+              <div className="flex flex-wrap gap-2">
+                {traits.map(t => (
+                  <Badge
+                    key={t}
+                    variant={selectedTraits.includes(t) ? "default" : "outline"}
+                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedTraits.includes(t) ? 'bg-primary text-black' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
+                    onClick={() => setSelectedTraits(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])}
+                  >
+                    {t}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {visualSearchMode && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="mb-12 p-8 rounded-[2.5rem] bg-primary/5 border border-primary/20 flex flex-col items-center text-center gap-6"
+        >
+          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary animate-pulse">
+            <Sparkles size={32} />
+          </div>
+          <div>
+            <h4 className="font-display text-2xl text-primary mb-2">AI Visual Search Active</h4>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">Upload an image or paste a URL to find talents with a similar visual aesthetic and look.</p>
+          </div>
+          <div className="flex gap-4">
+            <button className="bg-primary text-black px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest flex items-center gap-3">
+              <ImageIcon size={18} /> Upload Image
+            </button>
+            <button
+              onClick={() => setVisualSearchMode(false)}
+              className="bg-secondary text-white px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest"
+            >
+              Disable
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {searchType === 'talents' && !query && selectedMoods.length === 0 && (
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="font-display text-2xl text-white flex items-center gap-3">
+              <TrendingUp className="text-orange-500" size={24} />
+              Trending Talent
+            </h3>
+            <span className="text-[0.6rem] font-normal uppercase tracking-[3px] text-muted-foreground">Updated Hourly</span>
+          </div>
+          <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4 mask-edges">
+            {trendingResults.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => onProfileClick(p)}
+                className="flex-shrink-0 w-64 group cursor-pointer"
+              >
+                <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-4 border border-white/5 shadow-2xl">
+                  {p.photo_url ? (
+                    <img src={p.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.name} />
+                  ) : (
+                    <div className="w-full h-full bg-secondary flex items-center justify-center font-display text-4xl text-primary">
+                      {p.name?.[0]}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <div className="text-white font-normal text-sm mb-1">{p.name}</div>
+                    <div className="text-primary text-[0.6rem] uppercase tracking-widest">{p.role}</div>
+                  </div>
+                  {p.trending_score && (
+                    <div className="absolute top-4 right-4 bg-orange-500 text-white text-[0.55rem] font-normal px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+                      <TrendingUp size={10} /> {Math.round(p.trending_score)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <h2 className="font-display text-5xl text-primary mb-12 tracking-tight flex items-center gap-6">
+        {searchType === 'talents' ? (
+          <>
+            {title}
+            {isTrending && <Badge className="bg-orange-500 text-white border-none px-4 py-1.5 text-xs font-normal tracking-widest animate-pulse">🔥 TRENDING</Badge>}
+          </>
+        ) : `Open Casting Calls`}
       </h2>
 
       {loading ? (
@@ -162,9 +387,22 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                     </div>
                   </div>
                   <div className="text-primary font-normal text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>
-                  <div className="flex flex-wrap gap-4 md:gap-8">
+                  <div className="flex flex-wrap gap-4 md:gap-8 mb-4">
                     {p.location && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
+                    {p.trending_score && p.trending_score > 80 && (
+                      <span className="text-[0.6rem] bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-full border border-orange-500/20 font-normal uppercase tracking-widest flex items-center gap-2">
+                        <TrendingUp size={10} /> Hot
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {p.mood_tags?.slice(0, 2).map((m: string) => (
+                      <span key={m} className="text-[0.6rem] bg-secondary/40 text-muted-foreground px-2 py-0.5 rounded-md border border-white/5 uppercase tracking-tighter">{m}</span>
+                    ))}
+                    {p.style_tags?.slice(0, 2).map((s: string) => (
+                      <span key={s} className="text-[0.6rem] bg-primary/10 text-primary px-2 py-0.5 rounded-md border border-primary/20 uppercase tracking-tighter">{s}</span>
+                    ))}
                   </div>
                   {p.bio && <p className="text-sm text-muted-foreground/50 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
                 </div>
