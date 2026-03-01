@@ -407,19 +407,28 @@ export default function PremiumPage() {
                                             <QrCode className="text-primary" size={20} />
                                             <h4 className="text-sm font-normal text-white uppercase tracking-widest">Step 1: Scan & Pay</h4>
                                         </div>
-                                        <div className="aspect-square w-full max-w-[200px] bg-white p-4 rounded-2xl mx-auto shadow-2xl">
-                                            {/* Admin QR Code Placeholder */}
-                                            <div className="w-full h-full bg-black/5 rounded-lg flex flex-col items-center justify-center text-black text-center gap-2">
+                                        <div className="aspect-square w-full max-w-[240px] bg-white p-4 rounded-2xl mx-auto shadow-2xl relative group">
+                                            <img
+                                                src="/rbb-qr.png"
+                                                alt="Rastriya Banijya Bank QR"
+                                                className="w-full h-full object-contain"
+                                                onError={(e) => {
+                                                    // Fallback if image isn't found yet
+                                                    e.currentTarget.style.display = 'none';
+                                                    e.currentTarget.parentElement!.querySelector('.qr-placeholder')!.classList.remove('hidden');
+                                                }}
+                                            />
+                                            <div className="qr-placeholder hidden w-full h-full bg-black/5 rounded-lg flex flex-col items-center justify-center text-black text-center gap-2">
                                                 <QrCode size={40} className="mb-2" />
-                                                <span className="text-[0.5rem] font-display font-medium uppercase leading-tight">FonePay / ConnectIPS<br />Casting Hub Pvt Ltd</span>
+                                                <span className="text-[0.5rem] font-display font-medium uppercase leading-tight text-red-600">Rastriya Banijya Bank<br />Please Upload rbb-qr.png</span>
                                             </div>
                                         </div>
                                         <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center gap-4">
                                             <Landmark size={20} className="text-primary shrink-0" />
                                             <div className="text-[0.65rem] text-muted-foreground uppercase leading-relaxed">
-                                                Bank: <span className="text-white">Global IME Bank</span><br />
-                                                A/C: <span className="text-white">012345678901234</span><br />
-                                                Name: <span className="text-white">Casting Hub Nepal</span>
+                                                Bank: <span className="text-white">Rastriya Banijya Bank (RBB)</span><br />
+                                                A/C Name: <span className="text-white">Casting Hub Nepal</span><br />
+                                                Location: <span className="text-white">Kathmandu, Nepal</span>
                                             </div>
                                         </div>
                                     </div>
