@@ -102,6 +102,22 @@ export default function AdminPage() {
                 plan_type: 'pro',
                 payment_method: 'qr_manual'
             } as any);
+            if (tError) console.warn("Transaction log failed (non-critical):", tError.message);
+
+            // 4. Send SMS notification to the user if they have a phone number
+            try {
+                const { data: userProfile } = await supabase.from("profiles").select("phone, name").eq("user_id", v.user_id).single() as any;
+                if (userProfile?.phone) {
+                    await supabase.functions.invoke('send-sms', {
+                        body: {
+                            to: (userProfile as any).phone,
+                            body: `🎉 Hi ${(userProfile as any).name || 'there'}! Your CastingCall PRO membership has been activated. Enjoy unlimited photos, videos, and priority listing! - CastingCall Nepal`
+                        }
+                    });
+                }
+            } catch (smsErr) {
+                console.warn("SMS notification failed (non-critical):", smsErr);
+            }
 
             toast.success("Payment approved! Talent upgraded to PRO.");
             fetchAllData();
