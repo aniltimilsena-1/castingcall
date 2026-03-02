@@ -136,7 +136,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         looks_like: looksLike,
         visual_search_keywords: visualSearchKeywords
       };
-      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user.id);
       if (error) throw error;
 
       const captionInserts = Object.entries(captions).map(([url, desc]) => ({
