@@ -253,7 +253,7 @@ export default function ProfileDetailDialog({
                                                 )}
                                                 <button
                                                     onClick={() => {
-                                                        const url = `${window.location.origin}/?profile=${profile.id}`;
+                                                        const url = `${window.location.origin}/profile/${profile.id}`;
                                                         navigator.clipboard.writeText(url);
                                                         toast.success("Profile link copied to clipboard!");
                                                     }}

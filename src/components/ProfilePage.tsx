@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles } from "lucide-react";
+import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
@@ -202,13 +202,26 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           <button onClick={onBack} className="text-muted-foreground hover:text-primary transition-colors text-sm font-normal flex items-center gap-1.5">
             ← Back
           </button>
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-muted-foreground px-5 py-2.5 rounded-xl font-normal text-sm transition-all"
-          >
-            <Edit2 size={15} />
-            Edit Profile
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/profile/${profile?.id}`;
+                navigator.clipboard.writeText(url);
+                toast.success("Profile link copied to clipboard!");
+              }}
+              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-muted-foreground px-5 py-2.5 rounded-xl font-normal text-sm transition-all"
+            >
+              <Share2 size={15} />
+              Share Link
+            </button>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-muted-foreground px-5 py-2.5 rounded-xl font-normal text-sm transition-all"
+            >
+              <Edit2 size={15} />
+              Edit Profile
+            </button>
+          </div>
         </div>
 
         {/* Hero Card */}

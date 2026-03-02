@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,6 +28,9 @@ const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "mess
 
 const Index = () => {
   const { user, profile: currentUserProfile, loading } = useAuth();
+  const { id } = useParams();
+  const routerNavigate = useNavigate();
+  const location = useLocation();
   const [page, setPage] = useState<PageName>("home");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,11 +77,13 @@ const Index = () => {
   const handleProfileClick = (p: any) => {
     setSelectedProfileForDialog(p);
     setProfileDialogOpen(true);
+    routerNavigate(`/profile/${p.id}`);
   };
 
   const navigate = (p: PageName) => {
     if (AUTH_REQUIRED.includes(p) && !user) {
       setPage("auth");
+      routerNavigate("/");
       return;
     }
     // Tapping Feed tab while already on feed → refresh
@@ -86,18 +92,69 @@ const Index = () => {
       return;
     }
     setPage(p);
+
+    // Sync URL
+    if (p === "home") routerNavigate("/");
+    else if (p === "profile" && user) routerNavigate(`/profile/${user.id}`);
+    else if (p === "auth") routerNavigate("/"); // Auth is usually a overlay or specific page, but here it's a "page state"
+    else routerNavigate(`/${p}`);
   };
+
+  // Sync state with URL on load and changes
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === "/") {
+      if (!id) setPage("home");
+    } else if (path.startsWith("/profile")) {
+      if (id) {
+        if (user && id === user.id) {
+          setPage("profile");
+        } else {
+          // It's someone else's profile - it will be handled by the other useEffect
+        }
+      } else if (user) {
+        // Just /profile -> go to my profile
+        routerNavigate(`/profile/${user.id}`, { replace: true });
+      } else {
+        // Not logged in and no ID, go to auth
+        setPage("auth");
+        routerNavigate("/", { replace: true });
+      }
+    } else {
+      const p = path.substring(1) as PageName;
+      if (p) setPage(p);
+    }
+  }, [location.pathname, id, user]);
+
+  // Handle viewing specific profiles via URL
+  useEffect(() => {
+    if (id && (!user || id !== user.id)) {
+      if (selectedProfileForDialog?.id === id) return; // Already loaded via handleProfileClick
+
+      const fetchProfile = async () => {
+        const { data, error } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
+        if (data && !error) {
+          setSelectedProfileForDialog(data);
+          setProfileDialogOpen(true);
+        } else {
+          toast.error("Profile not found");
+          routerNavigate("/");
+        }
+      };
+      fetchProfile();
+    }
+  }, [id, user, selectedProfileForDialog]);
 
   const handleSearch = (term: string) => {
     setSearchQuery(term);
     setSearchRole("");
-    setPage("search");
+    navigate("search");
   };
 
   const handleCategoryClick = (role: string) => {
     setSearchRole(role);
     setSearchQuery("");
-    setPage("search");
+    navigate("search");
   };
 
   const handleAuthClick = () => {
@@ -173,7 +230,12 @@ const Index = () => {
       <ProfileDetailDialog
         profile={selectedProfileForDialog}
         open={profileDialogOpen}
-        onOpenChange={setProfileDialogOpen}
+        onOpenChange={(open) => {
+          setProfileDialogOpen(open);
+          if (!open && id && (!user || id !== user.id)) {
+            routerNavigate(-1); // Go back when closing the shareable profile link
+          }
+        }}
         user={user}
         currentUserProfile={currentUserProfile}
         isSaved={selectedProfileForDialog ? savedTalentIds.includes(selectedProfileForDialog.id) : false}
