@@ -30,6 +30,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/profile" element={<Index />} />
               <Route path="/profile/:id" element={<Index />} />
+              <Route path="/:page" element={<Index />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

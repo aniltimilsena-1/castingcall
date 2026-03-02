@@ -122,9 +122,16 @@ const Index = () => {
       }
     } else {
       const p = path.substring(1) as PageName;
-      if (p) setPage(p);
+      if (p) {
+        if (AUTH_REQUIRED.includes(p) && !user && !loading) {
+          setPage("auth");
+          routerNavigate("/", { replace: true });
+        } else {
+          setPage(p);
+        }
+      }
     }
-  }, [location.pathname, id, user]);
+  }, [location.pathname, id, user, loading]);
 
   // Handle viewing specific profiles via URL
   useEffect(() => {
