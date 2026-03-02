@@ -53,7 +53,12 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
       }
       onSuccess();
     } catch (e: any) {
-      toast.error(e.message);
+      console.error("Auth Error details:", e);
+      if (e.message === "Failed to fetch") {
+        toast.error("Network Error: Could not reach the server. Please check your internet or VPN.");
+      } else {
+        toast.error(e.message || "An unexpected error occurred during auth");
+      }
     } finally {
       setLoading(false);
     }
