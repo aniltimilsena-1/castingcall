@@ -134,7 +134,13 @@ const Index = () => {
       if (selectedProfileForDialog?.id === id) return; // Already loaded via handleProfileClick
 
       const fetchProfile = async () => {
-        const { data, error } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
+        // Search by both id and user_id to be safe
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .or(`id.eq.${id},user_id.eq.${id}`)
+          .maybeSingle();
+
         if (data && !error) {
           setSelectedProfileForDialog(data);
           setProfileDialogOpen(true);
