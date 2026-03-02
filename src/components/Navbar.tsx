@@ -1,5 +1,6 @@
-import { Search, Moon, Sun, Menu, Crown } from "lucide-react";
-import { useState } from "react";
+import { Search, Moon, Sun, Menu, Crown, Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 
@@ -15,6 +16,22 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
   const { user, profile } = useAuth();
   const { theme, setTheme } = useTheme();
   const [searchValue, setSearchValue] = useState("");
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchUnread = async () => {
+      const { count } = await supabase.from("notifications" as any).select("*", { count: 'exact', head: true }).eq("user_id", user.id).eq("is_read", false);
+      setUnreadCount(count || 0);
+    };
+    fetchUnread();
+
+    const channel = supabase.channel('notif-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => fetchUnread())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const isPro = profile?.plan === "pro";
 
@@ -59,6 +76,18 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
           >
             {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
+
+          {user && (
+            <button
+              onClick={onMenuClick} // For now, we open menu or we could have a specific toggle
+              className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all relative"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse" />
+              )}
+            </button>
+          )}
 
           {!isPro && (
             <button

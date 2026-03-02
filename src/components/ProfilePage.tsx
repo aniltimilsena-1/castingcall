@@ -3,7 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera } from "lucide-react";
+import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
 const GENDERS = ["Male", "Female", "Non-binary", "Other", "Prefer not to say"];
@@ -58,6 +59,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
   // Form state
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState("");
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
@@ -76,12 +78,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const [personalityTraits, setPersonalityTraits] = useState<string[]>([]);
   const [looksLike, setLooksLike] = useState<string[]>([]);
   const [newLooksLike, setNewLooksLike] = useState("");
+  const [visualSearchKeywords, setVisualSearchKeywords] = useState("");
   const [saving, setSaving] = useState(false);
 
   // Populate form fields whenever profile changes
   useEffect(() => {
     if (profile) {
       setName(profile.name || "");
+      setPhone((profile as any).phone || "");
       setRole(profile.role || "");
       setLocation(profile.location || "");
       setBio(profile.bio || "");
@@ -97,6 +101,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       setStyleTags((profile as any).style_tags || []);
       setPersonalityTraits((profile as any).personality_traits || []);
       setLooksLike((profile as any).looks_like || []);
+      setVisualSearchKeywords((profile as any).visual_search_keywords || "");
 
       const fetchCaptions = async () => {
         const { data } = await supabase.from('photo_captions').select('photo_url, description').eq('user_id', profile.user_id);
@@ -113,7 +118,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     setSaving(true);
     try {
       const updates = {
-        name, role, location, bio, height,
+        name,
+        phone,
+        role,
+        location,
+        bio, height,
         age: age ? parseInt(age) : null,
         gender,
         hair_color: hairColor,
@@ -124,7 +133,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         mood_tags: moodTags.map(t => t.toLowerCase()),
         style_tags: styleTags.map(t => t.toLowerCase()),
         personality_traits: personalityTraits.map(t => t.toLowerCase()),
-        looks_like: looksLike
+        looks_like: looksLike,
+        visual_search_keywords: visualSearchKeywords
       };
       const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
       if (error) throw error;
@@ -293,25 +303,25 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             {moodTags.length > 0 && (
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Moods:</span>
-                {moodTags.map(t => <Badge key={t} variant="secondary" className="bg-secondary/40 text-white font-normal text-[0.65rem]">{t}</Badge>)}
+                {(moodTags || []).map(t => <Badge key={t} variant="secondary" className="bg-secondary/40 text-white font-normal text-[0.65rem]">{t}</Badge>)}
               </div>
             )}
             {styleTags.length > 0 && (
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Style:</span>
-                {styleTags.map(t => <Badge key={t} variant="secondary" className="bg-primary/20 text-primary border-primary/20 font-normal text-[0.65rem]">{t}</Badge>)}
+                {(styleTags || []).map(t => <Badge key={t} variant="secondary" className="bg-primary/20 text-primary border-primary/20 font-normal text-[0.65rem]">{t}</Badge>)}
               </div>
             )}
             {personalityTraits.length > 0 && (
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Traits:</span>
-                {personalityTraits.map(t => <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal text-[0.65rem]">{t}</Badge>)}
+                {(personalityTraits || []).map(t => <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal text-[0.65rem]">{t}</Badge>)}
               </div>
             )}
             {looksLike.length > 0 && (
               <div className="flex flex-wrap gap-2 items-center">
                 <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Looks Like:</span>
-                {looksLike.map(t => <Badge key={t} variant="outline" className="border-white/10 text-muted-foreground font-normal text-[0.65rem]">{t}</Badge>)}
+                {(looksLike || []).map(t => <Badge key={t} variant="outline" className="border-white/10 text-muted-foreground font-normal text-[0.65rem]">{t}</Badge>)}
               </div>
             )}
           </div>
@@ -336,7 +346,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Skills & Specialties</h3>
             <div className="flex flex-wrap gap-2">
-              {profile.skills.map((skill) => (
+              {(profile.skills || []).map((skill) => (
                 <span key={skill} className="bg-primary/5 text-primary text-xs font-medium px-3 py-1.5 rounded-xl border border-primary/20">
                   {skill}
                 </span>
@@ -350,7 +360,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Portfolio Photos</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {(profile as any).photos.map((url: string, i: number) => (
+              {((profile as any)?.photos || []).map((url: string, i: number) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border">
                   <img src={url} alt={`Portfolio ${i + 1}`} className="w-full h-full object-cover" />
                 </div>
@@ -364,7 +374,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Video Reel</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {(profile as any).videos.map((url: string, i: number) => (
+              {((profile as any)?.videos || []).map((url: string, i: number) => (
                 <video key={i} src={url} controls className="w-full rounded-xl border border-border bg-black" />
               ))}
             </div>
@@ -649,11 +659,13 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           )}
         </div>
 
+
         {/* Basic Info */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
           <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="FULL NAME" value={name} onChange={setName} />
+            <Field label="PHONE (FOR SMS ALERTS)" value={phone} onChange={setPhone} placeholder="+977..." />
             <SelectField label="PRIMARY ROLE" value={role} onChange={setRole} options={ROLES} />
             <Field label="LOCATION" value={location} onChange={setLocation} placeholder="e.g. Mumbai, India" />
             <Field label="EMAIL (READ ONLY)" value={profile?.email || ""} onChange={() => { }} disabled />
@@ -748,121 +760,22 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           </div>
         </div>
 
-        {/* Smart Search Tags Section (Edit Mode) */}
-        <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5 flex items-center gap-2">
-            <Sparkles size={14} className="text-primary" /> Smart Search Optimization
-          </h3>
-          <p className="text-[0.65rem] text-muted-foreground/60 mb-6 italic leading-relaxed">
-            Enhance your visibility in smart searches by tagging your visual mood, fashion style, and personality.
-          </p>
-
-          <div className="space-y-8">
-            {/* Moods */}
-            <div>
-              <label className="block text-[0.7rem] font-normal tracking-wider text-primary mb-3">VISUAL MOODS</label>
-              <div className="flex flex-wrap gap-2">
-                {RECOMMENDED_TAGS.Moods.map(m => (
-                  <button
-                    key={m}
-                    onClick={() => setMoodTags(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])}
-                    className={`px-3 py-1.5 rounded-lg text-xs transition-all border ${moodTags.includes(m) ? 'bg-primary text-black border-primary' : 'bg-secondary/30 text-muted-foreground border-border hover:border-primary/50'}`}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Styles */}
-            <div>
-              <label className="block text-[0.7rem] font-normal tracking-wider text-primary mb-3">STYLE AESTHETIC</label>
-              <div className="flex flex-wrap gap-2">
-                {RECOMMENDED_TAGS.Styles.map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setStyleTags(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
-                    className={`px-3 py-1.5 rounded-lg text-xs transition-all border ${styleTags.includes(s) ? 'bg-primary/20 text-primary border-primary/20' : 'bg-secondary/30 text-muted-foreground border-border hover:border-primary/50'}`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Traits */}
-            <div>
-              <label className="block text-[0.7rem] font-normal tracking-wider text-primary mb-3">PERSONALITY TRAITS</label>
-              <div className="flex flex-wrap gap-2">
-                {RECOMMENDED_TAGS.Personality.map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setPersonalityTraits(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
-                    className={`px-3 py-1.5 rounded-lg text-xs transition-all border ${personalityTraits.includes(p) ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 'bg-secondary/30 text-muted-foreground border-border hover:border-primary/50'}`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Looks Like */}
-            <div>
-              <label className="block text-[0.7rem] font-normal tracking-wider text-primary mb-2">LOOKS LIKE... / VIBE MATCH</label>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {looksLike.map(l => (
-                  <Badge key={l} variant="secondary" className="flex gap-2 items-center bg-secondary text-white border-white/5 py-1.5 px-3">
-                    {l}
-                    <X size={12} className="cursor-pointer hover:text-red-400" onClick={() => setLooksLike(prev => prev.filter(x => x !== l))} />
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newLooksLike}
-                  onChange={(e) => setNewLooksLike(e.target.value)}
-                  placeholder="e.g. Young Brad Pitt, 90s Aesthetic..."
-                  className="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm outline-none focus:border-primary"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newLooksLike.trim()) {
-                      setLooksLike([...looksLike, newLooksLike.trim()]);
-                      setNewLooksLike("");
-                    }
-                  }}
-                />
-                <button
-                  onClick={() => {
-                    if (newLooksLike.trim()) {
-                      setLooksLike([...looksLike, newLooksLike.trim()]);
-                      setNewLooksLike("");
-                    }
-                  }}
-                  className="bg-secondary text-white px-4 py-2 rounded-xl text-xs hover:bg-secondary/80 border border-border"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          </div>
+        {/* Save / Cancel buttons */}
+        <div className="flex items-center justify-between pt-4 pb-8 gap-4">
+          <button
+            onClick={handleCancelEdit}
+            className="px-8 py-3 rounded-xl border border-border text-muted-foreground hover:text-white hover:border-white/20 transition-all font-normal text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-primary text-primary-foreground rounded-xl px-12 py-3.5 font-body font-normal text-sm hover:opacity-85 transition-opacity disabled:opacity-50 shadow-lg shadow-primary/20"
+          >
+            {saving ? "Saving…" : "Save Profile"}
+          </button>
         </div>
-      </div>
-
-      {/* Save / Cancel buttons */}
-      <div className="flex items-center justify-between pt-4 pb-8 gap-4">
-        <button
-          onClick={handleCancelEdit}
-          className="px-8 py-3 rounded-xl border border-border text-muted-foreground hover:text-white hover:border-white/20 transition-all font-normal text-sm"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-primary text-primary-foreground rounded-xl px-12 py-3.5 font-body font-normal text-sm hover:opacity-85 transition-opacity disabled:opacity-50 shadow-lg shadow-primary/20"
-        >
-          {saving ? "Saving…" : "Save Profile"}
-        </button>
       </div>
     </motion.div>
   );

@@ -128,7 +128,12 @@ export default function AdminPage() {
     const filteredApps = applications.filter(a => a.projects?.title?.toLowerCase().includes(searchTerm.toLowerCase()) || a.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
     const filteredSchedules = schedules.filter(s => s.projects?.title?.toLowerCase().includes(searchTerm.toLowerCase()) || s.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
     const filteredFinances = finances.filter(f => f.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || f.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()));
-    const filteredVerifications = verifications.filter(v => v.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || v.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredVerifications = verifications.filter(v => {
+        const name = v.profiles?.name || "Unknown";
+        const email = v.profiles?.email || "No Email";
+        return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            email.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     const totalRevenue = finances.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
@@ -167,15 +172,24 @@ export default function AdminPage() {
                         </motion.button>
 
                         <nav className="flex flex-wrap items-center gap-2 bg-white/[0.03] border border-white/5 p-1.5 rounded-2xl backdrop-blur-3xl">
-                            {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances', 'verifications'] as AdminTab[]).map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => { setActiveTab(tab); setSearchTerm(""); }}
-                                    className={`px-5 py-2.5 rounded-xl text-[0.6rem] font-normal uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-black shadow-lg shadow-primary/20 scale-105' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
+                            {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances', 'verifications'] as AdminTab[]).map((tab) => {
+                                const pendingCount = tab === 'verifications' ? verifications.filter(v => v.status === 'pending').length : 0;
+                                return (
+                                    <button
+                                        key={tab}
+                                        onClick={() => { setActiveTab(tab); setSearchTerm(""); }}
+                                        className={`px-5 py-2.5 rounded-xl text-[0.6rem] font-normal uppercase tracking-widest transition-all relative ${activeTab === tab ? 'bg-primary text-black shadow-lg shadow-primary/20 scale-105' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}
+                                    >
+                                        {tab}
+                                        {pendingCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 items-center justify-center text-[0.5rem] text-white font-bold">{pendingCount}</span>
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </nav>
                     </div>
                 </header>
@@ -241,7 +255,10 @@ export default function AdminPage() {
                                                         </div>
                                                         <div>
                                                             <p className="text-white text-lg font-normal tracking-tight">{p.name}</p>
-                                                            <p className="text-[0.65rem] text-muted-foreground/40 uppercase tracking-widest">{p.email}</p>
+                                                            <div className="flex flex-col gap-0.5 mt-0.5">
+                                                                <p className="text-[0.65rem] text-muted-foreground/40 uppercase tracking-widest">{p.email}</p>
+                                                                {(p as any).phone && <p className="text-[0.6rem] text-primary/40 uppercase tracking-widest font-bold">{(p as any).phone}</p>}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>

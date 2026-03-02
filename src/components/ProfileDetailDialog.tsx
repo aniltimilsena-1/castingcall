@@ -208,6 +208,11 @@ export default function ProfileDetailDialog({
                                                 {(profile as any).personality_traits?.map((t: string) => (
                                                     <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal uppercase tracking-tighter text-[0.6rem]">{t}</Badge>
                                                 ))}
+                                                {(profile as any).looks_like?.slice(0, 3).map((t: string) => (
+                                                    <Badge key={t} variant="outline" className="border-primary/30 text-primary/70 font-normal uppercase tracking-tighter text-[0.6rem] flex items-center gap-1">
+                                                        <Sparkles size={10} /> {t}
+                                                    </Badge>
+                                                ))}
                                                 {(profile as any).trending_score > 80 && (
                                                     <Badge className="bg-orange-500 text-white border-none font-normal tracking-widest text-[0.6rem]"><TrendingUp size={10} className="mr-1" /> Trending</Badge>
                                                 )}

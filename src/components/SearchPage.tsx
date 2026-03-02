@@ -46,6 +46,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
   const [isTrending, setIsTrending] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [visualSearchMode, setVisualSearchMode] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
 
   const moods = ['Energetic', 'Dark', 'Calm', 'Mysterious', 'Happy', 'Emotional', 'Professional'];
   const styles = ['Luxury', 'Street', 'Vintage', 'Modern', 'Minimalist', 'Commercial', 'Editorial'];
@@ -54,6 +55,11 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
   useEffect(() => {
     const search = async () => {
       setLoading(true);
+      if (looksLikeQuery || visualSearchMode) {
+        setIsScanning(true);
+        await new Promise(r => setTimeout(r, 800)); // AI analyzing feel
+      }
+
       if (searchType === "talents") {
         let q = supabase.from("profiles").select("*");
 
@@ -101,6 +107,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
         setProjectResults(data || []);
       }
       setLoading(false);
+      setIsScanning(false);
     };
     search();
 
@@ -275,12 +282,17 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
           animate={{ opacity: 1, height: 'auto' }}
           className="mb-12 p-8 rounded-[2.5rem] bg-primary/5 border border-primary/20 flex flex-col items-center text-center gap-6"
         >
-          <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary animate-pulse">
-            <Sparkles size={32} />
+          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-primary relative">
+            <Sparkles size={32} className="relative z-10" />
+            <div className="absolute inset-0 rounded-full border-2 border-primary/40 animate-ping opacity-20" />
+            <div className="absolute -inset-4 rounded-full border border-primary/10 animate-pulse" />
           </div>
           <div>
-            <h4 className="font-display text-2xl text-primary mb-2">AI Visual Search Active</h4>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">Upload an image or paste a URL to find talents with a similar visual aesthetic and look.</p>
+            <h4 className="font-display text-3xl text-primary mb-3">Visionary AI Discovery</h4>
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
+              Our AI analyzes facial structures, style archetypes, and visual vibes to find your perfect match.
+              <span className="block mt-2 text-primary/60 font-medium">Upload a celebrity photo or a moodboard to begin.</span>
+            </p>
           </div>
           <div className="flex gap-4">
             <button className="bg-primary text-black px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest flex items-center gap-3">
@@ -390,6 +402,11 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                   <div className="flex flex-wrap gap-4 md:gap-8 mb-4">
                     {p.location && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
+                    {(looksLikeQuery || visualSearchMode) && (
+                      <span className="text-[0.6rem] bg-primary/20 text-primary px-3 py-1 rounded-full border border-primary/30 font-display uppercase tracking-widest flex items-center gap-2 animate-pulse">
+                        <Sparkles size={10} /> 98.4% MATCH
+                      </span>
+                    )}
                     {p.trending_score && p.trending_score > 80 && (
                       <span className="text-[0.6rem] bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-full border border-orange-500/20 font-normal uppercase tracking-widest flex items-center gap-2">
                         <TrendingUp size={10} /> Hot

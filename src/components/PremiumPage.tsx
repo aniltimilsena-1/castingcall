@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Crown, CreditCard, Loader2, PartyPopper, Wallet, ExternalLink, ShieldCheck, Upload, QrCode, Hourglass, Landmark } from "lucide-react";
+import { Check, Crown, CreditCard, Loader2, PartyPopper, Wallet, ExternalLink, ShieldCheck, Upload, QrCode, Hourglass, Landmark, X } from "lucide-react";
 
 export default function PremiumPage() {
     const { user, profile, isPremium, refreshProfile } = useAuth();
@@ -438,13 +438,28 @@ export default function PremiumPage() {
                                             <Upload className="text-primary" size={20} />
                                             <h4 className="text-sm font-normal text-white uppercase tracking-widest">Step 2: Upload Screenshot</h4>
                                         </div>
-                                        <div className="relative aspect-video rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center bg-white/5 overflow-hidden">
+                                        <div className="relative aspect-video rounded-2xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center bg-white/5 overflow-hidden group">
                                             {screenshot ? (
-                                                <img src={URL.createObjectURL(screenshot)} className="w-full h-full object-cover" alt="Screenshot" />
+                                                <>
+                                                    <img src={URL.createObjectURL(screenshot)} className="w-full h-full object-cover" alt="Screenshot" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                                                        <button
+                                                            onClick={() => setScreenshot(null)}
+                                                            className="bg-red-500 text-white p-3 rounded-full hover:scale-110 transition-all shadow-xl"
+                                                            title="Remove and select different"
+                                                        >
+                                                            <X size={20} />
+                                                        </button>
+                                                        <span className="text-white text-[0.6rem] font-bold uppercase tracking-widest">Wrong file? Remove it</span>
+                                                    </div>
+                                                </>
                                             ) : (
                                                 <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-colors p-4 block">
-                                                    <Upload size={24} className="text-muted-foreground mb-3" />
-                                                    <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest">Select Image</span>
+                                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                                                        <Upload size={20} className="text-primary" />
+                                                    </div>
+                                                    <span className="text-[0.65rem] text-white font-medium uppercase tracking-widest mb-1">Select Screenshot</span>
+                                                    <span className="text-[0.55rem] text-muted-foreground uppercase tracking-tighter">JPG, PNG or PDF (Max 5MB)</span>
                                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => setScreenshot(e.target.files?.[0] || null)} />
                                                 </label>
                                             )}

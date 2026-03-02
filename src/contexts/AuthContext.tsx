@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { toast } from "sonner";
 
 type Profile = Tables<"profiles">;
 
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          fetchProfile(session.user.id);
         } else {
           setProfile(null);
         }
@@ -60,6 +61,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    // Real-time listener for profile changes (e.g., PRO upgrade)
+    let profileSubscription: any = null;
+    if (user) {
+      profileSubscription = supabase
+        .channel(`profile-${user.id}`)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            setProfile(payload.new as Profile);
+            // Only show toast if it's a meaningful change (like plan)
+            if (payload.old && (payload.old as any).plan !== (payload.new as any).plan) {
+              toast.success("Account status updated!");
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (profileSubscription) supabase.removeChannel(profileSubscription);
+    };
+  }, [user]);
 
   const signUp = async (email: string, password: string, name: string, role: string) => {
     if (role === "Admin") throw new Error("Unauthorized role");
