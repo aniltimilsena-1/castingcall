@@ -120,7 +120,15 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
     }
 
     const fetchTrending = async () => {
-      const { data } = await supabase.from("profiles").select("*").order('trending_score', { ascending: false }).limit(6);
+      let q = supabase.from("profiles").select("*");
+      if (role) {
+        q = q.eq("role", role);
+      }
+      // Hide admins from trending list for regular categories
+      if (currentUserProfile?.role !== 'Admin') {
+        q = q.neq('role', 'Admin');
+      }
+      const { data } = await q.order('trending_score', { ascending: false }).limit(6);
       setTrendingResults((data as Profile[]) || []);
     };
     fetchTrending();
@@ -313,7 +321,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
           <div className="flex items-center justify-between mb-8">
             <h3 className="font-display text-2xl text-white flex items-center gap-3">
               <TrendingUp className="text-orange-500" size={24} />
-              Trending Talent
+              Trending {role || "Talent"}
             </h3>
             <span className="text-[0.6rem] font-normal uppercase tracking-[3px] text-muted-foreground">Updated Hourly</span>
           </div>
