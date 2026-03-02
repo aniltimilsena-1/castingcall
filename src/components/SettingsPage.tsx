@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
   const [role, setRole] = useState("Actor");
+  const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -40,14 +41,32 @@ export default function SettingsPage() {
   };
 
   const handleChangePassword = async () => {
-    if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    if (!oldPassword) { toast.error("Please enter your current password"); return; }
+    if (newPassword.length < 6) { toast.error("New password must be at least 6 characters"); return; }
+
     try {
+      setSaving(true);
+      // Verify old password by attempting a silent sign-in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || "",
+        password: oldPassword,
+      });
+
+      if (signInError) {
+        throw new Error("Incorrect current password. Please try again.");
+      }
+
+      // Update to new password
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      toast.success("Password updated!");
+
+      toast.success("Password updated successfully!");
+      setOldPassword("");
       setNewPassword("");
     } catch (e: any) {
       toast.error(e.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -138,6 +157,7 @@ export default function SettingsPage() {
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
         <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Change Password</h3>
+        <InputField label="CURRENT PASSWORD" type="password" value={oldPassword} onChange={setOldPassword} placeholder="Enter your old password" />
         <InputField label="NEW PASSWORD" type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 6 characters" />
         <button onClick={handleChangePassword} className="border-[1.5px] border-border text-foreground px-8 py-3 rounded-lg font-body font-normal text-sm hover:border-primary hover:text-primary transition-colors">
           Update Password
