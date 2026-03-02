@@ -72,7 +72,12 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
         if (role) {
           q = q.eq("role", role);
         } else if (query) {
-          q = q.or(`name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
+          if (isUUID) {
+            q = q.or(`id.eq.${query},user_id.eq.${query}`);
+          } else {
+            q = q.or(`name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
+          }
         }
 
         if (selectedMoods.length > 0) {
