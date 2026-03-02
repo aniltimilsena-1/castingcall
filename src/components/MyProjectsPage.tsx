@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit3, FolderOpen, Layout, Clock, CheckCircle2, X, ImageIcon, Search, MapPin, DollarSign, Briefcase, Users, Eye, Check, UserPlus, Video } from "lucide-react";
+import { Plus, Trash2, Edit3, FolderOpen, Layout, Clock, CheckCircle2, X, ImageIcon, Search, MapPin, DollarSign, Briefcase, Users, Eye, Check, UserPlus, Video, MessageSquare } from "lucide-react";
 
 type Project = Tables<"projects"> & {
   thumbnail_url?: string | null;
@@ -166,7 +166,14 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
     if (error) {
       toast.error("Failed to update status");
     } else {
-      toast.success(`Applicant marked as ${status}`);
+      if (status === 'accepted') {
+        const applicant = applicants.find(a => a.id === appId);
+        toast.success(`Congratulations! You've hired ${applicant?.profiles?.name || 'the talent'}. You can now start messaging them.`, {
+          duration: 5000,
+        });
+      } else {
+        toast.success(`Applicant marked as ${status}`);
+      }
       setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status } : a));
     }
   };
@@ -465,7 +472,6 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
                           </select>
                           <button
                             onClick={() => {
-                              console.log("Viewing profile:", a.profiles?.name);
                               if (a.profiles) {
                                 onProfileClick(a.profiles);
                               } else {
@@ -473,6 +479,21 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
                               }
                             }}
                             className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5 relative z-50 pointer-events-auto"
+                            title="View Profile & Message"
+                          >
+                            <MessageSquare size={18} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              console.log("Viewing profile:", a.profiles?.name);
+                              if (a.profiles) {
+                                onProfileClick(a.profiles);
+                              } else {
+                                toast.error("This actor hasn't set up their profile yet.");
+                              }
+                            }}
+                            className="p-4 bg-white/5 text-muted-foreground rounded-xl hover:bg-white/10 transition-all relative z-50 pointer-events-auto"
+                            title="Quick View"
                           >
                             <Eye size={18} />
                           </button>
