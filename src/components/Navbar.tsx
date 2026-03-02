@@ -19,6 +19,7 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
   const { theme, setTheme } = useTheme();
   const [searchValue, setSearchValue] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -26,13 +27,27 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
       const { count } = await supabase.from("notifications" as any).select("*", { count: 'exact', head: true }).eq("user_id", user.id).eq("is_read", false);
       setUnreadCount(count || 0);
     };
-    fetchUnread();
 
-    const channel = supabase.channel('notif-changes')
+    const fetchUnreadMessages = async () => {
+      const { count } = await supabase.from("messages").select("*", { count: 'exact', head: true }).eq("receiver_id", user.id).eq("is_read", false);
+      setUnreadMsgCount(count || 0);
+    };
+
+    fetchUnread();
+    fetchUnreadMessages();
+
+    const notifChannel = supabase.channel('notif-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => fetchUnread())
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    const msgChannel = supabase.channel('msg-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => fetchUnreadMessages())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notifChannel);
+      supabase.removeChannel(msgChannel);
+    };
   }, [user]);
 
   const isPro = profile?.plan === "pro";
@@ -83,10 +98,13 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
             <div className="flex items-center gap-1">
               <button
                 onClick={onMessagesClick}
-                className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all"
+                className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all relative"
                 title="Direct Messages"
               >
                 <MessageSquare className="w-5 h-5" />
+                {unreadMsgCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+                )}
               </button>
 
               <button
