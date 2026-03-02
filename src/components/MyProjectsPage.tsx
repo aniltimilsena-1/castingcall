@@ -456,7 +456,13 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
                             <option value="rejected">❌ Rejected</option>
                           </select>
                           <button
-                            onClick={() => onProfileClick(a.profiles)}
+                            onClick={() => {
+                              if (a.profiles) {
+                                onProfileClick(a.profiles);
+                              } else {
+                                toast.error("This actor hasn't set up their profile yet.");
+                              }
+                            }}
                             className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5"
                           >
                             <Eye size={18} />
