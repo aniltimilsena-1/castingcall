@@ -388,7 +388,7 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[1000] flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[40] flex items-center justify-center p-4"
             >
               <motion.div
                 initial={{ scale: 0.9, y: 20 }}
@@ -405,7 +405,15 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
                       <p className="text-xs text-muted-foreground font-normal uppercase tracking-[2px]">Applicants Pipeline ({applicants.length})</p>
                     </div>
                   </div>
-                  <button onClick={() => setViewingApplicantsFor(null)} className="p-4 hover:bg-white/5 rounded-full transition-colors text-muted-foreground"><X size={24} /></button>
+                  <button
+                    onClick={() => {
+                      console.log("Closing pipeline");
+                      setViewingApplicantsFor(null);
+                    }}
+                    className="p-4 hover:bg-white/5 rounded-full transition-colors text-muted-foreground relative z-50 pointer-events-auto"
+                  >
+                    <X size={24} />
+                  </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-10 space-y-6">
@@ -457,13 +465,14 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
                           </select>
                           <button
                             onClick={() => {
+                              console.log("Viewing profile:", a.profiles?.name);
                               if (a.profiles) {
                                 onProfileClick(a.profiles);
                               } else {
                                 toast.error("This actor hasn't set up their profile yet.");
                               }
                             }}
-                            className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5"
+                            className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5 relative z-50 pointer-events-auto"
                           >
                             <Eye size={18} />
                           </button>
