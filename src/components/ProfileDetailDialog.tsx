@@ -25,6 +25,8 @@ interface ProfileDetailDialogProps {
     currentUserProfile: any;
     isSaved: boolean;
     onToggleSave: (e: React.MouseEvent, profileId: string) => void;
+    isOnline?: boolean;
+    onDirectMessage?: () => void;
 }
 
 export default function ProfileDetailDialog({
@@ -34,7 +36,9 @@ export default function ProfileDetailDialog({
     user,
     currentUserProfile,
     isSaved,
-    onToggleSave
+    onToggleSave,
+    isOnline = false,
+    onDirectMessage
 }: ProfileDetailDialogProps) {
     const [showFullProfile, setShowFullProfile] = useState(false);
     const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
@@ -166,11 +170,14 @@ export default function ProfileDetailDialog({
                                 <div className="space-y-8">
                                     <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
                                         <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                                            <div className="w-28 h-28 md:w-40 md:h-40 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-4xl md:text-5xl text-primary shadow-xl shadow-primary/10 overflow-hidden">
+                                            <div className="w-28 h-28 md:w-40 md:h-40 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-4xl md:text-5xl text-primary shadow-xl shadow-primary/10 overflow-hidden relative">
                                                 {profile?.photo_url ? (
                                                     <img src={profile.photo_url} alt="Profile" className="w-full h-full object-cover rounded-full" />
                                                 ) : (
                                                     (profile?.name || "U")[0].toUpperCase()
+                                                )}
+                                                {isOnline && (
+                                                    <div className="absolute bottom-4 right-4 w-5 h-5 bg-green-500 border-4 border-background rounded-full z-10" title="Online" />
                                                 )}
                                             </div>
                                             <div className="font-display text-lg text-white uppercase tracking-wider flex items-center gap-2">
@@ -227,11 +234,14 @@ export default function ProfileDetailDialog({
                                                 </button>
                                                 {user?.id !== profile.user_id && (
                                                     <button
-                                                        onClick={() => setIsMessaging(!isMessaging)}
-                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
+                                                        onClick={() => {
+                                                            if (onDirectMessage) onDirectMessage();
+                                                            else setIsMessaging(!isMessaging);
+                                                        }}
+                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary shadow-lg shadow-black/20'}`}
                                                     >
                                                         <MessageCircle size={18} />
-                                                        {isMessaging ? "Cancel Message" : "Send Message"}
+                                                        {onDirectMessage ? "Message Hub" : (isMessaging ? "Cancel Message" : "Send Quick Message")}
                                                     </button>
                                                 )}
                                                 <button

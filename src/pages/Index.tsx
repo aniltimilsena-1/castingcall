@@ -42,15 +42,51 @@ const Index = () => {
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
   const [feedRefreshKey, setFeedRefreshKey] = useState(0);
   const [activeMessagePartnerId, setActiveMessagePartnerId] = useState<string | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (user) {
-      const fetchSaved = async () => {
-        const { data } = await supabase.from("saved_talents").select("talent_profile_id").eq("user_id", user.id);
-        setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
-      };
-      fetchSaved();
-    }
+    if (!user) return;
+    const fetchSaved = async () => {
+      const { data } = await supabase.from("saved_talents").select("talent_profile_id").eq("user_id", user.id);
+      setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
+    };
+    fetchSaved();
+
+    // Global Presence Tracking
+    const channel = supabase.channel('global-presence', {
+      config: { presence: { key: user.id } }
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const onlineIds = new Set<string>();
+        Object.keys(state).forEach(key => onlineIds.add(key));
+        setOnlineUsers(onlineIds);
+      })
+      .on('presence', { event: 'join' }, ({ key }) => {
+        setOnlineUsers(prev => {
+          const next = new Set(prev);
+          next.add(key);
+          return next;
+        });
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        setOnlineUsers(prev => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const toggleSave = async (e: React.MouseEvent, profileId: string) => {
@@ -207,10 +243,10 @@ const Index = () => {
       />
 
       <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
-        {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} />}
+        {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onlineUsers={onlineUsers} />}
         {page === "auth" && <AuthPage onSuccess={() => setPage("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
-        {page === "search" && <SearchPage query={searchQuery} role={searchRole} onBack={() => setPage("home")} onProfileClick={handleProfileClick} />}
+        {page === "search" && <SearchPage query={searchQuery} role={searchRole} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} />}
         {page === "projects" && <MyProjectsPage onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
@@ -257,6 +293,13 @@ const Index = () => {
         currentUserProfile={currentUserProfile}
         isSaved={selectedProfileForDialog ? savedTalentIds.includes(selectedProfileForDialog.id) : false}
         onToggleSave={toggleSave}
+        isOnline={selectedProfileForDialog ? onlineUsers.has(selectedProfileForDialog.user_id) : false}
+        onDirectMessage={() => {
+          if (selectedProfileForDialog?.user_id) {
+            setProfileDialogOpen(false);
+            handleMessageClick(selectedProfileForDialog.user_id);
+          }
+        }}
       />
 
       <PhotoViewer

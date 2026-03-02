@@ -27,9 +27,10 @@ interface SearchPageProps {
   role?: string;
   onBack: () => void;
   onProfileClick: (profile: Profile) => void;
+  onlineUsers?: Set<string>;
 }
 
-export default function SearchPage({ query, role, onBack, onProfileClick }: SearchPageProps) {
+export default function SearchPage({ query, role, onBack, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
   const { user, profile: currentUserProfile } = useAuth();
   const [searchType, setSearchType] = useState<"talents" | "projects">("talents");
   const [results, setResults] = useState<Profile[]>([]);
@@ -345,6 +346,9 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                       {p.name?.[0]}
                     </div>
                   )}
+                  {onlineUsers.has(p.user_id) && (
+                    <div className="absolute top-4 left-4 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 animate-pulse" title="Online" />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   <div className="absolute bottom-4 left-4 right-4">
                     <div className="text-white font-normal text-sm mb-1">{p.name}</div>
@@ -391,11 +395,14 @@ export default function SearchPage({ query, role, onBack, onProfileClick }: Sear
                 className="group relative flex flex-col md:flex-row md:items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-4 md:px-6 py-4 md:py-5 hover:border-primary/50 hover:shadow-[0_20px_50px_-15px_rgba(251,191,36,0.15)] transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center gap-3 flex-shrink-0 relative">
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
                     {p.photo_url ? (
                       <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
                     ) : (
                       (p.name || "U")[0].toUpperCase()
+                    )}
+                    {onlineUsers.has(p.user_id) && (
+                      <div className="absolute bottom-0 right-1 w-4 h-4 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 animate-pulse" title="Online" />
                     )}
                   </div>
                   {p.plan === "pro" && (

@@ -29,7 +29,12 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
     };
 
     const fetchUnreadMessages = async () => {
-      const { count } = await supabase.from("messages").select("*", { count: 'exact', head: true }).eq("receiver_id", user.id).eq("is_read", false);
+      // Query for messages where is_read is false OR null
+      const { count } = await supabase
+        .from("messages")
+        .select("*", { count: 'exact', head: true })
+        .eq("receiver_id", user.id)
+        .or('is_read.eq.false,is_read.is.null');
       setUnreadMsgCount(count || 0);
     };
 
@@ -101,9 +106,9 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
                 className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all relative"
                 title="Direct Messages"
               >
-                <MessageSquare className="w-5 h-5" />
+                <MessageSquare className={`w-5 h-5 transition-colors ${unreadMsgCount > 0 ? "text-red-500" : "text-muted-foreground group-hover:text-primary"}`} />
                 {unreadMsgCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-background shadow-[0_0_8px_rgba(220,38,38,0.8)] animate-pulse" />
                 )}
               </button>
 

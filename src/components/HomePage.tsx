@@ -8,6 +8,7 @@ interface HomePageProps {
   onCategoryClick: (role: string) => void;
   onProfileClick: (profile: any) => void;
   onTermsClick: () => void;
+  onlineUsers?: Set<string>;
 }
 
 const categories = [
@@ -19,7 +20,7 @@ const categories = [
   { role: "Casting Director", icon: Users, delay: 0.48 },
 ];
 
-export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick }: HomePageProps) {
+export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick, onlineUsers = new Set() }: HomePageProps) {
   const { profile: currentUserProfile } = useAuth();
   const [featured, setFeatured] = useState<any[]>([]);
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
@@ -94,11 +95,14 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 onClick={() => onProfileClick(p)}
                 className="bg-card/50 border border-border/10 rounded-3xl p-6 flex flex-col items-center text-center group hover:border-primary/50 transition-all cursor-pointer"
               >
-                <div className="w-24 h-24 rounded-full bg-secondary border-2 border-primary mb-5 overflow-hidden shadow-2xl group-hover:scale-105 transition-transform">
+                <div className="w-24 h-24 rounded-full bg-secondary border-2 border-primary mb-5 overflow-hidden shadow-2xl group-hover:scale-105 transition-transform relative">
                   {p.photo_url ? (
                     <img src={p.photo_url} className="w-full h-full object-cover" alt="" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center font-display text-3xl text-primary">{p.name?.[0]}</div>
+                  )}
+                  {onlineUsers.has(p.user_id) && (
+                    <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 animate-pulse" />
                   )}
                 </div>
                 <div className="flex items-center gap-2 mb-1">
