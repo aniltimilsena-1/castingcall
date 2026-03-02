@@ -97,20 +97,42 @@ export default function MyProjectsPage() {
   const fetchApplicants = async (project: Project) => {
     setApplicantsLoading(true);
     setViewingApplicantsFor(project);
-    const { data, error } = await supabase
-      .from('applications' as any)
-      .select(`
-        *,
-        profiles:applicant_id (id, name, photo_url, role, location, experience_years)
-      `)
-      .eq('project_id', project.id);
+    try {
+      // 1. Fetch applications for this project
+      const { data: appsData, error: appError } = await supabase
+        .from('applications' as any)
+        .select('*')
+        .eq('project_id', project.id);
 
-    if (error) {
+      if (appError) throw appError;
+      const apps = (appsData as any[]) || [];
+      if (apps.length === 0) {
+        setApplicants([]);
+        return;
+      }
+
+      // 2. Fetch profiles for these applicants
+      const applicantIds = apps.map(a => a.applicant_id);
+      const { data: profs, error: profError } = await supabase
+        .from('profiles')
+        .select('id, name, photo_url, role, location, experience_years, user_id')
+        .in('user_id', applicantIds);
+
+      if (profError) throw profError;
+
+      // 3. Merge data
+      const merged = apps.map(app => ({
+        ...app,
+        profiles: profs?.find(p => p.user_id === app.applicant_id)
+      }));
+
+      setApplicants(merged);
+    } catch (err: any) {
+      console.error(err);
       toast.error("Could not load applicants");
-    } else {
-      setApplicants(data || []);
+    } finally {
+      setApplicantsLoading(false);
     }
-    setApplicantsLoading(false);
   };
 
   const handleUpdateAudition = async (appId: string, file: File) => {

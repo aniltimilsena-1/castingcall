@@ -35,8 +35,8 @@ export default function AdminPage() {
                 supabase.from("profiles").select("*").order("created_at", { ascending: false }),
                 supabase.from("projects").select("*").order("created_at", { ascending: false }),
                 supabase.from("photo_captions").select("*").order("created_at", { ascending: false }),
-                supabase.from("applications" as any).select("*, projects:project_id(title), profiles:applicant_id(name, email)").order("created_at", { ascending: false }),
-                supabase.from("audition_slots" as any).select("*, projects:project_id(title), profiles:talent_id(name)").order("start_time", { ascending: true }),
+                supabase.from("applications" as any).select("*, projects:project_id(title)").order("created_at", { ascending: false }),
+                supabase.from("audition_slots" as any).select("*, projects:project_id(title)").order("start_time", { ascending: true }),
                 supabase.from("transactions" as any).select("*").order("created_at", { ascending: false }),
                 supabase.from("payment_verifications" as any).select("*").order("created_at", { ascending: false })
             ]);
@@ -93,6 +93,13 @@ export default function AdminPage() {
         if (!confirm("Reject this payment?")) return;
         await supabase.from("payment_verifications" as any).update({ status: 'rejected' }).eq("id", id);
         toast.info("Payment rejected.");
+        fetchAllData();
+    };
+
+    const handleDeleteProject = async (id: string) => {
+        if (!confirm("Are you sure? This will remove the casting call forever.")) return;
+        await supabase.from("projects").delete().eq("id", id);
+        toast.info("Project removed.");
         fetchAllData();
     };
 
@@ -157,6 +164,26 @@ export default function AdminPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
+                                {activeTab === 'projects' && projects.map(p => {
+                                    const prof = profiles.find(pr => pr.user_id === p.user_id);
+                                    return (
+                                        <tr key={p.id}>
+                                            <td className="px-10 py-6"><div><p className="text-white font-medium">{p.title}</p><p className="text-xs text-muted-foreground">by {prof?.name || 'Unknown'}</p></div></td>
+                                            <td className="px-10 py-6"><span className={`px-3 py-1 rounded-full text-[0.6rem] uppercase ${p.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-secondary text-muted-foreground'}`}>{p.status}</span></td>
+                                            <td className="px-10 py-6"><button onClick={() => handleDeleteProject(p.id)} className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"><Trash2 size={16} /></button></td>
+                                        </tr>
+                                    );
+                                })}
+                                {activeTab === 'applications' && applications.map(a => {
+                                    const prof = profiles.find(p => p.user_id === a.applicant_id);
+                                    return (
+                                        <tr key={a.id}>
+                                            <td className="px-10 py-6"><div><p className="text-white">{prof?.name || 'Unknown'}</p><p className="text-xs text-muted-foreground">Applied for: {a.projects?.title}</p></div></td>
+                                            <td className="px-10 py-6"><span className={`px-3 py-1 rounded-full text-[0.6rem] uppercase ${a.status === 'accepted' ? 'bg-green-500/10 text-green-500' : 'bg-secondary text-muted-foreground'}`}>{a.status}</span></td>
+                                            <td className="px-10 py-6 text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</td>
+                                        </tr>
+                                    );
+                                })}
                                 {activeTab === 'finances' && finances.map(f => {
                                     const prof = profiles.find(p => p.user_id === f.user_id);
                                     return (
