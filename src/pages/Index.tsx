@@ -28,7 +28,8 @@ const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "mess
 
 const Index = () => {
   const { user, profile: currentUserProfile, loading } = useAuth();
-  const { id } = useParams();
+  const params = useParams();
+  const { id } = params;
   const routerNavigate = useNavigate();
   const location = useLocation();
   const [page, setPage] = useState<PageName>("home");
@@ -103,25 +104,19 @@ const Index = () => {
   // Sync state with URL on load and changes
   useEffect(() => {
     const path = location.pathname;
+    const { page: pageParam } = (params as any);
+
     if (path === "/") {
-      if (!id) setPage("home");
+      setPage("home");
     } else if (path.startsWith("/profile")) {
-      if (id) {
-        if (user && id === user.id) {
-          setPage("profile");
-        } else {
-          // It's someone else's profile - it will be handled by the other useEffect
-        }
-      } else if (user) {
-        // Just /profile -> go to my profile
-        routerNavigate(`/profile/${user.id}`, { replace: true });
+      if (id && (!user || id !== user.id)) {
+        // Handled by other effect for third-party profile viewing
       } else {
-        // Not logged in and no ID, go to auth
-        setPage("auth");
-        routerNavigate("/", { replace: true });
+        setPage("profile");
       }
     } else {
-      const p = path.substring(1) as PageName;
+      // Use either the page param or the first part of the path
+      const p = (pageParam || path.substring(1).split('/')[0]) as PageName;
       if (p) {
         if (AUTH_REQUIRED.includes(p) && !user && !loading) {
           setPage("auth");
@@ -131,7 +126,7 @@ const Index = () => {
         }
       }
     }
-  }, [location.pathname, id, user, loading]);
+  }, [location.pathname, params, user, loading, id]);
 
   // Handle viewing specific profiles via URL
   useEffect(() => {

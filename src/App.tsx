@@ -30,6 +30,18 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/profile" element={<Index />} />
               <Route path="/profile/:id" element={<Index />} />
+              <Route path="/search" element={<Index />} />
+              <Route path="/feed" element={<Index />} />
+              <Route path="/projects" element={<Index />} />
+              <Route path="/notifications" element={<Index />} />
+              <Route path="/messages" element={<Index />} />
+              <Route path="/settings" element={<Index />} />
+              <Route path="/saved" element={<Index />} />
+              <Route path="/analytics" element={<Index />} />
+              <Route path="/help" element={<Index />} />
+              <Route path="/terms" element={<Index />} />
+              <Route path="/premium" element={<Index />} />
+              <Route path="/admin" element={<Index />} />
               <Route path="/:page" element={<Index />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
