@@ -62,6 +62,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [showPartnerProfile, setShowPartnerProfile] = useState(false);
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
   const [isNepal, setIsNepal] = useState<boolean | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch("https://ipapi.co/json/").then(r => r.json()).then(d => setIsNepal(d.country_code === "NP")).catch(() => setIsNepal(false));
@@ -77,6 +78,51 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
     };
     fetchSaved();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase.channel('global-presence', {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const onlineIds = new Set<string>();
+        Object.keys(state).forEach((key) => {
+          onlineIds.add(key);
+        });
+        setOnlineUsers(onlineIds);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        setOnlineUsers((prev) => {
+          const next = new Set(prev);
+          next.add(key);
+          return next;
+        });
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        setOnlineUsers((prev) => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   useEffect(() => {
@@ -157,8 +203,11 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         <div className="flex-1 overflow-y-auto no-scrollbar">
           {conversations.map((c) => (
             <button key={c.partnerId} onClick={() => loadThread(c.partnerId)} className={`w-full px-3 py-3 flex items-center gap-3 hover:bg-white/5 transition-all ${selectedPartner === c.partnerId ? "bg-white/5" : ""}`}>
-              <div className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center relative">
                 {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
+                {onlineUsers.has(c.partnerId) && (
+                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1c] rounded-full" />
+                )}
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <div className="text-[15px] text-white truncate">{c.partnerName}</div>
@@ -198,10 +247,23 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
             <div className="px-6 py-4 flex items-center justify-between border-b border-white/5">
               <div className="flex items-center gap-4">
                 <button className="md:hidden text-muted-foreground" onClick={() => setSelectedPartner(null)}>←</button>
-                <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-white/10">
+                <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-white/10 relative">
                   {partnerProfile?.photo_url ? <img src={partnerProfile.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{partnerProfile?.name?.[0]}</div>}
+                  {onlineUsers.has(selectedPartner) && (
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-[#1c1c1c] rounded-full" />
+                  )}
                 </div>
-                <div><div className="text-white font-medium">{partnerProfile?.name}</div><div className="text-[10px] text-primary/60 uppercase tracking-widest">Global Talent</div></div>
+                <div>
+                  <div className="text-white font-medium flex items-center gap-2">
+                    {partnerProfile?.name}
+                    {onlineUsers.has(selectedPartner) ? (
+                      <span className="text-[0.6rem] bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded-md uppercase tracking-wider font-bold">Online</span>
+                    ) : (
+                      <span className="text-[0.6rem] bg-white/5 text-muted-foreground px-1.5 py-0.5 rounded-md uppercase tracking-wider">Offline</span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-primary/60 uppercase tracking-widest">Global Talent</div>
+                </div>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar flex flex-col">
