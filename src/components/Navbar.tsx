@@ -1,4 +1,4 @@
-import { Search, Moon, Sun, Menu, Crown, Bell } from "lucide-react";
+import { Search, Moon, Sun, Menu, Crown, Bell, MessageSquare } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,9 +10,11 @@ interface NavbarProps {
   onMenuClick: () => void;
   onLogoClick: () => void;
   onPremiumClick: () => void;
+  onNotificationClick: () => void;
+  onMessagesClick: () => void;
 }
 
-export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick, onPremiumClick }: NavbarProps) {
+export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick, onPremiumClick, onNotificationClick, onMessagesClick }: NavbarProps) {
   const { user, profile } = useAuth();
   const { theme, setTheme } = useTheme();
   const [searchValue, setSearchValue] = useState("");
@@ -78,15 +80,26 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
           </button>
 
           {user && (
-            <button
-              onClick={onMenuClick} // For now, we open menu or we could have a specific toggle
-              className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all relative"
-            >
-              <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse" />
-              )}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={onMessagesClick}
+                className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all"
+                title="Direct Messages"
+              >
+                <MessageSquare className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={onNotificationClick}
+                className="p-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all relative"
+                title="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full border-2 border-background animate-pulse" />
+                )}
+              </button>
+            </div>
           )}
 
           {!isPro && (

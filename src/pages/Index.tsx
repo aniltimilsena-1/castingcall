@@ -196,6 +196,8 @@ const Index = () => {
         onMenuClick={() => setDrawerOpen(true)}
         onLogoClick={() => setPage("home")}
         onPremiumClick={() => navigate("premium")}
+        onNotificationClick={() => navigate("notifications")}
+        onMessagesClick={() => navigate("messages")}
       />
 
       <AppDrawer
