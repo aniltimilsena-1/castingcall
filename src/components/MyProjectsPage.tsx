@@ -14,7 +14,7 @@ type Project = Tables<"projects"> & {
   salary_range?: string | null;
 };
 
-export default function MyProjectsPage() {
+export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p: any) => void }) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -455,7 +455,10 @@ export default function MyProjectsPage() {
                             <option value="accepted">✅ Hired</option>
                             <option value="rejected">❌ Rejected</option>
                           </select>
-                          <button className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5">
+                          <button
+                            onClick={() => onProfileClick(a.profiles)}
+                            className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5"
+                          >
                             <Eye size={18} />
                           </button>
                         </div>

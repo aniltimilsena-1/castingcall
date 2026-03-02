@@ -203,7 +203,7 @@ const Index = () => {
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
         {page === "search" && <SearchPage query={searchQuery} role={searchRole} onBack={() => setPage("home")} onProfileClick={handleProfileClick} />}
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} />}
-        {page === "projects" && <MyProjectsPage />}
+        {page === "projects" && <MyProjectsPage onProfileClick={handleProfileClick} />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
         {page === "messages" && <MessagesPage onNavigate={navigate} />}
         {page === "settings" && <SettingsPage />}
