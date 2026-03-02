@@ -14,7 +14,7 @@ type Project = Tables<"projects"> & {
   salary_range?: string | null;
 };
 
-export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p: any) => void }) {
+export default function MyProjectsPage({ onProfileClick, onMessageClick }: { onProfileClick: (p: any) => void, onMessageClick: (uid: string) => void }) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -472,14 +472,14 @@ export default function MyProjectsPage({ onProfileClick }: { onProfileClick: (p:
                           </select>
                           <button
                             onClick={() => {
-                              if (a.profiles) {
-                                onProfileClick(a.profiles);
+                              if (a.profiles?.user_id) {
+                                onMessageClick(a.profiles.user_id);
                               } else {
-                                toast.error("This actor hasn't set up their profile yet.");
+                                toast.error("This actor hasn't fully set up their account.");
                               }
                             }}
                             className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5 relative z-50 pointer-events-auto"
-                            title="View Profile & Message"
+                            title="Direct Message"
                           >
                             <MessageSquare size={18} />
                           </button>

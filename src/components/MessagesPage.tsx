@@ -46,9 +46,10 @@ interface Conversation {
 
 interface MessagesPageProps {
   onNavigate?: (page: any) => void;
+  initialPartnerId?: string | null;
 }
 
-export default function MessagesPage({ onNavigate }: MessagesPageProps) {
+export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesPageProps) {
   const { user, profile: currentUserProfile, isPremium } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
@@ -77,6 +78,12 @@ export default function MessagesPage({ onNavigate }: MessagesPageProps) {
     };
     fetchSaved();
   }, [user]);
+
+  useEffect(() => {
+    if (initialPartnerId) {
+      loadThread(initialPartnerId);
+    }
+  }, [initialPartnerId]);
 
   const loadConversations = async () => {
     if (!user) return;

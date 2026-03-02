@@ -41,6 +41,7 @@ const Index = () => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
   const [feedRefreshKey, setFeedRefreshKey] = useState(0);
+  const [activeMessagePartnerId, setActiveMessagePartnerId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -79,6 +80,12 @@ const Index = () => {
     setSelectedProfileForDialog(p);
     setProfileDialogOpen(true);
     routerNavigate(`/profile/${p.id}`);
+  };
+
+  const handleMessageClick = (userId: string) => {
+    setActiveMessagePartnerId(userId);
+    setPage("messages");
+    routerNavigate("/messages");
   };
 
   const navigate = (p: PageName) => {
@@ -203,9 +210,9 @@ const Index = () => {
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
         {page === "search" && <SearchPage query={searchQuery} role={searchRole} onBack={() => setPage("home")} onProfileClick={handleProfileClick} />}
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} />}
-        {page === "projects" && <MyProjectsPage onProfileClick={handleProfileClick} />}
+        {page === "projects" && <MyProjectsPage onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
-        {page === "messages" && <MessagesPage onNavigate={navigate} />}
+        {page === "messages" && <MessagesPage onNavigate={navigate} initialPartnerId={activeMessagePartnerId} />}
         {page === "settings" && <SettingsPage />}
         {page === "saved" && <SavedTalentsPage />}
         {page === "analytics" && <AnalyticsPage />}
