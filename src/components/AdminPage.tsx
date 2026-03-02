@@ -37,8 +37,8 @@ export default function AdminPage() {
                 supabase.from("photo_captions").select("*").order("created_at", { ascending: false }),
                 supabase.from("applications" as any).select("*, projects:project_id(title), profiles:applicant_id(name, email)").order("created_at", { ascending: false }),
                 supabase.from("audition_slots" as any).select("*, projects:project_id(title), profiles:talent_id(name)").order("start_time", { ascending: true }),
-                supabase.from("transactions" as any).select("*, profiles:user_id(name, email)").order("created_at", { ascending: false }),
-                supabase.from("payment_verifications" as any).select("*, profiles:user_id(name, email)").order("created_at", { ascending: false })
+                supabase.from("transactions" as any).select("*").order("created_at", { ascending: false }),
+                supabase.from("payment_verifications" as any).select("*").order("created_at", { ascending: false })
             ]);
 
             if (pRes.data) setProfiles(pRes.data);
@@ -99,8 +99,15 @@ export default function AdminPage() {
     const filteredProfiles = profiles.filter(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()));
 
     // Revenue tracking across currencies
-    const nprRevenue = finances.filter(f => f.currency === 'NPR').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+    // Group 1: Transactions (Stripe + Approved Manual)
     const usdRevenue = finances.filter(f => f.currency === 'USD' || f.currency === 'stripe_global').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+    // Group 2: Manual payments from verifications (Backup source)
+    const manualApprovedRevenue = verifications.filter(v => v.status === 'approved').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+    const nprFromTransactions = finances.filter(f => f.currency === 'NPR').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+
+    // Final total (using higher of two sources for NPR for resilience)
+    const nprRevenue = Math.max(manualApprovedRevenue, nprFromTransactions);
 
     return (
         <div className="min-h-screen bg-[#050505] text-white/90 pb-20">
@@ -150,22 +157,29 @@ export default function AdminPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {activeTab === 'finances' && finances.map(f => (
-                                    <tr key={f.id}>
-                                        <td className="px-10 py-6"><div><p className="text-white">{f.profiles?.name}</p><p className="text-xs text-muted-foreground">{f.profiles?.email}</p></div></td>
-                                        <td className="px-10 py-6"><span className="text-primary font-bold">{f.currency} {f.amount}</span></td>
-                                        <td className="px-10 py-6 text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</td>
-                                    </tr>
-                                ))}
-                                {activeTab === 'verifications' && verifications.map(v => (
-                                    <tr key={v.id}>
-                                        <td className="px-10 py-6"><p className="text-white">{v.profiles?.name}</p><a href={v.screenshot_url} target="_blank" className="text-xs text-primary underline">View Screenshot</a></td>
-                                        <td className="px-10 py-6"><span className={`px-3 py-1 rounded-full text-[0.6rem] uppercase ${v.status === 'pending' ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'}`}>{v.status}</span></td>
-                                        <td className="px-10 py-6">
-                                            {v.status === 'pending' && <button onClick={() => handleApprovePayment(v)} className="bg-primary text-black px-4 py-2 rounded-xl text-xs">Approve</button>}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {activeTab === 'finances' && finances.map(f => {
+                                    const prof = profiles.find(p => p.user_id === f.user_id);
+                                    return (
+                                        <tr key={f.id}>
+                                            <td className="px-10 py-6"><div><p className="text-white">{prof?.name || 'Unknown'}</p><p className="text-xs text-muted-foreground">{prof?.email || 'N/A'}</p></div></td>
+                                            <td className="px-10 py-6"><span className="text-primary font-bold">{f.currency} {f.amount}</span></td>
+                                            <td className="px-10 py-6 text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</td>
+                                        </tr>
+                                    );
+                                })}
+                                {activeTab === 'verifications' && verifications.map(v => {
+                                    const prof = profiles.find(p => p.user_id === v.user_id);
+                                    return (
+                                        <tr key={v.id}>
+                                            <td className="px-10 py-6"><p className="text-white">{prof?.name || 'Unknown'}</p><a href={v.screenshot_url} target="_blank" className="text-xs text-primary underline">View Screenshot</a></td>
+                                            <td className="px-10 py-6"><span className={`px-3 py-1 rounded-full text-[0.6rem] uppercase ${v.status === 'pending' ? 'bg-amber-500/10 text-amber-500' : v.status === 'approved' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>{v.status}</span></td>
+                                            <td className="px-10 py-6">
+                                                {v.status === 'pending' && <button onClick={() => handleApprovePayment(v)} className="bg-primary text-black px-4 py-2 rounded-xl text-xs">Approve</button>}
+                                                {v.status === 'approved' && <span className="text-xs text-muted-foreground italic">Processed</span>}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
