@@ -107,16 +107,31 @@ export default function AdminPage() {
             // 4. Send SMS notification to the user if they have a phone number
             try {
                 const { data: userProfile } = await supabase.from("profiles").select("phone, name").eq("user_id", v.user_id).single() as any;
+                console.log("User profile for SMS:", userProfile);
                 if (userProfile?.phone) {
-                    await supabase.functions.invoke('send-sms', {
+                    const phone = (userProfile as any).phone;
+                    const name = (userProfile as any).name || 'there';
+                    console.log("Sending SMS to:", phone);
+                    const { data: smsData, error: smsError } = await supabase.functions.invoke('send-sms', {
                         body: {
-                            to: (userProfile as any).phone,
-                            body: `🎉 Hi ${(userProfile as any).name || 'there'}! Your CastingCall PRO membership has been activated. Enjoy unlimited photos, videos, and priority listing! - CastingCall Nepal`
+                            to: phone,
+                            body: `Hi ${name}! Your CastingCall PRO membership has been activated. Enjoy unlimited photos, videos, and priority listing! - CastingCall Nepal`
                         }
                     });
+                    console.log("SMS response:", smsData, "SMS error:", smsError);
+                    if (smsError) {
+                        toast.warning(`PRO upgraded but SMS failed: ${smsError.message}`);
+                    } else if (smsData?.error) {
+                        toast.warning(`PRO upgraded but SMS failed: ${smsData.error}`);
+                    } else {
+                        toast.success("SMS notification sent!");
+                    }
+                } else {
+                    toast.info("PRO upgraded! (No phone number on profile — SMS skipped)");
                 }
-            } catch (smsErr) {
-                console.warn("SMS notification failed (non-critical):", smsErr);
+            } catch (smsErr: any) {
+                console.error("SMS notification failed:", smsErr);
+                toast.warning("PRO upgraded but SMS failed: " + (smsErr?.message || "Unknown error"));
             }
 
             toast.success("Payment approved! Talent upgraded to PRO.");
