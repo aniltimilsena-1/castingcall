@@ -63,7 +63,7 @@ export default function HelpSupportPage() {
               <p className="text-xs text-amber-200/60 font-normal">As a {profile?.role === 'Admin' ? 'Super Admin' : 'PRO member'}, you have direct access to our support team.</p>
             </div>
             <a
-              href="https://wa.me/9779800000000"
+              href="https://wa.me/9779840726604"
               target="_blank"
               rel="noopener noreferrer"
               className="ml-auto bg-[#25D366] text-white px-5 py-2.5 rounded-xl text-xs font-normal flex items-center gap-2 hover:scale-105 transition-all shadow-lg shadow-green-500/20"
