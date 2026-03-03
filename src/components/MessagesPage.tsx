@@ -324,7 +324,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                       {m.content.startsWith('[IMAGE]:') ? (
                         <div className="relative group">
                           <img
-                            src={m.content.slice(8)}
+                            src={m.content.split(':').slice(1).join(':')}
                             className="w-full h-auto max-h-[400px] object-contain block"
                             style={{ imageRendering: 'auto' }}
                             onLoad={(e) => (e.currentTarget.style.opacity = '1')}
@@ -333,7 +333,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                         </div>
                       ) : m.content.startsWith('[VIDEO]:') ? (
                         <video
-                          src={m.content.slice(8)}
+                          src={m.content.split(':').slice(1).join(':')}
                           controls
                           className="w-full h-auto max-h-[400px] block"
                         />
