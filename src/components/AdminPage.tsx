@@ -165,9 +165,16 @@ export default function AdminPage() {
                         />
                         <button
                             onClick={async () => {
-                                const phone = (document.getElementById('test-phone-number') as HTMLInputElement).value;
+                                let phone = (document.getElementById('test-phone-number') as HTMLInputElement).value.trim();
                                 if (!phone) return toast.error("Phone number required");
-                                const loadingToast = toast.loading("Sending test message...");
+
+                                // Basic formatting for Twilio
+                                if (!phone.startsWith('+')) {
+                                    if (phone.length === 10) phone = `+977${phone}`;
+                                    else phone = `+${phone}`;
+                                }
+
+                                const loadingToast = toast.loading("Sending test message to " + phone + "...");
                                 try {
                                     const { data, error } = await supabase.functions.invoke('send-sms', {
                                         body: {
@@ -175,11 +182,24 @@ export default function AdminPage() {
                                             body: "Casting Hub Global: This is a demo alert message. Twilio integration is active!"
                                         }
                                     });
-                                    if (error) throw error;
+
+                                    if (error) {
+                                        console.error("Supabase Invoke Error:", error);
+                                        // Try to extract detailed error from response
+                                        let msg = error.message;
+                                        if (error instanceof Error && (error as any).response) {
+                                            try {
+                                                const body = await (error as any).response.json();
+                                                if (body.error) msg = body.error;
+                                            } catch (e) { }
+                                        }
+                                        throw new Error(msg);
+                                    }
+
                                     toast.success("Demo SMS sent successfully!", { id: loadingToast });
                                 } catch (err: any) {
                                     console.error("SMS Test Error:", err);
-                                    toast.error(`Failed to send SMS: ${err.message}`, { id: loadingToast });
+                                    toast.error(`Error: ${err.message}`, { id: loadingToast });
                                 }
                             }}
                             className="bg-primary text-black px-8 py-3 rounded-xl text-xs font-bold hover:bg-primary/90 transition-transform active:scale-95"
