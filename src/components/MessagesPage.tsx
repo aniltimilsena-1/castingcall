@@ -63,6 +63,9 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
   const [isNepal, setIsNepal] = useState<boolean | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
+  const [pendingFileType, setPendingFileType] = useState<'image' | 'video' | null>(null);
 
   useEffect(() => {
     fetch("https://ipapi.co/json/").then(r => r.json()).then(d => setIsNepal(d.country_code === "NP")).catch(() => setIsNepal(false));
@@ -165,7 +168,14 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   };
 
   const sendMessage = async () => {
-    if (!user || !selectedPartner || !newMessage.trim()) return;
+    if (!user || !selectedPartner) return;
+
+    if (pendingFile) {
+      await handleFileUpload();
+      return;
+    }
+
+    if (!newMessage.trim()) return;
     const { error } = await supabase.from("messages").insert({ sender_id: user.id, receiver_id: selectedPartner, content: newMessage.trim() });
     if (error) toast.error(error.message);
     else { setNewMessage(""); loadThread(selectedPartner); }
@@ -176,20 +186,41 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     if (!error) loadThread(selectedPartner!);
   };
 
-  const handleFileUpload = async (e: any, type: string) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !user || !selectedPartner) return;
-    setUploading(true);
+    if (!file) return;
 
-    // Use auth.uid() as first folder segment to match RLS policy: (storage.foldername(name))[1] = auth.uid()::text
-    const path = `${user.id}/messages/${Date.now()}.${file.name.split('.').pop()}`;
+    const type = file.type.startsWith('video/') ? 'video' : 'image';
+    setPendingFile(file);
+    setPendingFileType(type);
+
+    const url = URL.createObjectURL(file);
+    setPendingPreviewUrl(url);
+  };
+
+  const cancelPendingFile = () => {
+    if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+    setPendingFile(null);
+    setPendingPreviewUrl(null);
+    setPendingFileType(null);
+  };
+
+  const handleFileUpload = async () => {
+    if (!pendingFile || !user || !selectedPartner) return;
+    setUploading(true);
+    const fileToUpload = pendingFile;
+    const type = pendingFileType;
+
+    cancelPendingFile(); // Clear preview immediately
+
+    const path = `${user.id}/messages/${Date.now()}.${fileToUpload.name.split('.').pop()}`;
 
     try {
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file);
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, fileToUpload);
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
-      const content = type === 'image' ? `[IMAGE]:${publicUrl}` : `[FILE]:${file.name}|${publicUrl}`;
+      const content = type === 'image' ? `[IMAGE]:${publicUrl}` : `[VIDEO]:${publicUrl}`;
 
       const { error: msgError } = await supabase.from("messages").insert({
         sender_id: user.id,
@@ -300,6 +331,12 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                           />
                           <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         </div>
+                      ) : m.content.startsWith('[VIDEO]:') ? (
+                        <video
+                          src={m.content.slice(8)}
+                          controls
+                          className="w-full h-auto max-h-[400px] block"
+                        />
                       ) : (
                         <div className="px-4 py-2.5 text-sm leading-relaxed">{m.content}</div>
                       )}
@@ -309,10 +346,67 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 );
               })}
             </div>
-            <div className="p-4 flex items-center gap-3">
-              <label className="p-2 hover:bg-white/5 rounded-full cursor-pointer"><ImageIcon size={20} className="text-primary" /><input type="file" hidden accept="image/*" onChange={e => handleFileUpload(e, 'image')} /></label>
-              <input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()} placeholder="Send global message..." className="flex-1 bg-white/5 border-none rounded-full px-5 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary/20" />
-              <button onClick={sendMessage} className="p-2.5 bg-primary text-black rounded-full hover:scale-110 active:scale-95 transition-all"><Send size={18} fill="currentColor" /></button>
+            <div className="p-4 space-y-3">
+              <AnimatePresence>
+                {pendingPreviewUrl && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="relative w-32 h-32 rounded-2xl overflow-hidden border border-primary/30 shadow-2xl shadow-primary/10 mb-2"
+                  >
+                    {pendingFileType === 'image' ? (
+                      <img src={pendingPreviewUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      <video src={pendingPreviewUrl} className="w-full h-full object-cover" />
+                    )}
+                    <button
+                      onClick={cancelPendingFile}
+                      className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                    {uploading && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex items-center gap-3">
+                <label className="p-2 hover:bg-white/5 rounded-full cursor-pointer transition-colors relative">
+                  <ImageIcon size={20} className={pendingFile ? "text-primary/40" : "text-primary"} />
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*,video/*"
+                    onChange={handleFileSelect}
+                    disabled={!!pendingFile}
+                  />
+                </label>
+
+                <input
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && sendMessage()}
+                  placeholder={pendingFile ? "Add a caption..." : "Send global message..."}
+                  className="flex-1 bg-white/5 border-none rounded-full px-5 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary/20 outline-none"
+                />
+
+                {(newMessage.trim() || pendingFile) && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    onClick={sendMessage}
+                    disabled={uploading}
+                    className="p-2.5 bg-primary text-black rounded-full hover:scale-110 active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                  >
+                    <Send size={18} fill="currentColor" />
+                  </motion.button>
+                )}
+              </div>
             </div>
           </>
         )}
