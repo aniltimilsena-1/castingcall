@@ -145,6 +145,50 @@ export default function AdminPage() {
                     <StatsCard icon={<DollarSign size={20} />} label="Total Revenue (NPR)" value={`Rs.${nprRevenue}`} trend="NEPAL" color="amber" />
                 </div>
 
+                <div className="mb-12 p-8 bg-primary/5 border border-primary/20 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-primary/20 p-4 rounded-2xl">
+                            <MessageCircle className="text-primary" size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-display text-white">System Testing: SMS Hub</h3>
+                            <p className="text-xs text-muted-foreground">Send a demo alert to verify Twilio integration.</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <input
+                            type="text"
+                            placeholder="+9779840726604"
+                            id="test-phone-number"
+                            defaultValue="+9779840726604"
+                            className="flex-1 md:w-64 px-6 py-3 bg-black/40 border border-white/10 rounded-xl text-sm outline-none focus:border-primary/50 transition-colors"
+                        />
+                        <button
+                            onClick={async () => {
+                                const phone = (document.getElementById('test-phone-number') as HTMLInputElement).value;
+                                if (!phone) return toast.error("Phone number required");
+                                const loadingToast = toast.loading("Sending test message...");
+                                try {
+                                    const { data, error } = await supabase.functions.invoke('send-sms', {
+                                        body: {
+                                            to: phone,
+                                            body: "Casting Hub Global: This is a demo alert message. Twilio integration is active!"
+                                        }
+                                    });
+                                    if (error) throw error;
+                                    toast.success("Demo SMS sent successfully!", { id: loadingToast });
+                                } catch (err: any) {
+                                    console.error("SMS Test Error:", err);
+                                    toast.error(`Failed to send SMS: ${err.message}`, { id: loadingToast });
+                                }
+                            }}
+                            className="bg-primary text-black px-8 py-3 rounded-xl text-xs font-bold hover:bg-primary/90 transition-transform active:scale-95"
+                        >
+                            SEND DEMO ALERT
+                        </button>
+                    </div>
+                </div>
+
                 <div className="bg-card/20 backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden">
                     <div className="p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-white/5">
                         <h2 className="text-2xl font-display text-white uppercase">{activeTab} Management</h2>

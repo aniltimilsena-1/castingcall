@@ -14,6 +14,8 @@ interface AuthContextType {
   isPremium: boolean;
   signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithPhone: (phone: string, metadata?: { name: string, role: string }) => Promise<void>;
+  verifyOTP: (phone: string, token: string) => Promise<void>;
   signInWithOAuth: (provider: 'google' | 'facebook') => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -111,6 +113,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const signInWithPhone = async (phone: string, metadata?: { name: string, role: string }) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      phone,
+      options: {
+        data: metadata
+      }
+    });
+    if (error) throw error;
+  };
+
+  const verifyOTP = async (phone: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
+    if (error) throw error;
+  };
+
   const signInWithOAuth = async (provider: 'google' | 'facebook') => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -132,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isPremium = profile?.role === "Admin" || profile?.plan === "pro";
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, isPremium, signUp, signIn, signInWithOAuth, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, isPremium, signUp, signIn, signInWithPhone, verifyOTP, signInWithOAuth, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
