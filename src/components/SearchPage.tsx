@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Edit2, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check } from "lucide-react";
+import { Bookmark, Send, Edit2, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, MoreVertical, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
@@ -844,8 +844,18 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
     <Dialog open={!!url} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-5xl max-h-[90svh] p-0 bg-background border-none flex flex-col md:flex-row overflow-hidden shadow-2xl rounded-3xl">
         <div className="flex-1 bg-black flex items-center justify-center p-4 relative">
-          <img src={url || ""} className="max-w-full max-h-full object-contain" alt="Post" />
-          <button onClick={onClose} className="absolute top-4 left-4 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full transition-all"><X size={20} /></button>
+          {url?.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || url?.includes('videos%2F') ? (
+            <video
+              src={url || ""}
+              className="max-w-full max-h-full object-contain"
+              controls
+              autoPlay
+              loop
+            />
+          ) : (
+            <img src={url || ""} className="max-w-full max-h-full object-contain" alt="Post" />
+          )}
+          <button onClick={onClose} className="absolute top-4 left-4 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full transition-all z-10"><X size={20} /></button>
         </div>
 
         <div className="w-full md:w-[400px] bg-card flex flex-col h-full border-l border-border">
@@ -853,9 +863,29 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
             <div className="w-12 h-12 rounded-full bg-secondary border border-primary flex items-center justify-center font-display text-xl text-primary overflow-hidden">
               {owner?.photo_url ? <img src={owner.photo_url} className="w-full h-full object-cover" alt="" /> : (owner?.name?.[0] || '?')}
             </div>
-            <div>
+            <div className="flex-1 min-w-0 text-left">
               <div className="font-normal text-lg text-white leading-none mb-1">{owner?.name || "Member"}</div>
               <div className="text-xs text-primary font-body uppercase tracking-wider">{owner?.role || "Talent"}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = url || '';
+                  link.download = `media_${Date.now()}`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  toast.success("Downloading media...");
+                }}
+                className="p-2 text-muted-foreground hover:text-primary transition-colors bg-secondary/30 rounded-lg"
+                title="Download Media"
+              >
+                <Plus size={18} /> {/* Using Plus for "Save" or just direct button */}
+              </button>
+              <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
+                <MoreVertical size={18} />
+              </button>
             </div>
           </div>
 

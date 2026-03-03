@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -18,7 +18,9 @@ import {
   X,
   Check,
   Crown,
-  Globe
+  Globe,
+  Download,
+  ArrowUpRight
 } from "lucide-react";
 import ProfileDetailDialog from "./ProfileDetailDialog";
 
@@ -66,6 +68,13 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [pendingFileType, setPendingFileType] = useState<'image' | 'video' | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [thread]);
 
   useEffect(() => {
     fetch("https://ipapi.co/json/").then(r => r.json()).then(d => setIsNepal(d.country_code === "NP")).catch(() => setIsNepal(false));
@@ -129,6 +138,33 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   }, [user]);
 
   useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase.channel('messages-realtime')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, (payload) => {
+        const newMessage = payload.new as any;
+        // If it's for the current thread, add it
+        if (selectedPartner === newMessage.sender_id) {
+          setThread(prev => [...prev, newMessage]);
+          // Mark as read immediately
+          supabase.from("messages").update({ is_read: true }).eq("id", newMessage.id);
+        }
+        // Always refresh conversations list
+        loadConversations();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, selectedPartner]);
+
+  useEffect(() => {
     if (initialPartnerId) {
       loadThread(initialPartnerId);
     }
@@ -161,9 +197,17 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           partnerPhoto: p?.photo_url || null
         });
       }
-      if (m.receiver_id === user.id && !m.is_read) convMap.get(partnerId)!.unread++;
+      if (m.receiver_id === user.id && !m.is_read) {
+        const conv = convMap.get(partnerId);
+        if (conv) conv.unread++;
+      }
     });
-    setConversations(Array.from(convMap.values()));
+
+    const sortedConvs = Array.from(convMap.values()).sort((a, b) =>
+      new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()
+    );
+
+    setConversations(sortedConvs);
     setLoading(false);
   };
 
@@ -325,14 +369,34 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 </div>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar flex flex-col">
+            <div
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar flex flex-col"
+            >
               {thread.map((m) => {
                 const isMine = m.sender_id === user?.id;
                 return (
-                  <div key={m.id} className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"}`}>
+                  <div key={m.id} className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"} group relative`}>
+                    {!isMine && (
+                      <div className="absolute left-full top-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        <button onClick={() => {
+                          if (m.content.includes('http')) {
+                            const url = m.content.split(':').slice(1).join(':');
+                            window.open(url, '_blank');
+                          }
+                        }} className="p-1.5 text-muted-foreground hover:text-primary bg-secondary/50 rounded-lg" title="View Fullsize"><ArrowUpRight size={14} /></button>
+                        <button className="p-1.5 text-muted-foreground hover:text-white bg-secondary/50 rounded-lg"><MoreVertical size={14} /></button>
+                      </div>
+                    )}
+                    {isMine && (
+                      <div className="absolute right-full top-1 mr-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        <button className="p-1.5 text-muted-foreground hover:text-white bg-secondary/50 rounded-lg"><MoreVertical size={14} /></button>
+                        <button onClick={() => deleteMessage(m.id)} className="p-1.5 text-muted-foreground hover:text-red-500 bg-secondary/50 rounded-lg" title="Delete"><Trash2 size={14} /></button>
+                      </div>
+                    )}
                     <div className={`max-w-[80%] rounded-2xl overflow-hidden ${isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg"}`}>
                       {m.content.startsWith('[IMAGE]:') ? (
-                        <div className="relative group bg-white/5 min-w-[200px] min-h-[150px] flex items-center justify-center">
+                        <div className="relative group/img bg-white/5 min-w-[200px] min-h-[150px] flex items-center justify-center">
                           <img
                             key={`${m.id}-img`}
                             src={m.content.replace('[IMAGE]:', '')}
@@ -341,7 +405,6 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                             onLoad={(e) => {
                               const target = e.currentTarget;
                               target.style.opacity = '1';
-                              // Ensure the parent container doesn't show the background anymore
                               const parent = target.parentElement;
                               if (parent) parent.classList.remove('bg-white/5');
                             }}
@@ -350,10 +413,26 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                               e.currentTarget.src = "https://placehold.co/400x300/1c1c1c/fbb724?text=Image+Load+Error";
                             }}
                           />
-                          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none group-hover/img:pointer-events-auto">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const link = document.createElement('a');
+                                link.href = m.content.replace('[IMAGE]:', '');
+                                link.download = `photo_${Date.now()}`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                              className="p-2 bg-primary/90 text-black rounded-full shadow-lg hover:scale-110 transition-transform"
+                              title="Save Photo"
+                            >
+                              <Download size={18} />
+                            </button>
+                          </div>
                         </div>
                       ) : m.content.startsWith('[VIDEO]:') ? (
-                        <div className="relative bg-black min-w-[200px] min-h-[150px]">
+                        <div className="relative bg-black min-w-[200px] min-h-[150px] group/vid">
                           <video
                             key={`${m.id}-video`}
                             src={m.content.replace('[VIDEO]:', '')}
@@ -361,6 +440,22 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                             className="w-full h-auto max-h-[500px] block"
                             preload="metadata"
                           />
+                          <div className="absolute top-2 right-2 opacity-0 group-hover/vid:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = m.content.replace('[VIDEO]:', '');
+                                link.download = `video_${Date.now()}`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                              className="p-2 bg-black/60 text-white rounded-full hover:bg-primary hover:text-black transition-all"
+                              title="Save Video"
+                            >
+                              <Download size={16} />
+                            </button>
+                          </div>
                         </div>
                       ) : (
                         <div className="px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">{m.content}</div>

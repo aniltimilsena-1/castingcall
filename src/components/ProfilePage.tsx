@@ -171,6 +171,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       setExperienceYears(profile.experience_years?.toString() || "");
       setPortfolioUrl(profile.portfolio_url || "");
       setSkills(profile.skills || []);
+      setMoodTags((profile as any).mood_tags || []);
+      setStyleTags((profile as any).style_tags || []);
+      setPersonalityTraits((profile as any).personality_traits || []);
+      setLooksLike((profile as any).looks_like || []);
+      setVisualSearchKeywords((profile as any).visual_search_keywords || "");
     }
     setIsEditing(false);
   };
@@ -692,6 +697,109 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               placeholder="Your professional summary..."
               className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors resize-y"
             />
+          </div>
+        </div>
+
+        {/* Smart Tags Section (Edit Mode) */}
+        <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5 flex items-center justify-between">
+            Smart Search Tags
+            <Sparkles size={14} className="text-primary/40" />
+          </h3>
+
+          <div className="space-y-6">
+            <div>
+              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Moods</label>
+              <div className="flex flex-wrap gap-1.5">
+                {RECOMMENDED_TAGS.Moods.map(t => {
+                  const isSelected = moodTags.includes(t.toLowerCase());
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setMoodTags(isSelected ? moodTags.filter(x => x !== t.toLowerCase()) : [...moodTags, t.toLowerCase()])}
+                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-muted-foreground hover:border-primary/50"}`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Styles</label>
+              <div className="flex flex-wrap gap-1.5">
+                {RECOMMENDED_TAGS.Styles.map(t => {
+                  const isSelected = styleTags.includes(t.toLowerCase());
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setStyleTags(isSelected ? styleTags.filter(x => x !== t.toLowerCase()) : [...styleTags, t.toLowerCase()])}
+                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-muted-foreground hover:border-primary/50"}`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Personality</label>
+              <div className="flex flex-wrap gap-1.5">
+                {RECOMMENDED_TAGS.Personality.map(t => {
+                  const isSelected = personalityTraits.includes(t.toLowerCase());
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setPersonalityTraits(isSelected ? personalityTraits.filter(x => x !== t.toLowerCase()) : [...personalityTraits, t.toLowerCase()])}
+                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-muted-foreground hover:border-primary/50"}`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Looks Like (Celebrity or Character Type)</label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {looksLike.map(t => (
+                  <Badge key={t} variant="secondary" className="bg-secondary/40 text-white gap-1.5 py-1 px-2.5">
+                    {t}
+                    <X size={12} className="cursor-pointer hover:text-red-400" onClick={() => setLooksLike(looksLike.filter(x => x !== t))} />
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newLooksLike}
+                  onChange={(e) => setNewLooksLike(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (newLooksLike.trim() && !looksLike.includes(newLooksLike.trim()) && (setLooksLike([...looksLike, newLooksLike.trim()]), setNewLooksLike("")))}
+                  placeholder="e.g. Brad Pitt, Young Hero..."
+                  className="flex-1 bg-background border border-border rounded-lg px-4 py-2 text-sm outline-none focus:border-primary"
+                />
+                <button
+                  onClick={() => newLooksLike.trim() && !looksLike.includes(newLooksLike.trim()) && (setLooksLike([...looksLike, newLooksLike.trim()]), setNewLooksLike(""))}
+                  className="bg-secondary p-2 rounded-lg border border-border hover:border-primary/30"
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Visual Search Keywords (Hidden from public)</label>
+              <textarea
+                value={visualSearchKeywords}
+                onChange={(e) => setVisualSearchKeywords(e.target.value)}
+                placeholder="beard, muscular, long hair, spectacles..."
+                rows={2}
+                className="w-full bg-background border border-border rounded-lg px-4 py-2 text-sm outline-none focus:border-primary resize-none"
+              />
+            </div>
           </div>
         </div>
 

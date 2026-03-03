@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Shield, Activity, Search, Star, CheckCircle2, MoreVertical, Ban, UserCheck, ArrowUpRight, TrendingUp, Briefcase, FileText, Layout, Trash2, ExternalLink, MessageCircle, Edit, Calendar, DollarSign, Clock, Link as LinkIcon, Globe } from "lucide-react";
+import { Users, Shield, Activity, Search, Star, CheckCircle2, MoreVertical, Ban, UserCheck, ArrowUpRight, TrendingUp, Briefcase, FileText, Layout, Trash2, ExternalLink, MessageCircle, Edit, Calendar, DollarSign, Clock, Link as LinkIcon, Globe, Crown } from "lucide-react";
 import { toast } from "sonner";
 
 type Profile = Tables<"profiles">;
@@ -164,6 +164,68 @@ export default function AdminPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
+                                {activeTab === 'talents' && filteredProfiles.map(p => (
+                                    <tr key={p.id}>
+                                        <td className="px-10 py-6 flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden">
+                                                {p.photo_url ? <img src={p.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{p.name?.[0]}</div>}
+                                            </div>
+                                            <div><p className="text-white">{p.name}</p><p className="text-[0.6rem] text-muted-foreground uppercase">{p.role}</p></div>
+                                        </td>
+                                        <td className="px-10 py-6">
+                                            <span className={`px-2 py-1 rounded text-[0.5rem] uppercase tracking-widest ${p.plan === 'pro' ? 'bg-primary text-black' : 'bg-white/5 text-muted-foreground'}`}>{p.plan || 'free'}</span>
+                                        </td>
+                                        <td className="px-10 py-6 border-none">
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={async () => {
+                                                    const newPlan = p.plan === 'pro' ? 'free' : 'pro';
+                                                    await supabase.from('profiles').update({ plan: newPlan } as any).eq('id', p.id);
+                                                    toast.success(`User set to ${newPlan.toUpperCase()}`);
+                                                    fetchAllData();
+                                                }} className={`p-2 rounded-lg transition-colors ${p.plan === 'pro' ? 'text-amber-500 hover:bg-amber-500/10' : 'text-muted-foreground hover:bg-white/5'}`} title="Toggle PRO">
+                                                    <Crown size={16} />
+                                                </button>
+                                                <button onClick={async () => {
+                                                    if (confirm('Delete user profile?')) {
+                                                        await supabase.from('profiles').delete().eq('id', p.id);
+                                                        toast.success('Profile removed');
+                                                        fetchAllData();
+                                                    }
+                                                }} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg" title="Delete Permanent">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {activeTab === 'feed' && feedPosts.map(f => {
+                                    const prof = profiles.find(p => p.user_id === f.user_id);
+                                    return (
+                                        <tr key={f.photo_url}>
+                                            <td className="px-10 py-6 flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded bg-secondary overflow-hidden flex items-center justify-center">
+                                                    {f.photo_url?.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || f.photo_url?.includes('videos%2F') ? (
+                                                        <video src={`${f.photo_url}#t=0.1`} className="w-full h-full object-cover" muted playsInline />
+                                                    ) : (
+                                                        <img src={f.photo_url} className="w-full h-full object-cover" />
+                                                    )}
+                                                </div>
+                                                <div><p className="text-white truncate max-w-[200px]">{f.description || 'No description'}</p><p className="text-xs text-muted-foreground">by {prof?.name || 'Unknown'}</p></div>
+                                            </td>
+                                            <td className="px-10 py-6"><span className="text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</span></td>
+                                            <td className="px-10 py-6">
+                                                <button onClick={async () => { if (confirm('Delete post?')) { await supabase.from('photo_captions').delete().eq('photo_url', f.photo_url); toast.success('Deleted'); fetchAllData(); } }} className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"><Trash2 size={16} /></button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                {activeTab === 'schedules' && schedules.map(s => (
+                                    <tr key={s.id}>
+                                        <td className="px-10 py-6"><p className="text-white">{s.projects?.title}</p></td>
+                                        <td className="px-10 py-6"><p className="text-xs text-muted-foreground">{new Date(s.start_time).toLocaleString()}</p></td>
+                                        <td className="px-10 py-6"><span className={`px-2 py-1 rounded text-[0.5rem] uppercase ${s.status === 'booked' ? 'bg-green-500/10 text-green-500' : 'bg-white/5 text-muted-foreground'}`}>{s.status}</span></td>
+                                    </tr>
+                                ))}
                                 {activeTab === 'projects' && projects.map(p => {
                                     const prof = profiles.find(pr => pr.user_id === p.user_id);
                                     return (

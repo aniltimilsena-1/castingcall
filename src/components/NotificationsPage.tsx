@@ -29,7 +29,19 @@ export default function NotificationsPage({ onOpenPhoto }: NotificationsPageProp
     setLoading(false);
   };
 
-  useEffect(() => { fetch(); }, [user]);
+  useEffect(() => {
+    fetch();
+    if (!user) return;
+    const channel = supabase.channel('notif-realtime')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`
+      }, () => fetch())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const markRead = async (id: string) => {
     const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id);

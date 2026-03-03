@@ -423,6 +423,28 @@ export default function ProfileDetailDialog({
                                                 </div>
                                             </div>
 
+                                            <div>
+                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4 flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Video Reel
+                                                </h3>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    {(profile as any)?.videos?.length > 0 ? (
+                                                        (profile as any).videos.map((url: string, i: number) => (
+                                                            <div key={i} onClick={() => { setViewingPhoto(url); trackPortfolioInteraction(url, 'video'); }} className="aspect-video rounded-xl overflow-hidden border border-border hover:border-primary transition-colors cursor-pointer group relative bg-black flex items-center justify-center">
+                                                                <video src={`${url}#t=0.1`} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" muted playsInline />
+                                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                                    <div className="w-12 h-12 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/40 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                                        <div className="w-0 h-0 border-t-[8px] border-t-transparent border-l-[12px] border-l-current border-b-[8px] border-b-transparent ml-1" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="col-span-full py-10 text-center border-2 border-dashed border-border rounded-xl text-muted-foreground/30 text-sm italic">No video reel uploaded</div>
+                                                    )}
+                                                </div>
+                                            </div>
+
                                             <div className="space-y-6 bg-secondary/10 p-8 rounded-3xl border border-border/50">
                                                 <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-2">Basic Information</h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
