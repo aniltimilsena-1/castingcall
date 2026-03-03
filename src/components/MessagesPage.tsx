@@ -293,7 +293,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                       {m.content.startsWith('[IMAGE]:') ? (
                         <div className="relative group">
                           <img
-                            src={m.content.split(':')[1]}
+                            src={m.content.slice(8)}
                             className="w-full h-auto max-h-[400px] object-contain block"
                             style={{ imageRendering: 'auto' }}
                             onLoad={(e) => (e.currentTarget.style.opacity = '1')}
