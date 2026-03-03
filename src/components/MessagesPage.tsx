@@ -180,13 +180,31 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     const file = e.target.files?.[0];
     if (!file || !user || !selectedPartner) return;
     setUploading(true);
-    const path = `messages/${user.id}/${Date.now()}.${file.name.split('.').pop()}`;
-    await supabase.storage.from('avatars').upload(path, file);
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
-    const content = type === 'image' ? `[IMAGE]:${publicUrl}` : `[FILE]:${file.name}|${publicUrl}`;
-    await supabase.from("messages").insert({ sender_id: user.id, receiver_id: selectedPartner, content });
-    setUploading(false);
-    loadThread(selectedPartner);
+
+    // Use auth.uid() as first folder segment to match RLS policy: (storage.foldername(name))[1] = auth.uid()::text
+    const path = `${user.id}/messages/${Date.now()}.${file.name.split('.').pop()}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+      const content = type === 'image' ? `[IMAGE]:${publicUrl}` : `[FILE]:${file.name}|${publicUrl}`;
+
+      const { error: msgError } = await supabase.from("messages").insert({
+        sender_id: user.id,
+        receiver_id: selectedPartner,
+        content
+      });
+      if (msgError) throw msgError;
+
+      loadThread(selectedPartner);
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast.error(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -271,8 +289,20 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 const isMine = m.sender_id === user?.id;
                 return (
                   <div key={m.id} className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"}`}>
-                    <div className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed rounded-2xl ${isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none"}`}>
-                      {m.content.startsWith('[IMAGE]:') ? <img src={m.content.split(':')[1]} className="rounded-xl max-w-full" /> : m.content}
+                    <div className={`max-w-[80%] rounded-2xl overflow-hidden ${isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none"}`}>
+                      {m.content.startsWith('[IMAGE]:') ? (
+                        <div className="relative group">
+                          <img
+                            src={m.content.split(':')[1]}
+                            className="w-full h-auto max-h-[400px] object-contain block"
+                            style={{ imageRendering: 'auto' }}
+                            onLoad={(e) => (e.currentTarget.style.opacity = '1')}
+                          />
+                          <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        </div>
+                      ) : (
+                        <div className="px-4 py-2.5 text-sm leading-relaxed">{m.content}</div>
+                      )}
                     </div>
                     <div className="text-[9px] text-muted-foreground/40 uppercase tracking-widest px-2">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
