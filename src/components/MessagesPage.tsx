@@ -147,8 +147,18 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       const partnerId = m.sender_id === user.id ? m.receiver_id : m.sender_id;
       if (!convMap.has(partnerId)) {
         const p = profileMap.get(partnerId);
+        let preview = m.content;
+        if (preview.startsWith('[IMAGE]:')) preview = "📷 Photo";
+        else if (preview.startsWith('[VIDEO]:')) preview = "🎥 Video";
+        else if (preview.startsWith('[FILE]:')) preview = "📎 File";
+
         convMap.set(partnerId, {
-          partnerId, partnerName: p?.name || "Unknown", lastMessage: m.content, lastTime: m.created_at, unread: 0, partnerPhoto: p?.photo_url || null
+          partnerId,
+          partnerName: p?.name || "Unknown",
+          lastMessage: preview,
+          lastTime: m.created_at,
+          unread: 0,
+          partnerPhoto: p?.photo_url || null
         });
       }
       if (m.receiver_id === user.id && !m.is_read) convMap.get(partnerId)!.unread++;
