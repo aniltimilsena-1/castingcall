@@ -320,25 +320,40 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 const isMine = m.sender_id === user?.id;
                 return (
                   <div key={m.id} className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"}`}>
-                    <div className={`max-w-[80%] rounded-2xl overflow-hidden ${isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none"}`}>
+                    <div className={`max-w-[80%] rounded-2xl overflow-hidden ${isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg"}`}>
                       {m.content.startsWith('[IMAGE]:') ? (
-                        <div className="relative group">
+                        <div className="relative group bg-white/5 min-w-[200px] min-h-[150px] flex items-center justify-center">
                           <img
-                            src={m.content.split(':').slice(1).join(':')}
-                            className="w-full h-auto max-h-[400px] object-contain block"
+                            key={`${m.id}-img`}
+                            src={m.content.replace('[IMAGE]:', '')}
+                            className="w-full h-auto max-h-[500px] object-contain block opacity-0 transition-opacity duration-300"
                             style={{ imageRendering: 'auto' }}
-                            onLoad={(e) => (e.currentTarget.style.opacity = '1')}
+                            onLoad={(e) => {
+                              const target = e.currentTarget;
+                              target.style.opacity = '1';
+                              // Ensure the parent container doesn't show the background anymore
+                              const parent = target.parentElement;
+                              if (parent) parent.classList.remove('bg-white/5');
+                            }}
+                            onError={(e) => {
+                              console.error("Image load error for message:", m.id);
+                              e.currentTarget.src = "https://placehold.co/400x300/1c1c1c/fbb724?text=Image+Load+Error";
+                            }}
                           />
                           <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                         </div>
                       ) : m.content.startsWith('[VIDEO]:') ? (
-                        <video
-                          src={m.content.split(':').slice(1).join(':')}
-                          controls
-                          className="w-full h-auto max-h-[400px] block"
-                        />
+                        <div className="relative bg-black min-w-[200px] min-h-[150px]">
+                          <video
+                            key={`${m.id}-video`}
+                            src={m.content.replace('[VIDEO]:', '')}
+                            controls
+                            className="w-full h-auto max-h-[500px] block"
+                            preload="metadata"
+                          />
+                        </div>
                       ) : (
-                        <div className="px-4 py-2.5 text-sm leading-relaxed">{m.content}</div>
+                        <div className="px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">{m.content}</div>
                       )}
                     </div>
                     <div className="text-[9px] text-muted-foreground/40 uppercase tracking-widest px-2">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
