@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Shield, Activity, Search, Star, CheckCircle2, MoreVertical, Ban, UserCheck, ArrowUpRight, TrendingUp, Briefcase, FileText, Layout, Trash2, ExternalLink, MessageCircle, Edit, Calendar, DollarSign, Clock, Link as LinkIcon, Globe, Crown } from "lucide-react";
+import { Users, Shield, Activity, Search, Star, CheckCircle2, MoreVertical, Ban, UserCheck, ArrowUpRight, TrendingUp, Briefcase, FileText, Layout, Trash2, ExternalLink, MessageCircle, Edit, Calendar, DollarSign, Clock, Link as LinkIcon, Globe, Crown, X } from "lucide-react";
 import { toast } from "sonner";
 
 type Profile = Tables<"profiles">;
@@ -59,19 +59,55 @@ export default function AdminPage() {
 
     const handleApprovePayment = async (v: any) => {
         try {
-            await supabase.from("payment_verifications" as any).update({ status: 'approved' }).eq("id", v.id);
-            await supabase.from("profiles").update({ plan: 'pro' } as any).eq("user_id", v.user_id);
+            const pType = v.payment_type || 'pro';
+            const meta = v.metadata || {};
 
-            // Manual verification is mostly for Nepal (QR/Bank)
+            // 1. Process based on type
+            if (pType === 'pro') {
+                await supabase.from("profiles").update({ plan: 'pro' } as any).eq("user_id", v.user_id);
+            } else if (pType === 'fan_pass') {
+                await supabase.from("fan_subscriptions" as any).insert({
+                    subscriber_id: v.user_id,
+                    talent_id: meta.talent_id,
+                    status: 'active',
+                    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                });
+            } else if (pType === 'unlock') {
+                await supabase.from("photo_purchases" as any).insert({
+                    buyer_id: v.user_id,
+                    photo_url: meta.post_url,
+                    amount_paid: v.amount
+                });
+            } else if (pType === 'product') {
+                await supabase.from("product_purchases" as any).insert({
+                    buyer_id: v.user_id,
+                    product_id: meta.product_id,
+                    amount_paid: v.amount
+                });
+            } else if (pType === 'tip') {
+                await supabase.from("tips" as any).insert({
+                    sender_id: v.user_id,
+                    receiver_id: meta.talent_id,
+                    amount: v.amount,
+                    post_url: meta.post_url,
+                    message: "Gift approved by admin"
+                });
+            }
+
+            // 2. Mark verification as approved
+            await supabase.from("payment_verifications" as any).update({ status: 'approved' }).eq("id", v.id);
+
+            // 3. Record transaction
             await supabase.from("transactions" as any).insert({
                 user_id: v.user_id,
                 amount: v.amount,
                 currency: 'NPR',
-                plan_type: 'pro',
-                payment_method: 'manual_verification'
+                payment_type: pType,
+                payment_method: 'manual_verification',
+                metadata: meta
             } as any);
 
-            // Fetch profile for SMS
+            // 4. Notification / SMS
             const { data: userProfile } = await supabase.from("profiles").select("phone, name").eq("user_id", v.user_id).single() as any;
             if (userProfile?.phone) {
                 await supabase.functions.invoke('send-sms', {
@@ -260,11 +296,25 @@ export default function AdminPage() {
                                     const prof = profiles.find(p => p.user_id === v.user_id);
                                     return (
                                         <tr key={v.id}>
-                                            <td className="px-10 py-6"><p className="text-white">{prof?.name || 'Unknown'}</p><a href={v.screenshot_url} target="_blank" className="text-xs text-primary underline">View Screenshot</a></td>
-                                            <td className="px-10 py-6"><span className={`px-3 py-1 rounded-full text-[0.6rem] uppercase ${v.status === 'pending' ? 'bg-amber-500/10 text-amber-500' : v.status === 'approved' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>{v.status}</span></td>
                                             <td className="px-10 py-6">
-                                                {v.status === 'pending' && <button onClick={() => handleApprovePayment(v)} className="bg-primary text-black px-4 py-2 rounded-xl text-xs">Approve</button>}
-                                                {v.status === 'approved' && <span className="text-xs text-muted-foreground italic">Processed</span>}
+                                                <p className="text-white">{prof?.name || 'Unknown'}</p>
+                                                <div className="flex gap-2 mt-1">
+                                                    <span className="text-[0.5rem] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-muted-foreground uppercase">{v.payment_type || 'pro'}</span>
+                                                    <a href={v.screenshot_url} target="_blank" className="text-[0.5rem] text-primary underline">Verify Reciept</a>
+                                                </div>
+                                            </td>
+                                            <td className="px-10 py-6">
+                                                <p className="text-white text-xs font-bold">NPR {v.amount}</p>
+                                                <span className={`px-3 py-1 rounded-full text-[0.5rem] uppercase ${v.status === 'pending' ? 'bg-amber-500/10 text-amber-500' : v.status === 'approved' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>{v.status}</span>
+                                            </td>
+                                            <td className="px-10 py-6">
+                                                {v.status === 'pending' && (
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => handleApprovePayment(v)} className="bg-primary text-black px-4 py-2 rounded-xl text-[0.6rem] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">Approve</button>
+                                                        <button onClick={() => handleRejectPayment(v.id)} className="bg-white/5 text-red-500 px-3 py-2 rounded-xl text-[0.6rem] hover:bg-red-500/10"><X size={14} /></button>
+                                                    </div>
+                                                )}
+                                                {v.status !== 'pending' && <span className="text-xs text-muted-foreground italic">{v.status === 'approved' ? 'Verified' : 'Declined'}</span>}
                                             </td>
                                         </tr>
                                     );

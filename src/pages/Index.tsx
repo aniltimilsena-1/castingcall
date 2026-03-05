@@ -21,8 +21,8 @@ import HelpSupportPage from "@/components/HelpSupportPage";
 import TermsPrivacyPage from "@/components/TermsPrivacyPage";
 import PremiumPage from "@/components/PremiumPage";
 import ProfileDetailDialog from "@/components/ProfileDetailDialog";
-
 import AdminPage from "@/components/AdminPage";
+import PiPPlayer from "@/components/PiPPlayer";
 
 const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "messages", "settings", "saved", "analytics", "admin"];
 
@@ -242,7 +242,7 @@ const Index = () => {
         onNavigate={navigate}
       />
 
-      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+      <main className={`flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} pb-16 md:pb-0`}>
         {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onlineUsers={onlineUsers} />}
         {page === "auth" && <AuthPage onSuccess={() => setPage("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
@@ -308,6 +308,7 @@ const Index = () => {
         user={user}
         currentUserProfile={currentUserProfile}
       />
+      <PiPPlayer />
     </div>
   );
 };

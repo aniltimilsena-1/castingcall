@@ -247,17 +247,149 @@ export type Database = {
           user_id: string
           description: string | null
           created_at: string
+          is_premium: boolean | null
+          price: number | null
         }
         Insert: {
           photo_url: string
           user_id: string
           description?: string | null
           created_at?: string
+          is_premium?: boolean | null
+          price?: number | null
         }
         Update: {
           photo_url?: string
           user_id?: string
           description?: string | null
+          created_at?: string
+          is_premium?: boolean | null
+          price?: number | null
+        }
+        Relationships: []
+      }
+      fan_subscriptions: {
+        Row: {
+          id: string
+          subscriber_id: string
+          talent_id: string
+          status: string | null
+          expires_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          subscriber_id: string
+          talent_id: string
+          status?: string | null
+          expires_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          subscriber_id?: string
+          talent_id?: string
+          status?: string | null
+          expires_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      digital_products: {
+        Row: {
+          id: string
+          seller_id: string
+          title: string
+          description: string | null
+          price: number
+          currency: string | null
+          file_url: string
+          thumbnail_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          seller_id: string
+          title: string
+          description?: string | null
+          price: number
+          currency?: string | null
+          file_url: string
+          thumbnail_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          seller_id?: string
+          title?: string
+          description?: string | null
+          price?: number
+          currency?: string | null
+          file_url?: string
+          thumbnail_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_purchases: {
+        Row: {
+          id: string
+          buyer_id: string
+          product_id: string
+          amount_paid: number
+          currency: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          buyer_id: string
+          product_id: string
+          amount_paid: number
+          currency?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          buyer_id?: string
+          product_id?: string
+          amount_paid?: number
+          currency?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      tips: {
+        Row: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          amount: number
+          currency: string | null
+          post_url: string | null
+          message: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          sender_id: string
+          receiver_id: string
+          amount: number
+          currency?: string | null
+          post_url?: string | null
+          message?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          sender_id?: string
+          receiver_id?: string
+          amount?: number
+          currency?: string | null
+          post_url?: string | null
+          message?: string | null
           created_at?: string
         }
         Relationships: []

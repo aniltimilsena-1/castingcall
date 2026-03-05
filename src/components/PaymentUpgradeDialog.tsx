@@ -1,0 +1,225 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
+import { CreditCard, QrCode, Upload, Check, X, ShieldCheck, Zap, Crown, ShoppingBag, Gift } from "lucide-react";
+
+interface PaymentUpgradeDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    user: any;
+    type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
+    amount: number;
+    metadata?: any;
+    onSuccess?: () => void;
+}
+
+export default function PaymentUpgradeDialog({
+    open,
+    onOpenChange,
+    user,
+    type,
+    amount,
+    metadata,
+    onSuccess
+}: PaymentUpgradeDialogProps) {
+    const [method, setMethod] = useState<'card' | 'manual' | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [step, setStep] = useState<'select' | 'pay' | 'confirm'>('select');
+
+    const handleManualUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+
+        setUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const filePath = `payments/${user.id}/${Math.random()}.${fileExt}`;
+
+            const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+            const { error: dbError } = await supabase.from('payment_verifications' as any).insert({
+                user_id: user.id,
+                amount: amount,
+                screenshot_url: publicUrl,
+                status: 'pending',
+                payment_type: type,
+                metadata: metadata
+            });
+
+            if (dbError) throw dbError;
+
+            toast.success("Payment proof submitted! Admin will verify shortly.");
+            setStep('confirm');
+        } catch (err: any) {
+            toast.error(err.message || "Upload failed");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleStripeSimulate = () => {
+        toast.loading("Connecting to Stripe Secure Gateway...");
+        setTimeout(() => {
+            toast.dismiss();
+            toast.success("Payment successful! (Simulated)");
+            onSuccess?.();
+            onOpenChange(false);
+        }, 2000);
+    };
+
+    const getTitle = () => {
+        switch (type) {
+            case 'pro': return "Upgrade to Global PRO";
+            case 'fan_pass': return "Get Fan Subscription";
+            case 'unlock': return "Unlock Premium Content";
+            case 'product': return "Purchase Digital Good";
+            case 'tip': return "Send a Gift";
+            default: return "Secure Payment";
+        }
+    };
+
+    const getIcon = () => {
+        switch (type) {
+            case 'pro': return <Crown className="text-amber-500" />;
+            case 'fan_pass': return <Zap className="text-primary" />;
+            case 'unlock': return <ShieldCheck className="text-blue-500" />;
+            case 'product': return <ShoppingBag className="text-orange-500" />;
+            case 'tip': return <Gift className="text-pink-500" />;
+            default: return <CreditCard />;
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-md bg-background/95 backdrop-blur-2xl border-white/5 p-0 overflow-hidden rounded-[2.5rem] shadow-2xl">
+                <div className="p-8">
+                    <div className="flex items-center gap-4 mb-8">
+                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                            {getIcon()}
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-display text-white">{getTitle()}</h2>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider">${amount} USD Contribution</p>
+                        </div>
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                        {step === 'select' && (
+                            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                                <button
+                                    onClick={() => { setMethod('card'); setStep('pay'); }}
+                                    className="w-full group relative overflow-hidden bg-white text-black p-5 rounded-2xl font-normal transition-all hover:scale-[1.02] flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <CreditCard size={20} />
+                                        <span>Pay with Card / Stripe</span>
+                                    </div>
+                                    <Check size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </button>
+
+                                <button
+                                    onClick={() => { setMethod('manual'); setStep('pay'); }}
+                                    className="w-full group bg-white/5 border border-white/10 text-white p-5 rounded-2xl font-normal transition-all hover:bg-white/10 flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <QrCode size={20} />
+                                        <span>eSewa / Khalti / manual</span>
+                                    </div>
+                                    <Upload size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                                </button>
+                            </motion.div>
+                        )}
+
+                        {step === 'pay' && method === 'card' && (
+                            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 text-center space-y-4">
+                                    <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto">
+                                        <CreditCard className="text-blue-500" size={32} />
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">You are being redirected to Stripe for a secure global checkout.</p>
+                                </div>
+                                <button
+                                    onClick={handleStripeSimulate}
+                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-normal transition-all shadow-lg shadow-blue-500/20"
+                                >
+                                    Confirm & Pay ${amount}
+                                </button>
+                                <button onClick={() => setStep('select')} className="w-full text-xs text-muted-foreground hover:text-white transition-colors">Go Back</button>
+                            </motion.div>
+                        )}
+
+                        {step === 'pay' && method === 'manual' && (
+                            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-6">
+                                    <div className="flex justify-center">
+                                        {/* Placeholder QR - In reality you'd show your eSewa/Khalti QR */}
+                                        <div className="w-40 h-40 bg-white p-2 rounded-xl">
+                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CastingHubGlobal" alt="QR Code" className="w-full h-full" />
+                                        </div>
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-sm font-normal text-white mb-1">Casting Hub Global QR</p>
+                                        <p className="text-[0.7rem] text-muted-foreground">Scan and pay Rs. {amount * 135} (NPR equivalent)</p>
+                                    </div>
+                                </div>
+
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        id="screenshot-up"
+                                        className="hidden"
+                                        onChange={handleManualUpload}
+                                        disabled={uploading}
+                                    />
+                                    <label
+                                        htmlFor="screenshot-up"
+                                        className="w-full flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-2xl py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all"
+                                    >
+                                        {uploading ? (
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                                        ) : (
+                                            <>
+                                                <Upload className="text-primary mb-2" size={24} />
+                                                <span className="text-sm font-normal text-white">Upload Screenshot</span>
+                                                <span className="text-[0.65rem] text-muted-foreground">Confirm your transfer proof</span>
+                                            </>
+                                        )}
+                                    </label>
+                                </div>
+                                <button onClick={() => setStep('select')} className="w-full text-xs text-muted-foreground hover:text-white transition-colors">Go Back</button>
+                            </motion.div>
+                        )}
+
+                        {step === 'confirm' && (
+                            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8 space-y-6">
+                                <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+                                    <Check className="text-green-500" size={40} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl text-white font-normal mb-2">Request Submitted</h3>
+                                    <p className="text-sm text-muted-foreground">Our financing team will verify the screenshot and activate your {type.replace('_', ' ')} within 1-2 hours.</p>
+                                </div>
+                                <button
+                                    onClick={() => onOpenChange(false)}
+                                    className="w-full bg-white text-black py-4 rounded-xl font-normal transition-all"
+                                >
+                                    Close & Continue
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                <div className="bg-white/5 px-8 py-4 flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-green-500" />
+                    <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">End-to-End Encrypted Secure Checkout</span>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}

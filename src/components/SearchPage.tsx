@@ -11,7 +11,8 @@ import ProfileDetailDialog from "./ProfileDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Sparkles, TrendingUp, Search, SlidersHorizontal, Image as ImageIcon } from "lucide-react";
+import { Sparkles, TrendingUp, Search, SlidersHorizontal, Image as ImageIcon, Minimize2 } from "lucide-react";
+import { useVideo } from "@/contexts/VideoContext";
 
 type Profile = Tables<"profiles"> & {
   mood_tags?: string[];
@@ -633,6 +634,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
   currentUserProfile: any;
   photoOwnerId?: string;
 }) {
+  const { setPipVideo, setIsPipOpen } = useVideo();
   const [likes, setLikes] = useState<number>(0);
   const [userLiked, setUserLiked] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
@@ -845,13 +847,27 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
       <DialogContent className="max-w-5xl max-h-[90svh] p-0 bg-background border-none flex flex-col md:flex-row overflow-hidden shadow-2xl rounded-3xl">
         <div className="flex-1 bg-black flex items-center justify-center p-4 relative">
           {url?.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || url?.includes('videos%2F') ? (
-            <video
-              src={url || ""}
-              className="max-w-full max-h-full object-contain"
-              controls
-              autoPlay
-              loop
-            />
+            <div className="relative w-full h-full flex items-center justify-center">
+              <video
+                src={url || ""}
+                className="max-w-full max-h-full object-contain"
+                controls
+                autoPlay
+                loop
+              />
+              <button
+                onClick={() => {
+                  setPipVideo({ url: url || "", title: description || "Video", owner: owner?.name });
+                  setIsPipOpen(true);
+                  onClose();
+                  toast.info("Video minimized to Picture-in-Picture");
+                }}
+                className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-primary hover:text-black text-white rounded-full transition-all z-10"
+                title="Picture-in-Picture"
+              >
+                <Minimize2 size={20} />
+              </button>
+            </div>
           ) : (
             <img src={url || ""} className="max-w-full max-h-full object-contain" alt="Post" />
           )}

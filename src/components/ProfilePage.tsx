@@ -3,7 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2 } from "lucide-react";
+import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2 } from "lucide-react";
+import { useVideo } from "@/contexts/VideoContext";
 import { Badge } from "@/components/ui/badge";
 
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
@@ -53,6 +54,7 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
   const { user, profile, isPremium, refreshProfile } = useAuth();
+  const { setPipVideo, setIsPipOpen } = useVideo();
 
   // Mode
   const [isEditing, setIsEditing] = useState(false);
@@ -72,7 +74,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const [portfolioUrl, setPortfolioUrl] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
-  const [captions, setCaptions] = useState<Record<string, string>>({});
+  const [captions, setCaptions] = useState<Record<string, { description: string; is_premium: boolean; price: number }>>({});
+  const [digitalProducts, setDigitalProducts] = useState<any[]>([]);
   const [moodTags, setMoodTags] = useState<string[]>([]);
   const [styleTags, setStyleTags] = useState<string[]>([]);
   const [personalityTraits, setPersonalityTraits] = useState<string[]>([]);
@@ -104,12 +107,23 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       setVisualSearchKeywords((profile as any).visual_search_keywords || "");
 
       const fetchCaptions = async () => {
-        const { data } = await supabase.from('photo_captions').select('photo_url, description').eq('user_id', profile.user_id);
-        const caps: Record<string, string> = {};
-        data?.forEach(c => caps[c.photo_url] = c.description || "");
+        const { data } = await supabase.from('photo_captions').select('photo_url, description, is_premium, price').eq('user_id', profile.user_id);
+        const caps: Record<string, { description: string; is_premium: boolean; price: number }> = {};
+        data?.forEach(c => caps[c.photo_url] = {
+          description: c.description || "",
+          is_premium: !!c.is_premium,
+          price: c.price || 0
+        });
         setCaptions(caps);
       };
+
+      const fetchProducts = async () => {
+        const { data } = await supabase.from('digital_products' as any).select('*').eq('seller_id', profile.user_id);
+        setDigitalProducts(data || []);
+      };
+
       fetchCaptions();
+      fetchProducts();
     }
   }, [profile]);
 
@@ -139,8 +153,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user.id);
       if (error) throw error;
 
-      const captionInserts = Object.entries(captions).map(([url, desc]) => ({
-        photo_url: url, user_id: user.id, description: desc
+      const captionInserts = Object.entries(captions).map(([url, data]) => ({
+        photo_url: url,
+        user_id: user.id,
+        description: data.description,
+        is_premium: data.is_premium,
+        price: data.price
       }));
       if (captionInserts.length > 0) {
         await supabase.from('photo_captions').upsert(captionInserts, { onConflict: 'photo_url' });
@@ -393,7 +411,20 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Video Reel</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {((profile as any)?.videos || []).map((url: string, i: number) => (
-                <video key={i} src={url} controls className="w-full rounded-xl border border-border bg-black" />
+                <div key={i} className="relative group rounded-xl overflow-hidden border border-border bg-black">
+                  <video src={url} controls className="w-full h-full" />
+                  <button
+                    onClick={() => {
+                      setPipVideo({ url, title: "Talent Reel", owner: profile?.name });
+                      setIsPipOpen(true);
+                      toast.info("Video minimized to Picture-in-Picture");
+                    }}
+                    className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-primary hover:text-black text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
+                    title="Picture-in-Picture"
+                  >
+                    <Minimize2 size={16} />
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -508,7 +539,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {(profile as any)?.photos?.map((url: string, index: number) => (
-              <div key={index} className="space-y-2">
+              <div className="space-y-2 relative">
                 <div className="relative aspect-square rounded-xl overflow-hidden border border-border group">
                   <img src={url} alt={`Portfolio ${index}`} className="w-full h-full object-cover" />
                   <button
@@ -523,14 +554,45 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   >
                     <X size={14} />
                   </button>
+                  {captions[url]?.is_premium && (
+                    <div className="absolute top-2 left-2 p-1 bg-amber-500 rounded-lg text-white shadow-lg">
+                      <Lock size={12} />
+                    </div>
+                  )}
                 </div>
                 <input
                   type="text"
-                  placeholder="Describe this photo..."
-                  value={captions[url] || ""}
-                  onChange={(e) => setCaptions({ ...captions, [url]: e.target.value })}
+                  placeholder="Brief description..."
+                  value={captions[url]?.description || ""}
+                  onChange={(e) => setCaptions({
+                    ...captions,
+                    [url]: { ...(captions[url] || { is_premium: false, price: 0 }), description: e.target.value }
+                  })}
                   className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-[0.7rem] outline-none focus:border-primary transition-colors"
                 />
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => setCaptions({
+                      ...captions,
+                      [url]: { ...(captions[url] || { description: "", price: 0 }), is_premium: !captions[url]?.is_premium }
+                    })}
+                    className={`flex-1 text-[0.6rem] py-1 rounded-md border transition-all ${captions[url]?.is_premium ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-background border-border text-muted-foreground'}`}
+                  >
+                    {captions[url]?.is_premium ? 'Premium' : 'Free Content'}
+                  </button>
+                  {captions[url]?.is_premium && (
+                    <input
+                      type="number"
+                      placeholder="Price"
+                      value={captions[url]?.price || ""}
+                      onChange={(e) => setCaptions({
+                        ...captions,
+                        [url]: { ...(captions[url] || { description: "", is_premium: true }), price: parseInt(e.target.value) || 0 }
+                      })}
+                      className="w-16 bg-background border border-border rounded-md px-2 py-1 text-[0.6rem] outline-none focus:border-amber-500 transition-colors"
+                    />
+                  )}
+                </div>
               </div>
             ))}
 

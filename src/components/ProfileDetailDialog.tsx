@@ -3,11 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2 } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, TrendingUp } from "lucide-react";
+import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 
 type Profile = Tables<"profiles"> & {
     mood_tags?: string[];
@@ -52,6 +52,18 @@ export default function ProfileDetailDialog({
     const [loadingProjects, setLoadingProjects] = useState(false);
     const [alreadyAppliedOrInvited, setAlreadyAppliedOrInvited] = useState<string[]>([]);
 
+    // ── Monetization States
+    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [digitalProducts, setDigitalProducts] = useState<any[]>([]);
+    const [loadingMonetization, setLoadingMonetization] = useState(false);
+
+    const [paymentModal, setPaymentModal] = useState<{
+        open: boolean;
+        type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
+        amount: number;
+        metadata: any;
+    }>({ open: false, type: 'fan_pass', amount: 0, metadata: {} });
+
     // Track Profile View for Analytics
     useEffect(() => {
         if (open && profile?.id) {
@@ -82,6 +94,34 @@ export default function ProfileDetailDialog({
                 };
                 fetchProjects();
             }
+
+            // Fetch Subscriptions & Products
+            const fetchMonetization = async () => {
+                setLoadingMonetization(true);
+                try {
+                    if (user) {
+                        const { data: sub } = await supabase
+                            .from("fan_subscriptions" as any)
+                            .select("id")
+                            .eq("subscriber_id", user.id)
+                            .eq("talent_id", profile.user_id)
+                            .eq("status", "active")
+                            .maybeSingle();
+                        setIsSubscribed(!!sub);
+                    }
+
+                    const { data: products } = await supabase
+                        .from("digital_products" as any)
+                        .select("*")
+                        .eq("seller_id", profile.user_id);
+                    setDigitalProducts(products || []);
+                } catch (err) {
+                    console.error("Monetization fetch error:", err);
+                } finally {
+                    setLoadingMonetization(false);
+                }
+            };
+            fetchMonetization();
         }
     }, [open, profile?.id, user?.id, currentUserProfile?.role]);
 
@@ -152,6 +192,36 @@ export default function ProfileDetailDialog({
         } catch (err) {
             console.error("Failed to track interaction:", err);
         }
+    };
+
+    const handleSubscribe = async () => {
+        if (!user) { toast.error("Sign in to subscribe"); return; }
+        if (isSubscribed) { toast.info("You're already a fan!"); return; }
+
+        setPaymentModal({
+            open: true,
+            type: 'fan_pass',
+            amount: 19.99,
+            metadata: { talent_id: profile.user_id }
+        });
+    };
+
+    const handleBuyProduct = (product: any) => {
+        setPaymentModal({
+            open: true,
+            type: 'product',
+            amount: product.price,
+            metadata: { product_id: product.id, talent_id: profile.user_id, title: product.title }
+        });
+    };
+
+    const handleSendGift = () => {
+        setPaymentModal({
+            open: true,
+            type: 'tip',
+            amount: 5.00,
+            metadata: { talent_id: profile.user_id }
+        });
     };
 
     if (!profile) return null;
@@ -251,6 +321,16 @@ export default function ProfileDetailDialog({
                                                     <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />
                                                     {isSaved ? "Saved to List" : "Save Talent"}
                                                 </button>
+
+                                                {user?.id !== profile.user_id && (
+                                                    <button
+                                                        onClick={handleSubscribe}
+                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 shadow-glow'}`}
+                                                    >
+                                                        {isSubscribed ? <Check size={18} /> : <Crown size={18} />}
+                                                        {isSubscribed ? "Active Fan Pass" : "Get Fan Pass"}
+                                                    </button>
+                                                )}
 
                                                 {user?.id !== profile.user_id && userProjects.length > 0 && (
                                                     <button
@@ -445,6 +525,44 @@ export default function ProfileDetailDialog({
                                                 </div>
                                             </div>
 
+                                            {/* Digital Store Section */}
+                                            {digitalProducts.length > 0 && (
+                                                <div className="pt-6 border-t border-border/20">
+                                                    <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-6 flex items-center gap-2">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Digital Hub Store
+                                                    </h3>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        {digitalProducts.map((p) => (
+                                                            <div key={p.id} className="bg-card/40 border border-border rounded-2xl overflow-hidden group hover:border-amber-500/50 transition-all">
+                                                                <div className="aspect-video w-full relative bg-secondary overflow-hidden">
+                                                                    {p.thumbnail_url ? (
+                                                                        <img src={p.thumbnail_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                                    ) : (
+                                                                        <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
+                                                                            <ShoppingBag size={32} />
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-normal text-amber-500 border border-amber-500/20">
+                                                                        ${p.price} {p.currency}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="p-5">
+                                                                    <h4 className="text-white text-sm font-normal mb-1">{p.title}</h4>
+                                                                    <p className="text-muted-foreground text-xs line-clamp-2 mb-4 leading-relaxed">{p.description}</p>
+                                                                    <button
+                                                                        onClick={() => handleBuyProduct(p)}
+                                                                        className="w-full bg-white/5 hover:bg-amber-500/10 border border-white/10 hover:border-amber-500/30 text-white text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-2"
+                                                                    >
+                                                                        <ShoppingBag size={14} className="text-amber-500" />
+                                                                        Purchase Item
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             <div className="space-y-6 bg-secondary/10 p-8 rounded-3xl border border-border/50">
                                                 <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-2">Basic Information</h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -518,6 +636,19 @@ export default function ProfileDetailDialog({
                 user={user}
                 currentUserProfile={currentUserProfile}
                 photoOwnerId={profile?.user_id}
+            />
+            <PaymentUpgradeDialog
+                open={paymentModal.open}
+                onOpenChange={(open) => setPaymentModal(prev => ({ ...prev, open }))}
+                user={user}
+                type={paymentModal.type}
+                amount={paymentModal.amount}
+                metadata={paymentModal.metadata}
+                onSuccess={() => {
+                    if (paymentModal.type === 'fan_pass') {
+                        setIsSubscribed(true);
+                    }
+                }}
             />
         </>
     );
