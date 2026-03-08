@@ -62,7 +62,26 @@ export default function ProfileDetailDialog({
         type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
         amount: number;
         metadata: any;
+        currency?: string;
+        currencySymbol?: string;
     }>({ open: false, type: 'fan_pass', amount: 0, metadata: {} });
+
+    const [isNepal, setIsNepal] = useState<boolean | null>(null);
+
+    // Detect User Location (Country)
+    useEffect(() => {
+        const detectLocation = async () => {
+            try {
+                const res = await fetch("https://ipapi.co/json/");
+                const data = await res.json();
+                setIsNepal(data.country_code === "NP");
+            } catch (err) {
+                console.error("Location detection failed:", err);
+                setIsNepal(false);
+            }
+        };
+        detectLocation();
+    }, []);
 
     // Track Profile View for Analytics
     useEffect(() => {
@@ -201,7 +220,9 @@ export default function ProfileDetailDialog({
         setPaymentModal({
             open: true,
             type: 'fan_pass',
-            amount: 19.99,
+            amount: isNepal ? 199 : 1.99,
+            currency: isNepal ? 'NPR' : 'USD',
+            currencySymbol: isNepal ? 'NPR ' : '$',
             metadata: { talent_id: profile.user_id }
         });
     };
@@ -219,7 +240,9 @@ export default function ProfileDetailDialog({
         setPaymentModal({
             open: true,
             type: 'tip',
-            amount: 5.00,
+            amount: isNepal ? 100 : 1.00,
+            currency: isNepal ? 'NPR' : 'USD',
+            currencySymbol: isNepal ? 'NPR ' : '$',
             metadata: { talent_id: profile.user_id }
         });
     };
@@ -643,6 +666,8 @@ export default function ProfileDetailDialog({
                 user={user}
                 type={paymentModal.type}
                 amount={paymentModal.amount}
+                currency={paymentModal.currency}
+                currencySymbol={paymentModal.currencySymbol}
                 metadata={paymentModal.metadata}
                 onSuccess={() => {
                     if (paymentModal.type === 'fan_pass') {

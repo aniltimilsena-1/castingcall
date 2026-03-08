@@ -176,7 +176,8 @@ export default function PaymentUpgradeDialog({
                                     <div className="text-center">
                                         <p className="text-xs font-normal text-white mb-1">Casting Hub Global QR</p>
                                         <p className="text-[0.7rem] text-muted-foreground uppercase tracking-[1px]">
-                                            Scan and pay {currencySymbol}{Math.round(currency === 'USD' ? amount * 135 : amount)} ({currency === 'USD' ? 'NPR' : currency} equivalent)
+                                            Scan and pay {currency === 'USD' ? 'Rs. ' : currencySymbol}{Math.round(currency === 'USD' ? amount * 135 : amount)}
+                                            {currency === 'USD' ? ' (NPR Equivalent)' : ''}
                                         </p>
                                     </div>
                                 </div>

@@ -57,64 +57,85 @@ export default function SearchPage({ query, role, onBack, onProfileClick, online
   useEffect(() => {
     const search = async () => {
       setLoading(true);
-      if (looksLikeQuery || visualSearchMode) {
-        setIsScanning(true);
-        await new Promise(r => setTimeout(r, 800)); // AI analyzing feel
-      }
+      try {
+        const trimmedQuery = query?.trim() || "";
+        // Detect if the query is a profile URL
+        const profileUrlMatch = trimmedQuery.match(/\/profile\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+        const uuidFromQuery = profileUrlMatch ? profileUrlMatch[1] : (
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedQuery) ? trimmedQuery : null
+        );
 
-      if (searchType === "talents") {
-        let q = supabase.from("profiles").select("*");
-
-        if (isTrending) {
-          q = q.order('trending_score', { ascending: false });
-        } else {
-          q = q.order('plan', { ascending: false });
+        // If we found a UUID, ensure we are in 'talents' search mode
+        if (uuidFromQuery && searchType !== 'talents') {
+          setSearchType('talents');
+          return; // The change in searchType will re-trigger this effect
         }
 
-        if (role) {
-          q = q.eq("role", role);
-        } else if (query) {
-          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(query);
-          if (isUUID) {
-            q = q.or(`id.eq.${query},user_id.eq.${query}`);
+        if (looksLikeQuery || visualSearchMode) {
+          setIsScanning(true);
+          await new Promise(r => setTimeout(r, 800)); // AI analyzing feel
+        }
+
+        if (searchType === "talents") {
+          let q = supabase.from("profiles").select("*");
+
+          if (isTrending) {
+            q = q.order('trending_score', { ascending: false });
           } else {
-            q = q.or(`name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
+            q = q.order('plan', { ascending: false });
           }
-        }
 
-        if (selectedMoods.length > 0) {
-          q = q.overlaps('mood_tags', selectedMoods.map(m => m.toLowerCase()));
-        }
-        if (selectedStyles.length > 0) {
-          q = q.overlaps('style_tags', selectedStyles.map(s => s.toLowerCase()));
-        }
-        if (selectedTraits.length > 0) {
-          q = q.overlaps('personality_traits', selectedTraits.map(t => t.toLowerCase()));
-        }
-        if (looksLikeQuery) {
-          q = q.overlaps('looks_like', [looksLikeQuery]);
-        }
-        if (visualSearchMode) {
-          // Mocking visual search logic - find by keywords or high trending
-          q = q.order('trending_score', { ascending: false });
-        }
+          if (role) {
+            q = q.eq("role", role);
+          } else if (uuidFromQuery) {
+            // Direct UUID search - bypass other filters
+            q = q.or(`id.eq.${uuidFromQuery},user_id.eq.${uuidFromQuery}`);
+          } else if (query) {
+            q = q.or(`name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
 
-        // Hide admins from regular users
-        if (currentUserProfile?.role !== 'Admin') {
-          q = q.neq('role', 'Admin');
+            // Apply standard filters only for keyword search
+            if (selectedMoods.length > 0) {
+              q = q.overlaps('mood_tags', selectedMoods.map(m => m.toLowerCase()));
+            }
+            if (selectedStyles.length > 0) {
+              q = q.overlaps('style_tags', selectedStyles.map(s => s.toLowerCase()));
+            }
+            if (selectedTraits.length > 0) {
+              q = q.overlaps('personality_traits', selectedTraits.map(t => t.toLowerCase()));
+            }
+          }
+
+          if (looksLikeQuery) {
+            q = q.overlaps('looks_like', [looksLikeQuery]);
+          }
+          if (visualSearchMode) {
+            q = q.order('trending_score', { ascending: false });
+          }
+
+          // Hide admins from regular users
+          if (currentUserProfile?.role !== 'Admin') {
+            q = q.neq('role', 'Admin');
+          }
+
+          const { data, error } = await q;
+          if (error) throw error;
+          setResults((data as Profile[]) || []);
+        } else {
+          let q = supabase.from("projects").select("*").eq("status", "active");
+          if (query) {
+            q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%,requirements.ilike.%${query}%`);
+          }
+          const { data, error } = await q;
+          if (error) throw error;
+          setProjectResults(data || []);
         }
-        const { data } = await q;
-        setResults((data as Profile[]) || []);
-      } else {
-        let q = supabase.from("projects").select("*").eq("status", "active");
-        if (query) {
-          q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%,requirements.ilike.%${query}%`);
-        }
-        const { data } = await q;
-        setProjectResults(data || []);
+      } catch (err) {
+        console.error("Search error:", err);
+        toast.error("Failed to load search results.");
+      } finally {
+        setLoading(false);
+        setIsScanning(false);
       }
-      setLoading(false);
-      setIsScanning(false);
     };
     search();
 
