@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { adminService } from "@/services/adminService";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,24 +32,16 @@ export default function AdminPage() {
     const fetchAllData = async () => {
         setLoading(true);
         try {
-            const [pRes, prRes, fRes, aRes, sRes, tRes, vRes] = await Promise.all([
-                supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-                supabase.from("projects").select("*").order("created_at", { ascending: false }),
-                supabase.from("photo_captions").select("*").order("created_at", { ascending: false }),
-                supabase.from("applications" as any).select("*, projects:project_id(title)").order("created_at", { ascending: false }),
-                supabase.from("audition_slots" as any).select("*, projects:project_id(title)").order("start_time", { ascending: true }),
-                supabase.from("transactions" as any).select("*").order("created_at", { ascending: false }),
-                supabase.from("payment_verifications" as any).select("*").order("created_at", { ascending: false })
-            ]);
+            const data = await adminService.getAllAdminData();
 
-            if (pRes.data) setProfiles(pRes.data);
-            if (prRes.data) setProjects(prRes.data);
+            if (data.profiles) setProfiles(data.profiles);
+            if (data.projects) setProjects(data.projects);
 
             // Merge photos from all profiles with captions
             const mergedFeed: any[] = [];
-            const captionsMap = new Map((fRes.data || []).map(f => [f.photo_url, f]));
+            const captionsMap = new Map((data.feedItems || []).map(f => [f.photo_url, f]));
 
-            (pRes.data || []).forEach(profile => {
+            (data.profiles || []).forEach(profile => {
                 const photos = (profile as any).photos || [];
                 photos.forEach((url: string) => {
                     const caption = captionsMap.get(url);
@@ -65,10 +58,10 @@ export default function AdminPage() {
             });
             setAllFeedItems(mergedFeed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
-            if (aRes.data) setApplications(aRes.data);
-            if (sRes.data) setSchedules(sRes.data);
-            if (tRes.data) setFinances(tRes.data);
-            if (vRes.data) setVerifications(vRes.data);
+            if (data.applications) setApplications(data.applications);
+            if (data.schedules) setSchedules(data.schedules);
+            if (data.finances) setFinances(data.finances);
+            if (data.verifications) setVerifications(data.verifications);
 
         } catch (err) {
             console.error("Fetch error:", err);
@@ -80,84 +73,46 @@ export default function AdminPage() {
 
     const handleApprovePayment = async (v: any) => {
         try {
-            const pType = v.payment_type || 'pro';
-            const meta = v.metadata || {};
-
-            // 1. Process based on type
-            if (pType === 'pro') {
-                await supabase.from("profiles").update({ plan: 'pro' } as any).eq("user_id", v.user_id);
-            } else if (pType === 'fan_pass') {
-                await supabase.from("fan_subscriptions" as any).insert({
-                    subscriber_id: v.user_id,
-                    talent_id: meta.talent_id,
-                    status: 'active',
-                    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-                });
-            } else if (pType === 'unlock') {
-                await supabase.from("photo_purchases" as any).insert({
-                    buyer_id: v.user_id,
-                    photo_url: meta.post_url,
-                    amount_paid: v.amount
-                });
-            } else if (pType === 'product') {
-                await supabase.from("product_purchases" as any).insert({
-                    buyer_id: v.user_id,
-                    product_id: meta.product_id,
-                    amount_paid: v.amount
-                });
-            } else if (pType === 'tip') {
-                await supabase.from("tips" as any).insert({
-                    sender_id: v.user_id,
-                    receiver_id: meta.talent_id,
-                    amount: v.amount,
-                    post_url: meta.post_url,
-                    message: "Gift approved by admin"
-                });
-            }
-
-            // 2. Mark verification as approved
-            await supabase.from("payment_verifications" as any).update({ status: 'approved' }).eq("id", v.id);
-
-            // 3. Record transaction
-            await supabase.from("transactions" as any).insert({
-                user_id: v.user_id,
-                amount: v.amount,
-                currency: 'NPR',
-                payment_type: pType,
-                payment_method: 'manual_verification',
-                metadata: meta
-            } as any);
-
-            // 4. Notification / SMS
-            const { data: userProfile } = await supabase.from("profiles").select("phone, name").eq("user_id", v.user_id).single() as any;
-            if (userProfile?.phone) {
-                await supabase.functions.invoke('send-sms', {
-                    body: {
-                        to: userProfile.phone,
-                        body: `Hi ${userProfile.name}! Your Casting Hub Global PRO membership is now active. Explore global opportunities and get discovered worldwide! - Casting Hub Global`
-                    }
-                });
-            }
-
-            toast.success("Payment approved! Global PRO activated.");
+            await adminService.approvePayment(v);
+            toast.success("Payment approved! User updated.");
             fetchAllData();
         } catch (err: any) {
             toast.error("Approval failed: " + err.message);
         }
     };
 
-    const handleRejectPayment = async (id: string) => {
+    const handleRejectPayment = async (v: any) => {
         if (!confirm("Reject this payment?")) return;
-        await supabase.from("payment_verifications" as any).update({ status: 'rejected' }).eq("id", id);
-        toast.info("Payment rejected.");
-        fetchAllData();
+        try {
+            await adminService.rejectPayment(v);
+            toast.info("Payment rejected.");
+            fetchAllData();
+        } catch (err: any) {
+            toast.error("Rejection failed: " + err.message);
+        }
     };
 
     const handleDeleteProject = async (id: string) => {
         if (!confirm("Are you sure? This will remove the casting call forever.")) return;
-        await supabase.from("projects").delete().eq("id", id);
-        toast.info("Project removed.");
-        fetchAllData();
+        try {
+            await adminService.deleteProject(id);
+            toast.info("Project removed.");
+            fetchAllData();
+        } catch (err) {
+            toast.error("Failed to delete project");
+        }
+    };
+
+    const handleDeleteUser = async (userId: string) => {
+        if (!confirm('Delete user profile?')) return;
+        try {
+            await adminService.deleteProfile(userId);
+            toast.success('Profile removed');
+            fetchAllData();
+        } catch (err) {
+            console.error("Delete user error:", err);
+            toast.error("Failed to delete user profile.");
+        }
     };
 
     const handleOpenScreenshot = async (url: string) => {

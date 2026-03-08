@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { feedService } from "@/services/feedService";
+import { profileService, Profile } from "@/services/profileService";
+import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Send, Play, Bookmark, MoreHorizontal, Sparkles, RefreshCw, ArrowLeft, X, Crown, Lock, Unlock, Gift, ShoppingBag, Minimize2, Trash2 } from "lucide-react";
@@ -86,46 +89,14 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
         const loadFeed = async () => {
             setLoading(true);
             try {
-                // 1. Fetch all profiles with their photos
-                let q = supabase
-                    .from("profiles")
-                    .select("id, user_id, name, photo_url, role, plan, photos, created_at");
+                const isAdmin = currentUserProfile?.role === 'Admin';
+                const [profiles, videoMap, captionMap] = await Promise.all([
+                    feedService.getFeedData(isAdmin),
+                    feedService.getVideoMap(),
+                    feedService.getCaptionMap()
+                ]);
 
-                if (currentUserProfile?.role !== 'Admin') {
-                    q = q.neq('role', 'Admin');
-                }
-
-                const { data: profiles, error } = await q.order("created_at", { ascending: false });
-
-                if (error) throw error;
-
-                // 2. Try to fetch videos (column may not exist yet — ignore errors)
-                const videoMap: Record<string, string[]> = {};
-                try {
-                    const { data: videoProfiles } = await (supabase
-                        .from("profiles")
-                        .select("user_id, videos") as any);
-                    (videoProfiles || []).forEach((p: any) => {
-                        if (p.videos?.length) videoMap[p.user_id] = p.videos;
-                    });
-                } catch (_) { /* videos column may not exist yet */ }
-
-                // 3. Try to fetch captions & premium status
-                const captionMap: Record<string, { description: string, isPremium: boolean, price: number }> = {};
-                try {
-                    const { data: captionRows } = await supabase
-                        .from("photo_captions")
-                        .select("photo_url, description, is_premium, price");
-                    (captionRows || []).forEach((c: any) => {
-                        captionMap[c.photo_url] = {
-                            description: c.description || "",
-                            isPremium: !!c.is_premium,
-                            price: c.price || 0
-                        };
-                    });
-                } catch (_) { /* photo_captions metadata unavailable */ }
-
-                // 4. Build unified feed items
+                // Build unified feed items
                 const items: FeedItem[] = [];
                 (profiles || []).forEach((p: any) => {
                     const owner = {
@@ -149,162 +120,126 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                 const shuffled = items.sort(() => Math.random() - 0.4);
                 setFeed(shuffled);
 
-                // 5. Try to fetch likes & comments — non-critical, never block render
-                if (shuffled.length > 0) {
-                    const allUrls = shuffled.map(i => i.url);
-                    try {
-                        const { data: likeRows } = await supabase
-                            .from("photo_likes")
-                            .select("photo_url, user_id")
-                            .in("photo_url", allUrls);
+                // Fetch social data (likes/comments)
+                const mediaUrls = shuffled.map(i => i.url);
+                const [likeRows, commentRows] = await Promise.all([
+                    feedService.getLikes(mediaUrls),
+                    feedService.getComments(mediaUrls)
+                ]);
 
-                        const likeMap: Record<string, { count: number; liked: boolean }> = {};
-                        (likeRows || []).forEach((l: any) => {
-                            if (!likeMap[l.photo_url]) likeMap[l.photo_url] = { count: 0, liked: false };
-                            likeMap[l.photo_url].count++;
-                            if (user && l.user_id === user.id) likeMap[l.photo_url].liked = true;
+                // Map likes
+                const likeMap: Record<string, { count: number; liked: boolean }> = {};
+                mediaUrls.forEach(url => {
+                    const itemLikes = likeRows.filter((l: any) => l.photo_url === url);
+                    likeMap[url] = {
+                        count: itemLikes.length,
+                        liked: !!(user && itemLikes.find((l: any) => l.user_id === user.id))
+                    };
+                });
+                setLikes(likeMap);
+
+                // Map comments (need unique commenters)
+                const uniqueCommenters = Array.from(new Set(commentRows.map((c: any) => c.user_id)));
+                const commenterProfiles = await feedService.getCommenters(uniqueCommenters);
+
+                const commentMap: Record<string, any[]> = {};
+                mediaUrls.forEach(url => {
+                    commentMap[url] = commentRows
+                        .filter((c: any) => c.photo_url === url)
+                        .map((c: any) => {
+                            const p = commenterProfiles.find((pr: any) => pr.user_id === c.user_id);
+                            return { ...c, commenter: p?.name || "Unknown", commenter_photo: p?.photo_url || null };
                         });
-                        setLikes(likeMap);
-                    } catch (_) { /* likes unavailable */ }
+                });
+                setComments(commentMap);
 
-                    // 6. Fetch User's Specific Access (Subs & Purchases)
-                    if (user) {
-                        try {
-                            const { data: subs } = await supabase.from("fan_subscriptions" as any).select("talent_id").eq("subscriber_id", user.id).eq("status", "active");
-                            const { data: buys } = await supabase.from("photo_purchases" as any).select("photo_url").eq("buyer_id", user.id);
-
-                            if (subs) setSubscriptions(new Set((subs as any[]).map(s => s.talent_id)));
-                            if (buys) setPurchasedPosts(new Set((buys as any[]).map(p => p.photo_url)));
-                        } catch (_) { /* access check failed */ }
-                    }
-
-                    try {
-                        // Fetch comments without FK join
-                        const { data: commentRows } = await supabase
-                            .from("photo_comments")
-                            .select("id, photo_url, content, user_id, created_at")
-                            .in("photo_url", allUrls)
-                            .order("created_at", { ascending: true });
-
-                        // Collect unique commenter user_ids and fetch their profiles
-                        const commenterIds = [...new Set((commentRows || []).map((c: any) => c.user_id))];
-                        const profileMap: Record<string, { name: string; photo_url: string | null }> = {};
-                        if (commenterIds.length > 0) {
-                            const { data: commenterProfiles } = await supabase
-                                .from("profiles")
-                                .select("user_id, name, photo_url")
-                                .in("user_id", commenterIds);
-                            (commenterProfiles || []).forEach((p: any) => {
-                                profileMap[p.user_id] = { name: p.name || "User", photo_url: p.photo_url || null };
-                            });
-                        }
-
-                        const commentMap: Record<string, any[]> = {};
-                        (commentRows || []).forEach((c: any) => {
-                            if (!commentMap[c.photo_url]) commentMap[c.photo_url] = [];
-                            const p = profileMap[c.user_id];
-                            commentMap[c.photo_url].push({
-                                id: c.id,
-                                content: c.content,
-                                user_id: c.user_id,
-                                commenter: p?.name || "User",
-                                commenter_photo: p?.photo_url || null,
-                                created_at: c.created_at,
-                            });
-                        });
-                        setComments(commentMap);
-                    } catch (_) { /* comments unavailable */ }
-
-                    // 6. Fetch user subscriptions if logged in
-                    if (user) {
-                        try {
-                            const { data: subRows } = await supabase
-                                .from("fan_subscriptions")
-                                .select("talent_id")
-                                .eq("subscriber_id", user.id)
-                                .eq("status", "active");
-                            if (subRows) setSubscriptions(new Set(subRows.map(s => s.talent_id)));
-                        } catch (_) { }
-                    }
+                if (user) {
+                    const [subs, purchased] = await Promise.all([
+                        paymentService.getFanSubscriptions(user.id),
+                        paymentService.getPurchasedPosts(user.id)
+                    ]);
+                    setSubscriptions(new Set(subs));
+                    setPurchasedPosts(purchased);
                 }
-            } catch (err: any) {
-                toast.error("Could not load feed: " + (err.message || "Unknown error"));
+            } catch (err) {
+                console.error("Feed load error:", err);
+                toast.error("Failed to load feed");
             } finally {
-                // Always stop loading — no matter what fails
                 setLoading(false);
                 setRefreshing(false);
             }
         };
-
         loadFeed();
-    }, [user, refreshKey]);
+    }, [user, refreshKey, currentUserProfile]);
 
     // ─── Like handler ─────────────────────────────────────────────────────────
-    const handleLike = async (url: string) => {
-        if (!user) { toast.error("Sign in to like posts"); return; }
-        const current = likes[url] || { count: 0, liked: false };
+    const handleLike = async (mediaUrl: string) => {
+        if (!user) {
+            toast.error("Please log in to like content");
+            return;
+        }
 
-        // Optimistic update
-        setLikes(prev => ({
-            ...prev,
-            [url]: { count: current.liked ? current.count - 1 : current.count + 1, liked: !current.liked }
-        }));
-
-        if (current.liked) {
-            await supabase.from("photo_likes").delete().eq("photo_url", url).eq("user_id", user.id);
-        } else {
-            await supabase.from("photo_likes").insert({ photo_url: url, user_id: user.id });
+        const isLiked = likes[mediaUrl]?.liked;
+        try {
+            if (isLiked) {
+                await feedService.unlikePost(mediaUrl, user.id);
+                setLikes(prev => ({
+                    ...prev,
+                    [mediaUrl]: { count: Math.max(0, prev[mediaUrl].count - 1), liked: false }
+                }));
+            } else {
+                await feedService.likePost(mediaUrl, user.id);
+                setLikes(prev => ({
+                    ...prev,
+                    [mediaUrl]: { count: (prev[mediaUrl]?.count || 0) + 1, liked: true }
+                }));
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Operation failed");
         }
     };
 
     // ─── Comment handler ──────────────────────────────────────────────────────
-    const handleDeleteComment = async (photoUrl: string, commentId: string) => {
-        const { error } = await supabase.from("photo_comments").delete().eq("id", commentId);
-        if (!error) {
+    const handleDeleteComment = async (commentId: string, photoUrl: string) => {
+        if (!confirm("Are you sure you want to delete this comment?")) return;
+
+        try {
+            await feedService.deleteComment(commentId);
             setComments(prev => ({
                 ...prev,
-                [photoUrl]: (prev[photoUrl] || []).filter(c => c.id !== commentId)
+                [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
             }));
             toast.success("Comment deleted");
-        } else {
-            toast.error("Could not delete comment");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to delete comment");
         }
     };
 
-    const handleComment = async (url: string) => {
-        if (!user) { toast.error("Sign in to comment"); return; }
-        const text = (commentText[url] || "").trim();
-        if (!text) return;
-        setPostingComment(url);
+    const handleComment = async (mediaUrl: string) => {
+        const text = commentText[mediaUrl];
+        if (!user || !text?.trim()) return;
 
-        const { data, error } = await supabase
-            .from("photo_comments")
-            .insert({ photo_url: url, user_id: user.id, content: text })
-            .select("id, content, user_id, created_at")
-            .single();
+        setPostingComment(mediaUrl);
+        try {
+            const data = await feedService.addComment(mediaUrl, user.id, text);
 
-        if (!error && data) {
-            // fetch commenter name
-            const { data: commenterProfile } = await supabase
-                .from("profiles")
-                .select("name, photo_url")
-                .eq("user_id", user.id)
-                .single();
+            const newComment = {
+                ...data,
+                commenter: currentUserProfile?.name || "Me",
+                commenter_photo: currentUserProfile?.photo_url || null
+            };
 
             setComments(prev => ({
                 ...prev,
-                [url]: [...(prev[url] || []), {
-                    id: data.id,
-                    content: data.content,
-                    user_id: data.user_id,
-                    commenter: commenterProfile?.name || "You",
-                    commenter_photo: commenterProfile?.photo_url || null,
-                    created_at: data.created_at,
-                }]
+                [mediaUrl]: [...(prev[mediaUrl] || []), newComment]
             }));
-            setCommentText(prev => ({ ...prev, [url]: "" }));
+            setCommentText(prev => ({ ...prev, [mediaUrl]: "" }));
+            toast.success("Comment added!");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to post comment");
+        } finally {
+            setPostingComment(null);
         }
-        setPostingComment(null);
     };
 
     // ─── Render ───────────────────────────────────────────────────────────────
@@ -370,6 +305,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                         onLike={() => handleLike(openPost.url)}
                         onCommentChange={(v) => setCommentText(prev => ({ ...prev, [openPost.url]: v }))}
                         onCommentSubmit={() => handleComment(openPost.url)}
+                        onDeleteComment={(cid) => handleDeleteComment(cid, openPost.url)}
                         onProfileClick={onProfileClick}
                     />
                 )}
@@ -407,6 +343,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                                 onToggleComments={() => setOpenComments(openComments === item.url ? null : item.url)}
                                 onCommentChange={(v) => setCommentText(prev => ({ ...prev, [item.url]: v }))}
                                 onCommentSubmit={() => handleComment(item.url)}
+                                onDeleteComment={(cid) => handleDeleteComment(cid, item.url)}
                                 onProfileClick={onProfileClick}
                                 onOpenPost={() => {
                                     if (isUnlocked) setOpenPost(item);
@@ -481,7 +418,7 @@ interface FeedCardProps {
     commentList: { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string }[];
     commentValue: string;
     commentsOpen: boolean;
-    isPostingComment: string | null;
+    isPostingComment: boolean;
     onLike: () => void;
     onDeleteComment: (commentId: string) => void;
     onToggleComments: () => void;
@@ -758,13 +695,13 @@ function FeedCard({
                                     <div className="flex-1 group/comment">
                                         <div className="flex items-center justify-between mb-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-white">{c.commenter}</span>
+                                                <span className="text-xs font-bold text-white uppercase tracking-wider">{c.commenter}</span>
                                                 {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
                                                     <button
-                                                        onClick={() => handleDeleteComment(item.url, c.id)}
+                                                        onClick={() => onDeleteComment(c.id)}
                                                         className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
                                                     >
-                                                        <Trash2 size={12} />
+                                                        <Trash2 size={10} />
                                                     </button>
                                                 )}
                                             </div>
@@ -814,10 +751,12 @@ interface PostModalProps {
     onLike: () => void;
     onCommentChange: (v: string) => void;
     onCommentSubmit: () => void;
+    onDeleteComment: (commentId: string) => void;
     onProfileClick?: (profile: any) => void;
 }
 
-function PostModal({ item, likeData, commentList, commentValue, isPostingComment, onClose, onLike, onCommentChange, onCommentSubmit, onProfileClick }: PostModalProps) {
+function PostModal({ item, likeData, commentList, commentValue, isPostingComment, onClose, onLike, onCommentChange, onCommentSubmit, onDeleteComment, onProfileClick }: PostModalProps) {
+    const { user, profile: currentUserProfile } = useAuth();
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
@@ -929,9 +868,19 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
                                 : c.commenter?.[0]?.toUpperCase()
                             }
                         </div>
-                        <div className="flex-1 bg-secondary/20 rounded-2xl px-3 py-2">
-                            <span className="font-normal text-xs text-foreground mr-1.5">{c.commenter}</span>
-                            <span className="text-xs text-foreground/80">{c.content}</span>
+                        <div className="flex-1 bg-secondary/20 rounded-2xl px-3 py-2 group/comment relative">
+                            <div className="flex items-center justify-between">
+                                <span className="font-normal text-xs text-foreground mr-1.5">{c.commenter}</span>
+                                {(user?.id === (c as any).user_id || currentUserProfile?.role === 'Admin') && (
+                                    <button
+                                        onClick={() => onDeleteComment(c.id)}
+                                        className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
+                                    >
+                                        <Trash2 size={10} />
+                                    </button>
+                                )}
+                            </div>
+                            <span className="text-xs text-foreground/80 break-words">{c.content}</span>
                             <div className="text-[0.6rem] text-muted-foreground/50 mt-1">{timeAgo(c.created_at)}</div>
                         </div>
                     </div>

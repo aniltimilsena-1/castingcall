@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+import { profileService, Profile } from "@/services/profileService";
+import { paymentService } from "@/services/paymentService";
+import { messageService } from "@/services/messageService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -9,13 +12,7 @@ import { PhotoViewer } from "./SearchPage";
 import { Badge } from "@/components/ui/badge";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 
-type Profile = Tables<"profiles"> & {
-    mood_tags?: string[];
-    style_tags?: string[];
-    personality_traits?: string[];
-    looks_like?: string[];
-    trending_score?: number;
-};
+// Profile type imported from profileService
 
 interface ProfileDetailDialogProps {
     profile: Profile | null;
@@ -83,21 +80,14 @@ export default function ProfileDetailDialog({
         detectLocation();
     }, []);
 
-    // Track Profile View for Analytics
     useEffect(() => {
         if (open && profile?.id) {
-            const trackView = async () => {
-                try {
-                    await supabase.from("profile_views" as any).insert({
-                        profile_id: profile.id,
-                        viewer_id: user?.id || null,
-                    } as any);
-                } catch (err) {
-                    console.error("Failed to track view:", err);
-                }
-            };
-            trackView();
+            profileService.trackProfileView(profile.id, user?.id);
+        }
+    }, [open, profile?.id, user?.id]);
 
+    useEffect(() => {
+        if (open && profile?.id) {
             if (user && (currentUserProfile?.role === "Producer" || currentUserProfile?.role === "Director" || currentUserProfile?.role === "Casting Director" || currentUserProfile?.role === "Admin")) {
                 const fetchProjects = async () => {
                     setLoadingProjects(true);
@@ -113,36 +103,29 @@ export default function ProfileDetailDialog({
                 };
                 fetchProjects();
             }
+        }
+    }, [open, profile?.id, user, currentUserProfile?.role]);
 
-            // Fetch Subscriptions & Products
-            const fetchMonetization = async () => {
+    useEffect(() => {
+        if (open && profile?.user_id) {
+            const loadMonetization = async () => {
                 setLoadingMonetization(true);
                 try {
                     if (user) {
-                        const { data: sub } = await supabase
-                            .from("fan_subscriptions" as any)
-                            .select("id")
-                            .eq("subscriber_id", user.id)
-                            .eq("talent_id", profile.user_id)
-                            .eq("status", "active")
-                            .maybeSingle();
-                        setIsSubscribed(!!sub);
+                        const subbed = await paymentService.verifySubscription(user.id, profile.user_id);
+                        setIsSubscribed(subbed);
                     }
-
-                    const { data: products } = await supabase
-                        .from("digital_products" as any)
-                        .select("*")
-                        .eq("seller_id", profile.user_id);
-                    setDigitalProducts(products || []);
+                    const products = await profileService.getDigitalProducts(profile.user_id);
+                    setDigitalProducts(products);
                 } catch (err) {
-                    console.error("Monetization fetch error:", err);
+                    console.error("Monetization load error:", err);
                 } finally {
                     setLoadingMonetization(false);
                 }
             };
-            fetchMonetization();
+            loadMonetization();
         }
-    }, [open, profile?.id, user?.id, currentUserProfile?.role]);
+    }, [open, profile?.user_id, user]);
 
     const handleInvite = async (projectId: string) => {
         if (!user || alreadyAppliedOrInvited.includes(projectId)) return;
@@ -174,27 +157,15 @@ export default function ProfileDetailDialog({
     };
 
     const handleSendMessage = async () => {
-        if (!user) {
-            toast.error("Please log in to send messages");
-            return;
-        }
-        if (!message.trim()) return;
-
+        if (!message.trim() || !user || !profile?.user_id) return;
         setSending(true);
         try {
-            const { error } = await supabase.from("messages").insert({
-                sender_id: user.id,
-                receiver_id: profile.user_id,
-                content: message.trim(),
-            });
-
-            if (error) throw error;
-
+            await messageService.sendMessage(user.id, profile.user_id, message);
             toast.success("Message sent successfully!");
             setMessage("");
             setIsMessaging(false);
-        } catch (err: any) {
-            toast.error(err.message || "Failed to send message");
+        } catch (err) {
+            toast.error("Failed to send message.");
         } finally {
             setSending(false);
         }

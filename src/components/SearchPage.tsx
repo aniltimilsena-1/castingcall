@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { profileService, Profile } from "@/services/profileService";
+import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
@@ -14,14 +16,7 @@ import { Slider } from "@/components/ui/slider";
 import { Sparkles, TrendingUp, Search, SlidersHorizontal, Image as ImageIcon, Minimize2 } from "lucide-react";
 import { useVideo } from "@/contexts/VideoContext";
 
-type Profile = Tables<"profiles"> & {
-  mood_tags?: string[];
-  style_tags?: string[];
-  personality_traits?: string[];
-  looks_like?: string[];
-  trending_score?: number;
-  visual_search_keywords?: string;
-};
+// Profile type is now imported from profileService
 
 interface SearchPageProps {
   query?: string;
@@ -58,75 +53,37 @@ export default function SearchPage({ query, role, onBack, onProfileClick, online
     const search = async () => {
       setLoading(true);
       try {
-        const trimmedQuery = query?.trim() || "";
-        // Detect if the query is a profile URL
-        const profileUrlMatch = trimmedQuery.match(/\/profile\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
-        const uuidFromQuery = profileUrlMatch ? profileUrlMatch[1] : (
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedQuery) ? trimmedQuery : null
-        );
-
-        // If we found a UUID, ensure we are in 'talents' search mode
-        if (uuidFromQuery && searchType !== 'talents') {
-          setSearchType('talents');
-          return; // The change in searchType will re-trigger this effect
-        }
-
         if (looksLikeQuery || visualSearchMode) {
           setIsScanning(true);
           await new Promise(r => setTimeout(r, 800)); // AI analyzing feel
         }
 
         if (searchType === "talents") {
-          let q = supabase.from("profiles").select("*");
-
-          if (isTrending) {
-            q = q.order('trending_score', { ascending: false });
-          } else {
-            q = q.order('plan', { ascending: false });
+          // Check for auto-switch to talents if query is a profile link
+          const trimmedQuery = query?.trim() || "";
+          if (trimmedQuery.match(/\/profile\/|([0-9a-f]{8}-)/i) && searchType !== 'talents') {
+            setSearchType('talents');
+            return;
           }
 
-          if (role) {
-            q = q.eq("role", role);
-          } else if (uuidFromQuery) {
-            // Direct UUID search - bypass other filters
-            q = q.or(`id.eq.${uuidFromQuery},user_id.eq.${uuidFromQuery}`);
-          } else if (query) {
-            q = q.or(`name.ilike.%${query}%,role.ilike.%${query}%,bio.ilike.%${query}%`);
-
-            // Apply standard filters only for keyword search
-            if (selectedMoods.length > 0) {
-              q = q.overlaps('mood_tags', selectedMoods.map(m => m.toLowerCase()));
-            }
-            if (selectedStyles.length > 0) {
-              q = q.overlaps('style_tags', selectedStyles.map(s => s.toLowerCase()));
-            }
-            if (selectedTraits.length > 0) {
-              q = q.overlaps('personality_traits', selectedTraits.map(t => t.toLowerCase()));
-            }
-          }
-
-          if (looksLikeQuery) {
-            q = q.overlaps('looks_like', [looksLikeQuery]);
-          }
-          if (visualSearchMode) {
-            q = q.order('trending_score', { ascending: false });
-          }
-
-          // Hide admins from regular users
-          if (currentUserProfile?.role !== 'Admin') {
-            q = q.neq('role', 'Admin');
-          }
-
-          const { data, error } = await q;
-          if (error) throw error;
-          setResults((data as Profile[]) || []);
+          const data = await profileService.searchProfiles({
+            query,
+            role,
+            isTrending,
+            isAdmin: currentUserProfile?.role === 'Admin',
+            moods: selectedMoods,
+            styles: selectedStyles,
+            traits: selectedTraits,
+            looksLike: looksLikeQuery
+          });
+          setResults(data as Profile[]);
         } else {
+          // projects search still inline for now, or could move to projectService
           let q = supabase.from("projects").select("*").eq("status", "active");
           if (query) {
             q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%,requirements.ilike.%${query}%`);
           }
-          const { data, error } = await q;
-          if (error) throw error;
+          const { data } = await q;
           setProjectResults(data || []);
         }
       } catch (err) {
@@ -148,16 +105,16 @@ export default function SearchPage({ query, role, onBack, onProfileClick, online
     }
 
     const fetchTrending = async () => {
-      let q = supabase.from("profiles").select("*");
-      if (role) {
-        q = q.eq("role", role);
+      try {
+        const data = await profileService.searchProfiles({
+          role,
+          isTrending: true,
+          isAdmin: currentUserProfile?.role === 'Admin'
+        });
+        setTrendingResults(data.slice(0, 6) as Profile[]);
+      } catch (err) {
+        console.error("Trending fetch error:", err);
       }
-      // Hide admins from trending list for regular categories
-      if (currentUserProfile?.role !== 'Admin') {
-        q = q.neq('role', 'Admin');
-      }
-      const { data } = await q.order('trending_score', { ascending: false }).limit(6);
-      setTrendingResults((data as Profile[]) || []);
     };
     fetchTrending();
   }, [query, role, user, searchType, selectedMoods, selectedStyles, selectedTraits, isTrending, looksLikeQuery, visualSearchMode]);
