@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Send, Play, Bookmark, MoreHorizontal, Sparkles, RefreshCw, ArrowLeft, X, Crown, Lock, Unlock, Gift, ShoppingBag, Minimize2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Play, Bookmark, MoreHorizontal, Sparkles, RefreshCw, ArrowLeft, X, Crown, Lock, Unlock, Gift, ShoppingBag, Minimize2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 import { useVideo } from "@/contexts/VideoContext";
@@ -54,13 +54,31 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
     const [subscriptions, setSubscriptions] = useState<Set<string>>(new Set());
     const [purchasedPosts, setPurchasedPosts] = useState<Set<string>>(new Set());
 
-    // ── Payment Modal
     const [paymentModal, setPaymentModal] = useState<{
         open: boolean;
         type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
         amount: number;
         metadata: any;
+        currency?: string;
+        currencySymbol?: string;
     }>({ open: false, type: 'unlock', amount: 0, metadata: {} });
+
+    const [isNepal, setIsNepal] = useState<boolean | null>(null);
+
+    // Detect User Location (Country)
+    useEffect(() => {
+        const detectLocation = async () => {
+            try {
+                const res = await fetch("https://ipapi.co/json/");
+                const data = await res.json();
+                setIsNepal(data.country_code === "NP");
+            } catch (err) {
+                console.error("Location detection failed:", err);
+                setIsNepal(false);
+            }
+        };
+        detectLocation();
+    }, []);
 
     // ─── Load Feed ───────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -240,6 +258,19 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
     };
 
     // ─── Comment handler ──────────────────────────────────────────────────────
+    const handleDeleteComment = async (photoUrl: string, commentId: string) => {
+        const { error } = await supabase.from("photo_comments").delete().eq("id", commentId);
+        if (!error) {
+            setComments(prev => ({
+                ...prev,
+                [photoUrl]: (prev[photoUrl] || []).filter(c => c.id !== commentId)
+            }));
+            toast.success("Comment deleted");
+        } else {
+            toast.error("Could not delete comment");
+        }
+    };
+
     const handleComment = async (url: string) => {
         if (!user) { toast.error("Sign in to comment"); return; }
         const text = (commentText[url] || "").trim();
@@ -386,14 +417,18 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                                         setPaymentModal({
                                             open: true,
                                             type: 'fan_pass',
-                                            amount: 19.99,
+                                            amount: isNepal ? 199 : 1.99,
+                                            currency: isNepal ? 'NPR' : 'USD',
+                                            currencySymbol: isNepal ? 'NPR ' : '$',
                                             metadata: { talent_id: item.owner.id }
                                         });
                                     } else {
                                         setPaymentModal({
                                             open: true,
                                             type: 'unlock',
-                                            amount: item.price || 4.99,
+                                            amount: item.price || (isNepal ? 499 : 4.99),
+                                            currency: isNepal ? 'NPR' : 'USD',
+                                            currencySymbol: isNepal ? 'NPR ' : '$',
                                             metadata: { post_url: item.url, talent_id: item.owner.id }
                                         });
                                     }
@@ -402,7 +437,9 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                                     setPaymentModal({
                                         open: true,
                                         type: 'tip',
-                                        amount: 5.00,
+                                        amount: isNepal ? 100 : 1.00,
+                                        currency: isNepal ? 'NPR' : 'USD',
+                                        currencySymbol: isNepal ? 'NPR ' : '$',
                                         metadata: { talent_id: item.owner.id }
                                     });
                                 }}
@@ -419,6 +456,8 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                 user={user}
                 type={paymentModal.type}
                 amount={paymentModal.amount}
+                currency={paymentModal.currency}
+                currencySymbol={paymentModal.currencySymbol}
                 metadata={paymentModal.metadata}
                 onSuccess={() => {
                     if (paymentModal.type === 'unlock') {
@@ -439,11 +478,12 @@ interface FeedCardProps {
     item: FeedItem;
     isUnlocked: boolean;
     likeData: { count: number; liked: boolean };
-    commentList: { id: string; content: string; commenter: string; commenter_photo: string | null; created_at: string }[];
+    commentList: { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string }[];
     commentValue: string;
     commentsOpen: boolean;
-    isPostingComment: boolean;
+    isPostingComment: string | null;
     onLike: () => void;
+    onDeleteComment: (commentId: string) => void;
     onToggleComments: () => void;
     onCommentChange: (v: string) => void;
     onCommentSubmit: () => void;
@@ -456,9 +496,10 @@ interface FeedCardProps {
 
 function FeedCard({
     item, isUnlocked, likeData, commentList, commentValue, commentsOpen,
-    isPostingComment, onLike, onToggleComments, onCommentChange,
+    isPostingComment, onLike, onDeleteComment, onToggleComments, onCommentChange,
     onCommentSubmit, onProfileClick, onOpenPost, onUnlock, onTip, index
 }: FeedCardProps) {
+    const { user, profile: currentUserProfile } = useAuth();
     const { setPipVideo, setIsPipOpen } = useVideo();
     const [isPlaying, setIsPlaying] = useState(false);
     const [heartAnim, setHeartAnim] = useState(false);
@@ -714,9 +755,19 @@ function FeedCard({
                                     <div className="w-10 h-10 rounded-full bg-secondary border border-white/5 flex-shrink-0 overflow-hidden">
                                         {c.commenter_photo ? <img src={c.commenter_photo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs">{c.commenter[0]}</div>}
                                     </div>
-                                    <div className="flex-1">
+                                    <div className="flex-1 group/comment">
                                         <div className="flex items-center justify-between mb-1">
-                                            <span className="text-xs font-bold text-white">{c.commenter}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-bold text-white">{c.commenter}</span>
+                                                {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
+                                                    <button
+                                                        onClick={() => handleDeleteComment(item.url, c.id)}
+                                                        className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                )}
+                                            </div>
                                             <span className="text-[0.6rem] text-muted-foreground uppercase">{timeAgo(c.created_at)}</span>
                                         </div>
                                         <p className="text-xs text-foreground/80 leading-relaxed">{c.content}</p>

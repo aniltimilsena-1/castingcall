@@ -12,6 +12,8 @@ interface PaymentUpgradeDialogProps {
     type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
     amount: number;
     metadata?: any;
+    currency?: string;
+    currencySymbol?: string;
     onSuccess?: () => void;
 }
 
@@ -22,6 +24,8 @@ export default function PaymentUpgradeDialog({
     type,
     amount,
     metadata,
+    currency = 'USD',
+    currencySymbol = '$',
     onSuccess
 }: PaymentUpgradeDialogProps) {
     const [method, setMethod] = useState<'card' | 'manual' | null>(null);
@@ -37,10 +41,10 @@ export default function PaymentUpgradeDialog({
             const fileExt = file.name.split('.').pop();
             const filePath = `payments/${user.id}/${Math.random()}.${fileExt}`;
 
-            const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+            const { error: uploadError } = await supabase.storage.from('payments').upload(filePath, file);
             if (uploadError) throw uploadError;
 
-            const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+            const { data: { publicUrl } } = supabase.storage.from('payments').getPublicUrl(filePath);
 
             const { error: dbError } = await supabase.from('payment_verifications' as any).insert({
                 user_id: user.id,
@@ -63,10 +67,16 @@ export default function PaymentUpgradeDialog({
     };
 
     const handleStripeSimulate = () => {
-        toast.loading("Connecting to Stripe Secure Gateway...");
+        setUploading(true);
+        const toastId = toast.loading("Connecting to Stripe Secure Gateway...");
+
+        // Calculate USD equivalent if needed for simulation display
+        const usdAmount = currency === 'NPR' ? (amount / 135).toFixed(2) : amount;
+
         setTimeout(() => {
-            toast.dismiss();
-            toast.success("Payment successful! (Simulated)");
+            toast.dismiss(toastId);
+            setUploading(false);
+            toast.success(`Payment of $${usdAmount} successful! (Simulated)`);
             onSuccess?.();
             onOpenChange(false);
         }, 2000);
@@ -104,7 +114,7 @@ export default function PaymentUpgradeDialog({
                         </div>
                         <div>
                             <h2 className="text-xl font-display text-white">{getTitle()}</h2>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider">${amount} USD Contribution</p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider">{currencySymbol}{amount} {currency} Contribution</p>
                         </div>
                     </div>
 
@@ -145,9 +155,10 @@ export default function PaymentUpgradeDialog({
                                 </div>
                                 <button
                                     onClick={handleStripeSimulate}
-                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-normal transition-all shadow-lg shadow-blue-500/20"
+                                    disabled={uploading}
+                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-normal transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
                                 >
-                                    Confirm & Pay ${amount}
+                                    {uploading ? 'Processing Secure Connection...' : `Confirm & Pay $${currency === 'NPR' ? (amount / 135).toFixed(2) : amount} (USD Equivalent)`}
                                 </button>
                                 <button onClick={() => setStep('select')} className="w-full text-xs text-muted-foreground hover:text-white transition-colors">Go Back</button>
                             </motion.div>
@@ -163,8 +174,10 @@ export default function PaymentUpgradeDialog({
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-sm font-normal text-white mb-1">Casting Hub Global QR</p>
-                                        <p className="text-[0.7rem] text-muted-foreground">Scan and pay Rs. {amount * 135} (NPR equivalent)</p>
+                                        <p className="text-xs font-normal text-white mb-1">Casting Hub Global QR</p>
+                                        <p className="text-[0.7rem] text-muted-foreground uppercase tracking-[1px]">
+                                            Scan and pay {currencySymbol}{Math.round(currency === 'USD' ? amount * 135 : amount)} ({currency === 'USD' ? 'NPR' : currency} equivalent)
+                                        </p>
                                     </div>
                                 </div>
 

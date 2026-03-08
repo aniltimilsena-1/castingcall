@@ -118,6 +118,8 @@ export default function PremiumPage() {
                 user={user}
                 type="pro"
                 amount={isNepal ? 499 : 4.99}
+                currency={isNepal ? 'NPR' : 'USD'}
+                currencySymbol={isNepal ? 'NPR ' : '$'}
                 onSuccess={() => {
                     setSuccess(true);
                     refreshProfile();

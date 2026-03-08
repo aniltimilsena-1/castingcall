@@ -14,7 +14,7 @@ type AdminTab = "talents" | "projects" | "feed" | "applications" | "schedules" |
 export default function AdminPage() {
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
-    const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
+    const [allFeedItems, setAllFeedItems] = useState<any[]>([]);
     const [applications, setApplications] = useState<any[]>([]);
     const [schedules, setSchedules] = useState<any[]>([]);
     const [finances, setFinances] = useState<any[]>([]);
@@ -43,7 +43,28 @@ export default function AdminPage() {
 
             if (pRes.data) setProfiles(pRes.data);
             if (prRes.data) setProjects(prRes.data);
-            if (fRes.data) setFeedPosts(fRes.data);
+
+            // Merge photos from all profiles with captions
+            const mergedFeed: any[] = [];
+            const captionsMap = new Map((fRes.data || []).map(f => [f.photo_url, f]));
+
+            (pRes.data || []).forEach(profile => {
+                const photos = (profile as any).photos || [];
+                photos.forEach((url: string) => {
+                    const caption = captionsMap.get(url);
+                    mergedFeed.push({
+                        url,
+                        user_id: profile.user_id,
+                        userName: profile.name,
+                        description: caption?.description || "",
+                        is_premium: caption?.is_premium || false,
+                        price: caption?.price || 0,
+                        created_at: caption?.created_at || profile.created_at
+                    });
+                });
+            });
+            setAllFeedItems(mergedFeed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+
             if (aRes.data) setApplications(aRes.data);
             if (sRes.data) setSchedules(sRes.data);
             if (tRes.data) setFinances(tRes.data);
@@ -137,6 +158,19 @@ export default function AdminPage() {
         await supabase.from("projects").delete().eq("id", id);
         toast.info("Project removed.");
         fetchAllData();
+    };
+
+    const handleOpenScreenshot = async (url: string) => {
+        if (!url) return;
+        // Extract path from public URL if it's there
+        const path = url.split('/payments/').pop() || url;
+        const { data, error } = await supabase.storage.from('payments').createSignedUrl(path, 60);
+        if (error) {
+            toast.error("Could not generate secure link");
+            window.open(url, '_blank'); // fallback
+        } else if (data?.signedUrl) {
+            window.open(data.signedUrl, '_blank');
+        }
     };
 
     const filteredProfiles = profiles.filter(p => p.name?.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -234,23 +268,27 @@ export default function AdminPage() {
                                         </td>
                                     </tr>
                                 ))}
-                                {activeTab === 'feed' && feedPosts.map(f => {
-                                    const prof = profiles.find(p => p.user_id === f.user_id);
+                                {activeTab === 'feed' && allFeedItems.map(f => {
                                     return (
-                                        <tr key={f.photo_url}>
+                                        <tr key={f.url}>
                                             <td className="px-10 py-6 flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded bg-secondary overflow-hidden flex items-center justify-center">
-                                                    {f.photo_url?.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || f.photo_url?.includes('videos%2F') ? (
-                                                        <video src={`${f.photo_url}#t=0.1`} className="w-full h-full object-cover" muted playsInline />
+                                                    {f.url?.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || f.url?.includes('videos%2F') ? (
+                                                        <video src={`${f.url}#t=0.1`} className="w-full h-full object-cover" muted playsInline />
                                                     ) : (
-                                                        <img src={f.photo_url} className="w-full h-full object-cover" />
+                                                        <img src={f.url} className="w-full h-full object-cover" />
                                                     )}
                                                 </div>
-                                                <div><p className="text-white truncate max-w-[200px]">{f.description || 'No description'}</p><p className="text-xs text-muted-foreground">by {prof?.name || 'Unknown'}</p></div>
+                                                <div><p className="text-white truncate max-w-[200px]">{f.description || 'No description'}</p><p className="text-xs text-muted-foreground">by {f.userName || 'Unknown'}</p></div>
                                             </td>
-                                            <td className="px-10 py-6"><span className="text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</span></td>
                                             <td className="px-10 py-6">
-                                                <button onClick={async () => { if (confirm('Delete post?')) { await supabase.from('photo_captions').delete().eq('photo_url', f.photo_url); toast.success('Deleted'); fetchAllData(); } }} className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"><Trash2 size={16} /></button>
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</span>
+                                                    {f.is_premium && <span className="text-[0.5rem] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/30 w-fit">PREMIUM (${f.price})</span>}
+                                                </div>
+                                            </td>
+                                            <td className="px-10 py-6">
+                                                <button onClick={async () => { if (confirm('Delete post?')) { await supabase.from('photo_captions').delete().eq('photo_url', f.url); toast.success('Deleted'); fetchAllData(); } }} className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"><Trash2 size={16} /></button>
                                             </td>
                                         </tr>
                                     );
@@ -300,7 +338,7 @@ export default function AdminPage() {
                                                 <p className="text-white">{prof?.name || 'Unknown'}</p>
                                                 <div className="flex gap-2 mt-1">
                                                     <span className="text-[0.5rem] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-muted-foreground uppercase">{v.payment_type || 'pro'}</span>
-                                                    <a href={v.screenshot_url} target="_blank" className="text-[0.5rem] text-primary underline">Verify Reciept</a>
+                                                    <button onClick={() => handleOpenScreenshot(v.screenshot_url)} className="text-[0.5rem] text-primary underline">Verify Receipt</button>
                                                 </div>
                                             </td>
                                             <td className="px-10 py-6">

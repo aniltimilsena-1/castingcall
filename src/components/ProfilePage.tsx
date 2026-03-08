@@ -137,11 +137,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         role,
         location,
         bio, height,
-        age: age ? parseInt(age) : null,
+        age: age && !isNaN(parseInt(age)) ? parseInt(age) : null,
         gender,
         hair_color: hairColor,
         eye_color: eyeColor,
-        experience_years: experienceYears ? parseInt(experienceYears) : null,
+        experience_years: experienceYears && !isNaN(parseInt(experienceYears)) ? parseInt(experienceYears) : null,
         portfolio_url: portfolioUrl,
         skills,
         mood_tags: moodTags.map(t => t.toLowerCase()),
@@ -620,11 +620,15 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
                       if (uploadError) throw uploadError;
                       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-                      const { error: updateError } = await supabase.from('profiles').update({ photos: [...currentPhotos, publicUrl] } as any).eq('user_id', user.id);
+
+                      const { data: latestProfile } = await supabase.from('profiles').select('photos').eq('user_id', user.id).single();
+                      const latestPhotos = (latestProfile as any)?.photos || [];
+
+                      const { error: updateError } = await supabase.from('profiles').update({ photos: [...latestPhotos, publicUrl] } as any).eq('user_id', user.id);
                       if (updateError) throw updateError;
                       await refreshProfile();
                       toast.dismiss();
-                      toast.success("Photo added!");
+                      toast.success("Portfolio updated!");
                     } catch (err: any) {
                       toast.dismiss();
                       toast.error(err.message || "Failed to upload");

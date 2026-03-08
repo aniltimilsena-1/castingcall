@@ -378,20 +378,18 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 return (
                   <div key={m.id} className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"} group relative`}>
                     {!isMine && (
-                      <div className="absolute left-full top-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                      <div className="flex items-center gap-1 mt-1">
                         <button onClick={() => {
                           if (m.content.includes('http')) {
                             const url = m.content.split(':').slice(1).join(':');
                             window.open(url, '_blank');
                           }
-                        }} className="p-1.5 text-muted-foreground hover:text-primary bg-secondary/50 rounded-lg" title="View Fullsize"><ArrowUpRight size={14} /></button>
-                        <button className="p-1.5 text-muted-foreground hover:text-white bg-secondary/50 rounded-lg"><MoreVertical size={14} /></button>
+                        }} className="p-1 px-2 text-[10px] text-muted-foreground/40 hover:text-white uppercase transition-colors">View Source</button>
                       </div>
                     )}
                     {isMine && (
-                      <div className="absolute right-full top-1 mr-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                        <button className="p-1.5 text-muted-foreground hover:text-white bg-secondary/50 rounded-lg"><MoreVertical size={14} /></button>
-                        <button onClick={() => deleteMessage(m.id)} className="p-1.5 text-muted-foreground hover:text-red-500 bg-secondary/50 rounded-lg" title="Delete"><Trash2 size={14} /></button>
+                      <div className="flex items-center gap-1 mt-1">
+                        <button className="p-1 px-2 text-[10px] text-muted-foreground/40 hover:text-white uppercase transition-colors" onClick={() => deleteMessage(m.id)}>Delete</button>
                       </div>
                     )}
                     <div className={`max-w-[80%] rounded-2xl overflow-hidden ${isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg"}`}>

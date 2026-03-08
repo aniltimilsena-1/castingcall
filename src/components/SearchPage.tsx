@@ -798,7 +798,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
   };
 
   const renderComment = (c: any, isReply = false) => (
-    <div key={c.id} className={`flex gap-3 ${isReply ? 'ml-10 mt-3 border-l-2 border-border pl-4' : 'mt-6'}`}>
+    <div key={c.id} className={`flex gap-3 group ${isReply ? 'ml-10 mt-3 border-l-2 border-border pl-4' : 'mt-6'}`}>
       <div className={`${isReply ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0`}>
         {c.profiles?.photo_url ? (
           <img src={c.profiles.photo_url} className="w-full h-full object-cover" alt="" />
@@ -831,7 +831,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
           </button>
           {!isReply && <button onClick={() => handleReply(c)} className="text-[0.65rem] font-normal text-muted-foreground hover:text-primary">Reply</button>}
 
-          {user && user.id === c.user_id && (
+          {(user && user.id === c.user_id || currentUserProfile?.role === 'Admin') && (
             <div className="flex items-center gap-2 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => { setEditingCommentId(c.id); setEditingContent(c.content); }} className="text-muted-foreground hover:text-primary transition-colors"><Edit2 size={12} /></button>
               <button onClick={() => handleDeleteComment(c.id)} className="text-muted-foreground hover:text-destructive transition-colors"><Trash2 size={12} /></button>
