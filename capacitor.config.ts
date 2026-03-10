@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.userhub.expansion',
-  appName: 'User Hub',
+  appId: 'com.caastingcall.me',
+  appName: 'CaastingCall',
   webDir: 'dist'
 };
 

@@ -1,13 +1,13 @@
 
 -- Seed a fixed admin account
--- Email: admin@castingcall.com
+-- Email: admin@caastingcall.me
 -- Password: AdminPassword123!
 
 DO $$
 DECLARE
   admin_id UUID := gen_random_uuid();
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@castingcall.com') THEN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@caastingcall.me') THEN
     INSERT INTO auth.users (
       id,
       instance_id,
@@ -28,7 +28,7 @@ BEGIN
     VALUES (
       admin_id,
       '00000000-0000-0000-0000-000000000000',
-      'admin@castingcall.com',
+      'admin@caastingcall.me',
       crypt('AdminPassword123!', gen_salt('bf')),
       now(),
       '{"provider":"email","providers":["email"]}',

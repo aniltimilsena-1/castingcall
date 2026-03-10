@@ -283,7 +283,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                 <Sparkles className="w-14 h-14 text-primary/30" />
                 <h2 className="font-display text-3xl text-primary">Nothing here yet</h2>
                 <p className="text-muted-foreground text-sm max-w-xs">
-                    Be the first to share photos and videos on CastingCall! Upload from your profile to appear in the feed.
+                    Be the first to share photos and videos on CaastingCall! Upload from your profile to appear in the feed.
                 </p>
                 <button onClick={handleRefresh} className="mt-4 text-primary bg-primary/10 px-6 py-2 rounded-full text-xs uppercase tracking-widest">Retry Refresh</button>
             </div>

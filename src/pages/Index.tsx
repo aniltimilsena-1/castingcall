@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { profileService } from "@/services/profileService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Home, Sparkles, Search, User } from "lucide-react";
@@ -47,8 +48,12 @@ const Index = () => {
   useEffect(() => {
     if (!user) return;
     const fetchSaved = async () => {
-      const { data } = await supabase.from("saved_talents").select("talent_profile_id").eq("user_id", user.id);
-      setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
+      try {
+        const ids = await profileService.getSavedTalentIds(user.id);
+        setSavedTalentIds(ids);
+      } catch (err) {
+        console.error("Failed to load saved talents");
+      }
     };
     fetchSaved();
 
@@ -99,11 +104,11 @@ const Index = () => {
     const isSaved = savedTalentIds.includes(profileId);
     try {
       if (isSaved) {
-        await supabase.from("saved_talents").delete().eq("user_id", user.id).eq("talent_profile_id", profileId);
+        await profileService.unsaveTalent(user.id, profileId);
         setSavedTalentIds(prev => prev.filter(id => id !== profileId));
         toast.info("Talent removed from saved list");
       } else {
-        await supabase.from("saved_talents").insert({ user_id: user.id, talent_profile_id: profileId });
+        await profileService.saveTalent(user.id, profileId);
         setSavedTalentIds(prev => [...prev, profileId]);
         toast.success("Talent saved successfully!");
       }
@@ -177,17 +182,16 @@ const Index = () => {
       if (selectedProfileForDialog?.id === id) return; // Already loaded via handleProfileClick
 
       const fetchProfile = async () => {
-        // Search by both id and user_id to be safe
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .or(`id.eq.${id},user_id.eq.${id}`)
-          .maybeSingle();
-
-        if (data && !error) {
-          setSelectedProfileForDialog(data);
-          setProfileDialogOpen(true);
-        } else {
+        try {
+          const data = await profileService.getProfileById(id);
+          if (data) {
+            setSelectedProfileForDialog(data);
+            setProfileDialogOpen(true);
+          } else {
+            toast.error("Profile not found");
+            routerNavigate("/");
+          }
+        } catch (err) {
           toast.error("Profile not found");
           routerNavigate("/");
         }
@@ -219,7 +223,7 @@ const Index = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="font-display text-4xl text-primary animate-pulse">CastingCall</div>
+        <div className="font-display text-4xl text-primary animate-pulse">CaastingCall</div>
       </div>
     );
   }

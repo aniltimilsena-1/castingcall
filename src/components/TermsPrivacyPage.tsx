@@ -8,12 +8,12 @@ export default function TermsPrivacyPage() {
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6">
         <h2 className="font-display text-2xl text-foreground mb-4">Terms of Service</h2>
         <div className="text-sm text-muted-foreground space-y-3">
-          <p>Welcome to CastingCall. By using our platform, you agree to these terms.</p>
+          <p>Welcome to CaastingCall. By using our platform, you agree to these terms.</p>
           <p><span className="text-foreground font-normal">1. Account Responsibility.</span> You are responsible for maintaining the confidentiality of your account credentials. You must be at least 18 years old to use this service.</p>
           <p><span className="text-foreground font-normal">2. Acceptable Use.</span> You agree not to misuse the platform, harass other users, or post misleading content. All profiles must represent real individuals.</p>
-          <p><span className="text-foreground font-normal">3. Content Ownership.</span> You retain ownership of content you upload. By posting, you grant CastingCall a non-exclusive license to display your content on the platform.</p>
+          <p><span className="text-foreground font-normal">3. Content Ownership.</span> You retain ownership of content you upload. By posting, you grant CaastingCall a non-exclusive license to display your content on the platform.</p>
           <p><span className="text-foreground font-normal">4. Termination.</span> We reserve the right to suspend or terminate accounts that violate these terms.</p>
-          <p><span className="text-foreground font-normal">5. Limitation of Liability.</span> CastingCall is provided "as is." We are not liable for any damages arising from the use of the platform.</p>
+          <p><span className="text-foreground font-normal">5. Limitation of Liability.</span> CaastingCall is provided "as is." We are not liable for any damages arising from the use of the platform.</p>
         </div>
       </div>
 

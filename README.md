@@ -1,4 +1,4 @@
-# CastingCall
+# CaastingCall
 
 ## Project info
 

@@ -64,16 +64,16 @@ export default function Navbar({ onSearch, onAuthClick, onMenuClick, onLogoClick
   };
 
   return (
-    <nav className="sticky top-0 bg-background z-50 border-b border-border">
+    <nav className="sticky top-0 bg-background/60 backdrop-blur-xl z-50 border-b border-white/5">
       <div className="flex items-center justify-between px-4 md:px-8 h-16">
         <button onClick={onLogoClick} className="flex items-center group">
           <img
             src="/logo.png"
-            alt="CastingCall Logo"
+            alt="CaastingCall Logo"
             className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = '<span class="font-display text-3xl text-primary tracking-wider">CastingCall</span>';
+              e.currentTarget.parentElement!.innerHTML = '<span class="font-display text-3xl text-primary tracking-wider">CaastingCall</span>';
             }}
           />
         </button>

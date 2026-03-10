@@ -123,5 +123,30 @@ export const profileService = {
             .eq("is_active", true);
         if (error) throw error;
         return data || [];
+    },
+
+    async getSavedTalentIds(userId: string) {
+        const { data, error } = await supabase
+            .from("saved_talents")
+            .select("talent_profile_id")
+            .eq("user_id", userId);
+        if (error) throw error;
+        return (data || []).map(s => s.talent_profile_id);
+    },
+
+    async saveTalent(userId: string, talentProfileId: string) {
+        const { error } = await supabase
+            .from("saved_talents")
+            .insert({ user_id: userId, talent_profile_id: talentProfileId });
+        if (error) throw error;
+    },
+
+    async unsaveTalent(userId: string, talentProfileId: string) {
+        const { error } = await supabase
+            .from("saved_talents")
+            .delete()
+            .eq("user_id", userId)
+            .eq("talent_profile_id", talentProfileId);
+        if (error) throw error;
     }
 };

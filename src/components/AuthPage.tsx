@@ -71,7 +71,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
           if (signupPass !== signupConfirmPass) { toast.error("Passwords do not match"); return; }
           if (signupPass.length < 6) { toast.error("Password must be at least 6 characters"); return; }
           await signUp(signupEmail, signupPass, signupName, signupRole);
-          toast.success("Welcome to CastingCall! 🎬");
+          toast.success("Welcome to CaastingCall! 🎬");
           onSuccess();
         }
       }
@@ -96,8 +96,8 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         transition={{ duration: 0.4 }}
       >
         <div className="flex flex-col items-center text-center mb-8">
-          <img src="/logo.png" alt="CastingCall Logo" className="h-20 w-auto mb-4" />
-          <h1 className="font-display text-4xl text-primary tracking-tight">CastingCall</h1>
+          <img src="/logo.png" alt="CaastingCall Logo" className="h-20 w-auto mb-4" />
+          <h1 className="font-display text-4xl text-primary tracking-tight">CaastingCall</h1>
           <p className="text-muted-foreground text-sm mt-2 font-medium">
             Connect with top talent and industry professionals
           </p>
