@@ -3,9 +3,10 @@ import { profileService, Profile } from "@/services/profileService";
 import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Edit2, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, MoreVertical, Download } from "lucide-react";
+import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
@@ -13,7 +14,6 @@ import ProfileDetailDialog from "./ProfileDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Sparkles, TrendingUp, Search, SlidersHorizontal, Image as ImageIcon, Minimize2 } from "lucide-react";
 import { useVideo } from "@/contexts/VideoContext";
 
 // Profile type is now imported from profileService
@@ -22,16 +22,16 @@ interface SearchPageProps {
   query?: string;
   role?: string;
   onBack: () => void;
-  onProfileClick: (profile: Profile) => void;
+  onProfileClick: (profile: Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] }) => void;
   onlineUsers?: Set<string>;
 }
 
 export default function SearchPage({ query, role, onBack, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
   const { user, profile: currentUserProfile } = useAuth();
   const [searchType, setSearchType] = useState<"talents" | "projects">("talents");
-  const [results, setResults] = useState<Profile[]>([]);
-  const [projectResults, setProjectResults] = useState<any[]>([]);
-  const [trendingResults, setTrendingResults] = useState<Profile[]>([]);
+  const [results, setResults] = useState<(Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] })[]>([]);
+  const [projectResults, setProjectResults] = useState<Tables<"projects">[]>([]);
+  const [trendingResults, setTrendingResults] = useState<(Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] })[]>([]);
   const [loading, setLoading] = useState(true);
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
 
@@ -393,8 +393,8 @@ export default function SearchPage({ query, role, onBack, onProfileClick, online
                   <div className="flex items-center gap-3 mb-2">
                     <div className="text-base md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
                       {p.name || "Unknown"}
-                      {(p.plan === "pro" || p.role === "Admin") && <Crown size={14} className="text-amber-500 fill-amber-500/20" />}
-                      {(p as any).is_verified && <CheckCircle2 size={16} className="text-blue-500 fill-blue-500/10" />}
+                      {(p.plan === "pro" || p.role === "Admin") && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
+                      {p.is_verified && <CheckCircle2 size={16} className="text-blue-500 fill-blue-500/10" />}
                     </div>
                   </div>
                   <div className="text-primary font-normal text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>
@@ -406,7 +406,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick, online
                         <Sparkles size={10} /> 98.4% MATCH
                       </span>
                     )}
-                    {p.trending_score && p.trending_score > 80 && (
+                    {p.trending_score !== undefined && p.trending_score > 80 && (
                       <span className="text-[0.6rem] bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-full border border-orange-500/20 font-normal uppercase tracking-widest flex items-center gap-2">
                         <TrendingUp size={10} /> Hot
                       </span>
@@ -460,7 +460,7 @@ export default function SearchPage({ query, role, onBack, onProfileClick, online
   );
 }
 
-function ProjectCard({ project }: { project: any }) {
+function ProjectCard({ project }: { project: Tables<"projects"> }) {
   const { user } = useAuth();
   const [applied, setApplied] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -608,8 +608,8 @@ function ProjectCard({ project }: { project: any }) {
 export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwnerId }: {
   url: string | null;
   onClose: () => void;
-  user: any;
-  currentUserProfile: any;
+  user: User | null;
+  currentUserProfile: Profile | null;
   photoOwnerId?: string;
 }) {
   const { setPipVideo, setIsPipOpen } = useVideo();

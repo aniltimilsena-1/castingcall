@@ -88,8 +88,14 @@ export type Database = {
           portfolio_url: string | null
           skills: string[] | null
           photos: string[] | null
-          updated_at: string
           user_id: string
+          mood_tags?: string[] | null
+          style_tags?: string[] | null
+          personality_traits?: string[] | null
+          looks_like?: string[] | null
+          trending_score?: number | null
+          visual_search_keywords?: string | null
+          is_verified?: boolean | null
         }
         Insert: {
           bio?: string | null
@@ -110,8 +116,14 @@ export type Database = {
           portfolio_url?: string | null
           skills?: string[] | null
           photos?: string[] | null
-          updated_at?: string
           user_id: string
+          mood_tags?: string[] | null
+          style_tags?: string[] | null
+          personality_traits?: string[] | null
+          looks_like?: string[] | null
+          trending_score?: number | null
+          visual_search_keywords?: string | null
+          is_verified?: boolean | null
         }
         Update: {
           bio?: string | null
@@ -132,8 +144,14 @@ export type Database = {
           portfolio_url?: string | null
           skills?: string[] | null
           photos?: string[] | null
-          updated_at?: string
           user_id?: string
+          mood_tags?: string[] | null
+          style_tags?: string[] | null
+          personality_traits?: string[] | null
+          looks_like?: string[] | null
+          trending_score?: number | null
+          visual_search_keywords?: string | null
+          is_verified?: boolean | null
         }
         Relationships: []
       }
@@ -146,6 +164,11 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          thumbnail_url: string | null
+          requirements: string | null
+          role_category: string | null
+          location: string | null
+          salary_range: string | null
         }
         Insert: {
           created_at?: string
@@ -155,6 +178,11 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id: string
+          thumbnail_url?: string | null
+          requirements?: string | null
+          role_category?: string | null
+          location?: string | null
+          salary_range?: string | null
         }
         Update: {
           created_at?: string
@@ -164,6 +192,11 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+          thumbnail_url?: string | null
+          requirements?: string | null
+          role_category?: string | null
+          location?: string | null
+          salary_range?: string | null
         }
         Relationships: []
       }
@@ -358,6 +391,265 @@ export type Database = {
           amount_paid?: number
           currency?: string | null
           created_at?: string
+        }
+        Relationships: []
+      }
+      applications: {
+        Row: {
+          id: string
+          project_id: string
+          applicant_id: string
+          status: string | null
+          video_url: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          applicant_id: string
+          status?: string | null
+          video_url?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          applicant_id?: string
+          status?: string | null
+          video_url?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audition_slots: {
+        Row: {
+          id: string
+          project_id: string
+          start_time: string
+          status: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          start_time: string
+          status?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          start_time?: string
+          status?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audition_slots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photo_purchases: {
+        Row: {
+          id: string
+          buyer_id: string
+          photo_url: string
+          amount_paid: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          buyer_id: string
+          photo_url: string
+          amount_paid: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          buyer_id?: string
+          photo_url?: string
+          amount_paid?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      photo_comment_likes: {
+        Row: {
+          id: string
+          comment_id: string
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          comment_id: string
+          user_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          comment_id?: string
+          user_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      payment_verifications: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          screenshot_url: string
+          status: string | null
+          payment_type: string | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          screenshot_url: string
+          status?: string | null
+          payment_type?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          screenshot_url?: string
+          status?: string | null
+          payment_type?: string | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          currency: string | null
+          payment_type: string | null
+          payment_method: string | null
+          metadata: Json | null
+          status: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          currency?: string | null
+          payment_type?: string | null
+          payment_method?: string | null
+          metadata?: Json | null
+          status?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          currency?: string | null
+          payment_type?: string | null
+          payment_method?: string | null
+          metadata?: Json | null
+          status?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      portfolio_interactions: {
+        Row: {
+          id: string
+          user_id: string
+          interactor_id: string | null
+          item_url: string
+          item_type: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          interactor_id?: string | null
+          item_url: string
+          item_type: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          interactor_id?: string | null
+          item_url?: string
+          item_type?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      talent_growth_data: {
+        Row: {
+          id: string
+          user_id: string
+          type: string
+          content: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: string
+          content: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: string
+          content?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
+      profile_views: {
+        Row: {
+          id: string
+          viewer_id: string | null
+          profile_id: string
+          viewed_at: string
+          viewer_ip: string | null
+        }
+        Insert: {
+          id?: string
+          viewer_id?: string | null
+          profile_id: string
+          viewed_at?: string
+          viewer_ip?: string | null
+        }
+        Update: {
+          id?: string
+          viewer_id?: string | null
+          profile_id?: string
+          viewed_at?: string
+          viewer_ip?: string | null
         }
         Relationships: []
       }

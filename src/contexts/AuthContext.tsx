@@ -66,24 +66,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Real-time listener for profile changes (e.g., PRO upgrade)
-    let profileSubscription: any = null;
+    let profileSubscription: { unsubscribe: () => void } | null = null;
     if (user) {
-      profileSubscription = supabase
+      const channel = supabase
         .channel(`profile-${user.id}`)
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` },
           (payload) => {
-            setProfile(payload.new as Profile);
+            const newProfile = payload.new as Profile;
+            const oldProfile = payload.old as Profile;
+
+            setProfile(newProfile);
             // Only show toast if it's a meaningful change (like plan)
-            if (payload.old && (payload.old as any).plan !== (payload.new as any).plan) {
+            if (oldProfile && oldProfile.plan !== newProfile.plan) {
               toast.success("Account status updated!");
             }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            profileSubscription = { unsubscribe: () => { supabase.removeChannel(channel); } };
+          }
+        });
     }
 
     return () => {
-      if (profileSubscription) supabase.removeChannel(profileSubscription);
+      if (profileSubscription) profileSubscription.unsubscribe();
     };
   }, [user]);
 

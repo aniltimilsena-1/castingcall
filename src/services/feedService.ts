@@ -17,9 +17,9 @@ export const feedService = {
 
     async getVideoMap() {
         try {
-            const { data: videoProfiles } = await (supabase
+            const { data: videoProfiles } = await supabase
                 .from("profiles")
-                .select("user_id, videos") as any);
+                .select("user_id, videos");
 
             const videoMap: Record<string, string[]> = {};
             (videoProfiles || []).forEach((p: any) => {

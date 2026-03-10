@@ -5,7 +5,7 @@ import { profileService, Profile } from "@/services/profileService";
 import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Send, Play, Bookmark, MoreHorizontal, Sparkles, RefreshCw, ArrowLeft, X, Crown, Lock, Unlock, Gift, ShoppingBag, Minimize2, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Sparkles, RefreshCw, ArrowLeft, X, Crown, Lock, Unlock, Gift, Minimize2, Trash2, Play } from "lucide-react";
 import { toast } from "sonner";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 import { useVideo } from "@/contexts/VideoContext";
@@ -61,7 +61,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
         open: boolean;
         type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
         amount: number;
-        metadata: any;
+        metadata: Record<string, any>;
         currency?: string;
         currencySymbol?: string;
     }>({ open: false, type: 'unlock', amount: 0, metadata: {} });
@@ -102,17 +102,17 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                     const owner = {
                         id: p.user_id,
                         name: p.name || "Unknown",
-                        photo_url: p.photo_url,
+                        photo_url: p.photo_url || null,
                         role: p.role,
                         plan: p.plan
                     };
                     (p.photos || []).forEach((url: string) => {
                         const meta = captionMap[url] || { description: "", isPremium: false, price: 0 };
-                        items.push({ id: `${p.user_id}-${url}`, type: "photo", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at });
+                        items.push({ id: `${p.user_id}-${url}`, type: "photo", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at || new Date().toISOString() });
                     });
                     (videoMap[p.user_id] || []).forEach((url: string) => {
                         const meta = captionMap[url] || { description: "", isPremium: false, price: 0 };
-                        items.push({ id: `${p.user_id}-${url}`, type: "video", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at });
+                        items.push({ id: `${p.user_id}-${url}`, type: "video", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at || new Date().toISOString() });
                     });
                 });
 
@@ -222,6 +222,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
         setPostingComment(mediaUrl);
         try {
             const data = await feedService.addComment(mediaUrl, user.id, text);
+            if (!data) throw new Error("Could not add comment");
 
             const newComment = {
                 ...data,

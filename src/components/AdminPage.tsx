@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { adminService } from "@/services/adminService";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
-import { motion, AnimatePresence } from "framer-motion";
-import { Users, Shield, Activity, Search, Star, CheckCircle2, MoreVertical, Ban, UserCheck, ArrowUpRight, TrendingUp, Briefcase, FileText, Layout, Trash2, ExternalLink, MessageCircle, Edit, Calendar, DollarSign, Clock, Link as LinkIcon, Globe, Crown, X } from "lucide-react";
+import { Users, Shield, Search, DollarSign, Trash2, Globe, Crown, X, MapPin } from "lucide-react";
 import { toast } from "sonner";
 
 type Profile = Tables<"profiles">;
@@ -12,22 +11,40 @@ type FeedPost = Tables<"photo_captions">;
 
 type AdminTab = "talents" | "projects" | "feed" | "applications" | "schedules" | "finances" | "verifications";
 
+interface AdminFeedItem {
+    url: string;
+    user_id: string;
+    userName: string;
+    description: string;
+    is_premium: boolean;
+    price: number;
+    created_at: string;
+}
+
+interface AdminApplication extends Tables<"applications"> {
+    projects: { title: string } | null;
+}
+
+interface AdminSchedule extends Tables<"audition_slots"> {
+    projects: { title: string } | null;
+}
+
+interface AdminFinance extends Tables<"transactions"> { }
+
+interface AdminVerification extends Tables<"payment_verifications"> { }
+
 export default function AdminPage() {
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
-    const [allFeedItems, setAllFeedItems] = useState<any[]>([]);
-    const [applications, setApplications] = useState<any[]>([]);
-    const [schedules, setSchedules] = useState<any[]>([]);
-    const [finances, setFinances] = useState<any[]>([]);
-    const [verifications, setVerifications] = useState<any[]>([]);
+    const [allFeedItems, setAllFeedItems] = useState<AdminFeedItem[]>([]);
+    const [applications, setApplications] = useState<AdminApplication[]>([]);
+    const [schedules, setSchedules] = useState<AdminSchedule[]>([]);
+    const [finances, setFinances] = useState<AdminFinance[]>([]);
+    const [verifications, setVerifications] = useState<AdminVerification[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<AdminTab>("talents");
     const [searchTerm, setSearchTerm] = useState("");
-
-    useEffect(() => {
-        fetchAllData();
-    }, []);
 
     const fetchAllData = async () => {
         setLoading(true);
@@ -38,17 +55,17 @@ export default function AdminPage() {
             if (data.projects) setProjects(data.projects);
 
             // Merge photos from all profiles with captions
-            const mergedFeed: any[] = [];
-            const captionsMap = new Map((data.feedItems || []).map(f => [f.photo_url, f]));
+            const mergedFeed: AdminFeedItem[] = [];
+            const captionsMap = new Map((data.feedItems || []).map(f => [f.photo_url, f as FeedPost]));
 
             (data.profiles || []).forEach(profile => {
-                const photos = (profile as any).photos || [];
+                const photos = profile.photos || [];
                 photos.forEach((url: string) => {
                     const caption = captionsMap.get(url);
                     mergedFeed.push({
                         url,
                         user_id: profile.user_id,
-                        userName: profile.name,
+                        userName: profile.name || "Unknown",
                         description: caption?.description || "",
                         is_premium: caption?.is_premium || false,
                         price: caption?.price || 0,
@@ -71,24 +88,26 @@ export default function AdminPage() {
         }
     };
 
-    const handleApprovePayment = async (v: any) => {
+    const handleApprovePayment = async (v: { id: string; user_id: string; amount: number; payment_type: string }) => {
         try {
             await adminService.approvePayment(v);
             toast.success("Payment approved! User updated.");
             fetchAllData();
-        } catch (err: any) {
-            toast.error("Approval failed: " + err.message);
+        } catch (err: unknown) {
+            const error = err as Error;
+            toast.error("Approval failed: " + error.message);
         }
     };
 
-    const handleRejectPayment = async (v: any) => {
+    const handleRejectPayment = async (id: string) => {
         if (!confirm("Reject this payment?")) return;
         try {
-            await adminService.rejectPayment(v);
+            await adminService.rejectPayment(id);
             toast.info("Payment rejected.");
             fetchAllData();
-        } catch (err: any) {
-            toast.error("Rejection failed: " + err.message);
+        } catch (err: unknown) {
+            const error = err as Error;
+            toast.error("Rejection failed: " + error.message);
         }
     };
 
@@ -204,7 +223,7 @@ export default function AdminPage() {
                                             <div className="flex items-center gap-2">
                                                 <button onClick={async () => {
                                                     const newPlan = p.plan === 'pro' ? 'free' : 'pro';
-                                                    await supabase.from('profiles').update({ plan: newPlan } as any).eq('id', p.id);
+                                                    await supabase.from('profiles').update({ plan: newPlan } as never).eq('id', p.id);
                                                     toast.success(`User set to ${newPlan.toUpperCase()}`);
                                                     fetchAllData();
                                                 }} className={`p-2 rounded-lg transition-colors ${p.plan === 'pro' ? 'text-amber-500 hover:bg-amber-500/10' : 'text-muted-foreground hover:bg-white/5'}`} title="Toggle PRO">
@@ -321,7 +340,7 @@ export default function AdminPage() {
     );
 }
 
-function StatsCard({ icon, label, value, trend, color }: any) {
+function StatsCard({ icon, label, value, trend, color: _color }: { icon: React.ReactNode; label: string; value: string; trend: string; color: string }) {
     return (
         <div className="bg-card/30 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden">
             <div className="flex items-center justify-between mb-8">{icon} <span className="text-[0.6rem] text-green-400 tracking-widest">{trend}</span></div>

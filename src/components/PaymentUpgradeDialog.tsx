@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,10 +9,10 @@ import { CreditCard, QrCode, Upload, Check, X, ShieldCheck, Zap, Crown, Shopping
 interface PaymentUpgradeDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    user: any;
+    user: User | null;
     type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
     amount: number;
-    metadata?: any;
+    metadata?: Record<string, any> | null;
     currency?: string;
     currencySymbol?: string;
     onSuccess?: () => void;
@@ -46,7 +47,7 @@ export default function PaymentUpgradeDialog({
 
             const { data: { publicUrl } } = supabase.storage.from('payments').getPublicUrl(filePath);
 
-            const { error: dbError } = await supabase.from('payment_verifications' as any).insert({
+            const { error: dbError } = await supabase.from('payment_verifications').insert({
                 user_id: user.id,
                 amount: amount,
                 screenshot_url: publicUrl,

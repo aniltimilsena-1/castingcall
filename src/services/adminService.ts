@@ -6,10 +6,10 @@ export const adminService = {
             supabase.from("profiles").select("*").order("created_at", { ascending: false }),
             supabase.from("projects").select("*").order("created_at", { ascending: false }),
             supabase.from("photo_captions").select("*").order("created_at", { ascending: false }),
-            supabase.from("applications" as any).select("*, projects:project_id(title)").order("created_at", { ascending: false }),
-            supabase.from("audition_slots" as any).select("*, projects:project_id(title)").order("start_time", { ascending: true }),
-            supabase.from("transactions" as any).select("*").order("created_at", { ascending: false }),
-            supabase.from("payment_verifications" as any).select("*").order("created_at", { ascending: false })
+            supabase.from("applications").select("*, projects:project_id(title)").order("created_at", { ascending: false }),
+            supabase.from("audition_slots").select("*, projects:project_id(title)").order("start_time", { ascending: true }),
+            supabase.from("transactions").select("*").order("created_at", { ascending: false }),
+            supabase.from("payment_verifications").select("*").order("created_at", { ascending: false })
         ]);
 
         return {
@@ -37,13 +37,13 @@ export const adminService = {
                 expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
             });
         } else if (pType === 'product') {
-            await supabase.from("product_purchases" as any).insert({
+            await supabase.from("product_purchases").insert({
                 buyer_id: v.user_id,
                 product_id: meta.product_id,
                 amount_paid: v.amount
             });
         } else if (pType === 'tip') {
-            await supabase.from("tips" as any).insert({
+            await supabase.from("tips").insert({
                 sender_id: v.user_id,
                 receiver_id: meta.talent_id,
                 amount: v.amount,
@@ -51,7 +51,7 @@ export const adminService = {
                 message: "Gift approved by admin"
             });
         } else if (pType === 'unlock') {
-            await supabase.from("photo_purchases" as any).insert({
+            await supabase.from("photo_purchases").insert({
                 buyer_id: v.user_id,
                 photo_url: meta.post_url,
                 amount_paid: v.amount
