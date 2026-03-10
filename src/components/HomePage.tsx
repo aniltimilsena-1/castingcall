@@ -1,4 +1,4 @@
-import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight } from "lucide-react";
+import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight, UserPlus, Sparkles, UserCheck } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { profileService } from "@/services/profileService";
@@ -202,6 +202,85 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         </div>
       </section>
 
+      {/* ── HOW IT WORKS ── */}
+      <section className="py-24 px-6 max-w-7xl mx-auto relative z-30">
+        <div className="bg-gradient-to-b from-white/[0.02] to-transparent border border-white/5 rounded-[4rem] p-12 md:p-20 overflow-hidden relative">
+          {/* Abstract Background Glows */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-20">
+            {/* For Talents Track */}
+            <div className="space-y-12">
+              <div className="space-y-4">
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-amber-500/80">For Talent</span>
+                <h3 className="text-4xl font-display text-white">Shine in the Spotlight</h3>
+                <p className="text-sm text-white/40 font-light leading-relaxed max-w-md">Your gateway to the industry's most prestigious projects. Start your journey with three simple steps.</p>
+              </div>
+
+              <div className="space-y-10">
+                {[
+                  { icon: UserPlus, title: "Create Your ID", desc: "Build a professional portfolio that resonates with top casting directors." },
+                  { icon: Sparkles, title: "Showcase Excellence", desc: "Upload your headshots, reels, and achievements to stand out from the crowd." },
+                  { icon: Star, title: "Get Discovered", desc: "Apply for exclusive roles or let visionary directors find you directly." }
+                ].map((step, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.15 }}
+                    className="flex gap-6 group"
+                  >
+                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-black transition-all duration-500">
+                      <step.icon size={24} strokeWidth={1.5} />
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <h4 className="text-lg font-display text-white group-hover:text-amber-500 transition-colors uppercase tracking-widest">{step.title}</h4>
+                      <p className="text-xs text-white/30 font-light leading-relaxed">{step.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* For Creatives Track */}
+            <div className="space-y-12">
+              <div className="space-y-4">
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-primary/80">For Directors</span>
+                <h3 className="text-4xl font-display text-white">Vision Meets Talent</h3>
+                <p className="text-sm text-white/40 font-light leading-relaxed max-w-md">Cast the perfect ensemble for your next masterpiece. Our network brings the world's best to you.</p>
+              </div>
+
+              <div className="space-y-10">
+                {[
+                  { icon: Search, title: "Discover Masters", desc: "Use precision search filters to find the exact talent your vision requires." },
+                  { icon: UserCheck, title: "Review & Validate", desc: "Explore verified portfolios and high-definition reels in seconds." },
+                  { icon: Briefcase, title: "Cast Your Stars", desc: "Connect directly and secure the talent that will bring your project to life." }
+                ].map((step, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.15 }}
+                    className="flex gap-6 group text-right lg:flex-row-reverse"
+                  >
+                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
+                      <step.icon size={24} strokeWidth={1.5} />
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <h4 className="text-lg font-display text-white group-hover:text-primary transition-colors uppercase tracking-widest">{step.title}</h4>
+                      <p className="text-xs text-white/30 font-light leading-relaxed">{step.desc}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── FEATURED TALENTS ── */}
       {featured.length > 0 && (
         <section className="py-32 px-6 max-w-7xl mx-auto bg-white/[0.01] rounded-[4rem] border border-white/5 relative z-30">
@@ -225,8 +304,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   transition={{ delay: i * 0.1 }}
                   onClick={() => onProfileClick(p)}
                   className={`group relative bg-[#0d0d0f] border rounded-[2rem] p-8 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
-                      ? "border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] hover:border-amber-500/60"
-                      : "border-white/5 hover:border-primary/20"
+                    ? "border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] hover:border-amber-500/60"
+                    : "border-white/5 hover:border-primary/20"
                     }`}
                 >
                   {/* Elite Shimmer Overlay */}
