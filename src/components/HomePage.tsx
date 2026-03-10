@@ -214,44 +214,67 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-            {featured.map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                onClick={() => onProfileClick(p)}
-                className="group relative bg-[#0d0d0f] border border-white/5 rounded-[2rem] p-8 flex flex-col items-center text-center cursor-pointer hover:border-primary/20 transition-all hover:-translate-y-2"
-              >
-                <div className="relative w-28 h-28 rounded-full mb-6 p-1 bg-gradient-to-tr from-white/10 to-transparent group-hover:from-primary/40">
-                  <div className="w-full h-full rounded-full bg-secondary overflow-hidden shadow-2xl relative border-2 border-[#0d0d0f]">
-                    {p.photo_url ? (
-                      <img src={p.photo_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center font-display text-4xl text-white/20">{p.name?.[0]}</div>
-                    )}
+            {featured.map((p, i) => {
+              const isElite = p.plan === 'pro' || p.role === 'Admin';
+              return (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                  onClick={() => onProfileClick(p)}
+                  className={`group relative bg-[#0d0d0f] border rounded-[2rem] p-8 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
+                      ? "border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] hover:border-amber-500/60"
+                      : "border-white/5 hover:border-primary/20"
+                    }`}
+                >
+                  {/* Elite Shimmer Overlay */}
+                  {isElite && (
+                    <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
+                      <motion.div
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+                        className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-amber-500/5 to-transparent skew-x-12"
+                      />
+                    </div>
+                  )}
+
+                  <div className="relative w-28 h-28 rounded-full mb-6 p-1 bg-gradient-to-tr from-white/10 to-transparent group-hover:from-primary/40">
+                    <div className={`w-full h-full rounded-full bg-secondary overflow-hidden shadow-2xl relative border-2 border-[#0d0d0f]`}>
+                      {p.photo_url ? (
+                        <img src={p.photo_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center font-display text-4xl text-white/20">{p.name?.[0]}</div>
+                      )}
+
+                      {/* Elite Pulse for profile photo */}
+                      {isElite && (
+                        <div className="absolute inset-0 border-2 border-amber-500/20 rounded-full animate-pulse" />
+                      )}
+
+                      {onlineUsers.has(p.user_id) && (
+                        <div className="absolute inset-0 border-2 border-primary/40 rounded-full animate-ping" />
+                      )}
+                    </div>
                     {onlineUsers.has(p.user_id) && (
-                      <div className="absolute inset-0 border-2 border-primary/40 rounded-full animate-ping" />
+                      <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-[#0d0d0f] rounded-full z-10" />
                     )}
                   </div>
-                  {onlineUsers.has(p.user_id) && (
-                    <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-[#0d0d0f] rounded-full z-10" />
-                  )}
-                </div>
 
-                <div className="flex items-center gap-2 mb-2">
-                  <h4 className="font-display text-lg text-white group-hover:text-primary transition-colors">{p.name}</h4>
-                  {(p.plan === 'pro' || p.role === 'Admin') && <Crown size={14} className="text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />}
-                  {(p as any).is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
-                </div>
-                <p className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-primary/60 mb-6">{p.role}</p>
-                <p className="text-[0.7rem] text-white/40 line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className={`font-display text-lg group-hover:text-primary transition-colors ${isElite ? "text-amber-500" : "text-white"}`}>{p.name}</h4>
+                    {isElite && <Crown size={14} className="text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />}
+                    {(p as any).is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
+                  </div>
+                  <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-amber-500/80" : "text-primary/60"}`}>{p.role}</p>
+                  <p className="text-[0.7rem] text-white/40 line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
 
-                <div className="w-full h-px bg-white/5 mb-6" />
-                <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-white/20 group-hover:text-white transition-colors">Portofolio</span>
-              </motion.div>
-            ))}
+                  <div className="w-full h-px bg-white/5 mb-6" />
+                  <span className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] transition-colors ${isElite ? "text-amber-500/40 group-hover:text-amber-500" : "text-white/20 group-hover:text-white"}`}>Portfolio</span>
+                </motion.div>
+              );
+            })}
           </div>
         </section>
       )}
