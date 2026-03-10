@@ -21,14 +21,19 @@ import { useVideo } from "@/contexts/VideoContext";
 interface SearchPageProps {
   query?: string;
   role?: string;
+  initialType?: "talents" | "projects";
   onBack: () => void;
   onProfileClick: (profile: Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] }) => void;
   onlineUsers?: Set<string>;
 }
 
-export default function SearchPage({ query, role, onBack, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
+export default function SearchPage({ query, role, initialType = "talents", onBack, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
   const { user, profile: currentUserProfile } = useAuth();
-  const [searchType, setSearchType] = useState<"talents" | "projects">("talents");
+  const [searchType, setSearchType] = useState<"talents" | "projects">(initialType);
+
+  useEffect(() => {
+    setSearchType(initialType);
+  }, [initialType]);
   const [results, setResults] = useState<(Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] })[]>([]);
   const [projectResults, setProjectResults] = useState<Tables<"projects">[]>([]);
   const [trendingResults, setTrendingResults] = useState<(Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] })[]>([]);

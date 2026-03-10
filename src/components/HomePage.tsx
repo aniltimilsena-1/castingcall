@@ -4,11 +4,13 @@ import { useEffect, useState, useRef } from "react";
 import { profileService } from "@/services/profileService";
 import { adminService } from "@/services/adminService";
 import { useAuth } from "@/contexts/AuthContext";
+import { PageName } from "./AppDrawer";
 
 interface HomePageProps {
   onCategoryClick: (role: string) => void;
   onProfileClick: (profile: any) => void;
   onTermsClick: () => void;
+  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects" }) => void;
   onlineUsers?: Set<string>;
 }
 
@@ -21,7 +23,7 @@ const categories = [
   { role: "Casting Director", icon: Users, delay: 0.6 },
 ];
 
-export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick, onlineUsers = new Set() }: HomePageProps) {
+export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick, onNavigate, onlineUsers = new Set() }: HomePageProps) {
   const { profile: currentUserProfile } = useAuth();
   const [featured, setFeatured] = useState<any[]>([]);
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
@@ -93,19 +95,20 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.9] tracking-tighter text-white mb-6"
+            className="font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.9] tracking-tighter text-white mb-6 uppercase"
           >
-            DISCOVER <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-amber-500 italic">LIMITLESS</span> POSSIBILITIES
+            Find <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-amber-500 italic font-normal">Casting</span> Opportunities <br />
+            <span className="text-white/80">for Actors & Creators</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-xl text-white/50 font-body max-w-2xl mx-auto mb-10 leading-relaxed font-light"
+            className="text-lg md:text-xl text-white/70 font-body max-w-2xl mx-auto mb-10 leading-relaxed font-light"
           >
-            The global stage for exceptional performers and visionary creators.
-            Join the most elite community in the entertainment industry.
+            The ultimate bridge between visionary directors and elite performers worldwide.
+            Discover your next masterpiece or landing your dream role today.
           </motion.p>
 
           <motion.div
@@ -115,16 +118,17 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
             <button
-              onClick={() => onCategoryClick("Actor")}
+              onClick={() => onCategoryClick("all")}
               className="group relative px-10 py-4 bg-primary text-black rounded-full font-display text-sm tracking-widest uppercase overflow-hidden transition-all hover:scale-105 active:scale-95"
             >
-              <span className="relative z-10 flex items-center gap-2 font-bold">Start Exploring <ChevronRight size={16} /></span>
+              <span className="relative z-10 flex items-center gap-2 font-bold">Browse Auditions <ChevronRight size={16} /></span>
               <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <button
+              onClick={() => onCategoryClick("post")}
               className="px-10 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-md rounded-full font-display text-sm tracking-widest uppercase transition-all hover:border-white/20"
             >
-              Learn More
+              Post a Casting Call
             </button>
           </motion.div>
         </div>
@@ -215,7 +219,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               <div className="space-y-4">
                 <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-amber-500/80">For Talent</span>
                 <h3 className="text-4xl font-display text-white">Shine in the Spotlight</h3>
-                <p className="text-sm text-white/40 font-light leading-relaxed max-w-md">Your gateway to the industry's most prestigious projects. Start your journey with three simple steps.</p>
+                <p className="text-sm text-white/60 font-light leading-relaxed max-w-md">Your gateway to the industry's most prestigious projects. Start your journey with three simple steps.</p>
               </div>
 
               <div className="space-y-10">
@@ -249,7 +253,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               <div className="space-y-4">
                 <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-primary/80">For Directors</span>
                 <h3 className="text-4xl font-display text-white">Vision Meets Talent</h3>
-                <p className="text-sm text-white/40 font-light leading-relaxed max-w-md">Cast the perfect ensemble for your next masterpiece. Our network brings the world's best to you.</p>
+                <p className="text-sm text-white/60 font-light leading-relaxed max-w-md">Cast the perfect ensemble for your next masterpiece. Our network brings the world's best to you.</p>
               </div>
 
               <div className="space-y-10">
@@ -400,24 +404,81 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         </section>
       )}
 
+      {/* ── MISSION & VISION ── */}
+      <section className="py-32 px-6 max-w-7xl mx-auto relative z-30">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+          <div className="space-y-8">
+            <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold italic">Our Soul</h2>
+            <h3 className="text-5xl font-display text-white italic leading-tight">Empowering Every Story <br /> <span className="text-white/40 font-normal not-italic">to be Told</span></h3>
+            <p className="text-sm text-white/40 leading-relaxed font-light font-body max-w-md">
+              CaastingCall was built with a single vision: to democratize the entertainment industry.
+              Whether you're a child star in the making or a veteran director looking for your next leading man,
+              we provide the tools to connect, showcase, and succeed.
+            </p>
+            <div className="grid grid-cols-2 gap-6 pt-6">
+              <div className="space-y-2">
+                <span className="block text-2xl font-display text-amber-500">Global Reach</span>
+                <span className="text-[0.6rem] text-white/20 uppercase tracking-[0.2em]">Unlimited connections from any corner of the globe.</span>
+              </div>
+              <div className="space-y-2">
+                <span className="block text-2xl font-display text-primary">Trust First</span>
+                <span className="text-[0.6rem] text-white/20 uppercase tracking-[0.2em]">Verified profiles and secure communications for peace of mind.</span>
+              </div>
+            </div>
+          </div>
+          <div className="relative aspect-square md:aspect-video rounded-[3rem] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-amber-500/20 z-10" />
+            <img
+              src="/vision-hero.png"
+              alt="Vision"
+              className="w-full h-full object-cover grayscale transition-transform duration-[2s] group-hover:scale-110 group-hover:grayscale-0"
+              onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80"; }}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ── FOOTER ── */}
-      <footer className="mt-20 border-t border-white/5 py-24 relative z-30">
-        <div className="max-w-7xl mx-auto px-6 text-center space-y-12">
-          <div className="flex justify-center mb-10 opacity-40 hover:opacity-100 transition-opacity">
-            <h2 className="font-display text-3xl tracking-widest text-white uppercase italic">CaastingCall</h2>
+      <footer className="mt-20 border-t border-white/5 py-24 relative z-30 bg-black/40">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
+          <div className="md:col-span-2 space-y-8">
+            <div className="flex justify-center md:justify-start">
+              <h2 className="font-display text-3xl tracking-widest text-white uppercase italic">CaastingCall</h2>
+            </div>
+            <p className="text-[0.65rem] text-white/20 uppercase tracking-[0.3em] font-medium italic max-w-sm mx-auto md:mx-0">
+              The premium network for actors, creators, and visionary storytellers.
+              Bridging the gap between raw talent and the global stage.
+            </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 text-[0.65rem] uppercase tracking-[0.3em] font-bold">
-            <a href="/privacy" onClick={(e) => { e.preventDefault(); onTermsClick(); }} className="text-white/40 hover:text-primary transition-colors">Privacy Policy</a>
-            <a href="/terms" onClick={(e) => { e.preventDefault(); onTermsClick(); }} className="text-white/40 hover:text-primary transition-colors">Terms of Service</a>
-            <a href="#" className="text-white/40 hover:text-primary transition-colors">Instagram</a>
-            <a href="#" className="text-white/40 hover:text-primary transition-colors">Twitter</a>
+          <div className="space-y-6">
+            <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Platform</h4>
+            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-white/40">
+              <button onClick={() => onNavigate("search", { searchType: "projects" })} className="hover:text-primary transition-all text-left">Casting Calls</button>
+              <button onClick={() => onNavigate("search", { searchType: "talents" })} className="hover:text-primary transition-all text-left">Find Talent</button>
+              <button onClick={() => onNavigate("feed")} className="hover:text-primary transition-all text-left">Community Feed</button>
+              <button onClick={() => onNavigate("premium")} className="hover:text-primary transition-all text-left">Upgrade to PRO</button>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <p className="text-[0.6rem] text-white/20 uppercase tracking-[0.3em] font-medium italic">Empowering the world's finest talent since 2026</p>
-            <p className="text-[0.6rem] text-white/10 uppercase tracking-[0.3em]">© 2026 CaastingCall. All Rights Reserved.</p>
+          <div className="space-y-6">
+            <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-amber-500 font-bold">Company</h4>
+            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-white/40">
+              <button onClick={() => onNavigate("help")} className="hover:text-amber-500 transition-all text-left">About Us</button>
+              <button onClick={() => onNavigate("help")} className="hover:text-amber-500 transition-all text-left">Contact Support</button>
+              <button onClick={() => onNavigate("terms")} className="hover:text-amber-500 transition-all text-left">Terms of Service</button>
+              <button onClick={() => onNavigate("terms")} className="hover:text-amber-500 transition-all text-left">Privacy Policy</button>
+            </div>
           </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-8 text-[0.6rem] uppercase tracking-[0.3em] font-bold text-white/20">
+            <a href="#" className="hover:text-white transition-colors">Instagram</a>
+            <a href="#" className="hover:text-white transition-colors">Twitter (X)</a>
+            <a href="#" className="hover:text-white transition-colors">YouTube</a>
+          </div>
+          <p className="text-[0.6rem] text-white/10 uppercase tracking-[0.3em]">© 2026 CaastingCall. All Rights Reserved.</p>
         </div>
       </footer>
     </div>

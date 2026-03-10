@@ -11,7 +11,7 @@ export type PageName =
 interface AppDrawerProps {
   open: boolean;
   onClose: () => void;
-  onNavigate: (page: PageName) => void;
+  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects" }) => void;
 }
 
 export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps) {
@@ -24,8 +24,8 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
     .toUpperCase()
     .slice(0, 2);
 
-  const go = (page: PageName) => {
-    onNavigate(page);
+  const go = (page: PageName, options?: { searchType?: "talents" | "projects" }) => {
+    onNavigate(page, options);
     onClose();
   };
 
@@ -78,19 +78,26 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 
         {/* ── Scrollable Nav Items ── */}
         <div className="flex-1 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
-          <Section label="Discover">
+          <Section label="Explore">
+            <Item onClick={() => go("home")}>Home</Item>
+            <Item onClick={() => go("search", { searchType: "projects" })}>Casting Calls</Item>
+            <Item onClick={() => go("search", { searchType: "talents" })}>Find Actors</Item>
             <Item onClick={() => go("feed")}>Feed</Item>
+          </Section>
+          <Hr />
+          <Section label="Workspace">
+            <Item onClick={() => go("projects")}>Post a Casting</Item>
+            <Item onClick={() => go("projects")}>Manage Applications</Item>
           </Section>
           <Hr />
           <Section label="Account">
             <Item onClick={() => go("profile")}>My Profile</Item>
-            {!isPremium && <Item onClick={() => go("premium")}>Premium</Item>}
-            <Item onClick={() => go("projects")}>My Projects</Item>
+            {!isPremium && <Item onClick={() => go("premium")}>Premium Upgrade</Item>}
             <Item onClick={() => go("notifications")}>Notifications</Item>
             <Item onClick={() => go("messages")}>Messages</Item>
           </Section>
           <Hr />
-          <Section label="General">
+          <Section label="System">
             {profile?.role === "Admin" && (
               <Item onClick={() => go("admin")}>
                 <span className="text-primary font-normal">Admin Panel</span>
@@ -98,7 +105,6 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             )}
             <Item onClick={() => go("settings")}>Settings</Item>
             <Item onClick={() => go("saved")}>Saved Talents</Item>
-            <Item onClick={() => go("analytics")}>Analytics</Item>
           </Section>
           <Hr />
           <Section label="Support">

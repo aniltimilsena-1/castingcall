@@ -129,12 +129,20 @@ const Index = () => {
     routerNavigate("/messages");
   };
 
-  const navigate = (p: PageName) => {
+  const navigate = (p: PageName, options?: { searchType?: "talents" | "projects" }) => {
     if (AUTH_REQUIRED.includes(p) && !user) {
       setPage("auth");
       routerNavigate("/");
       return;
     }
+
+    if (options?.searchType) {
+      setSearchInitialType(options.searchType);
+    } else if (p === 'search') {
+      // Default search type if not specified
+      setSearchInitialType('talents');
+    }
+
     // Tapping Feed tab while already on feed → refresh
     if (p === "feed" && page === "feed") {
       setFeedRefreshKey(k => k + 1);
@@ -200,15 +208,30 @@ const Index = () => {
     }
   }, [id, user, selectedProfileForDialog]);
 
-  const handleSearch = (term: string) => {
+  const [searchInitialType, setSearchInitialType] = useState<"talents" | "projects">("talents");
+
+  const handleSearch = (term: string, type: "talents" | "projects" = "talents") => {
     setSearchQuery(term);
     setSearchRole("");
+    setSearchInitialType(type);
     navigate("search");
   };
 
   const handleCategoryClick = (role: string) => {
+    if (role === 'all') {
+      setSearchRole("");
+      setSearchQuery("");
+      setSearchInitialType("projects");
+      navigate("search");
+      return;
+    }
+    if (role === 'post') {
+      navigate("projects");
+      return;
+    }
     setSearchRole(role);
     setSearchQuery("");
+    setSearchInitialType("talents");
     navigate("search");
   };
 
@@ -238,6 +261,8 @@ const Index = () => {
         onPremiumClick={() => navigate("premium")}
         onNotificationClick={() => navigate("notifications")}
         onMessagesClick={() => navigate("messages")}
+        onNavigate={navigate}
+        activePage={page}
       />
 
       <AppDrawer
@@ -247,10 +272,10 @@ const Index = () => {
       />
 
       <main className={`flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} pb-16 md:pb-0`}>
-        {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onlineUsers={onlineUsers} />}
+        {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
         {page === "auth" && <AuthPage onSuccess={() => setPage("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
-        {page === "search" && <SearchPage query={searchQuery} role={searchRole} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
+        {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} />}
         {page === "projects" && <MyProjectsPage onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
