@@ -46,6 +46,10 @@ export default function AdminPage() {
     const [activeTab, setActiveTab] = useState<AdminTab>("talents");
     const [searchTerm, setSearchTerm] = useState("");
 
+    useEffect(() => {
+        fetchAllData();
+    }, []);
+
     const fetchAllData = async () => {
         setLoading(true);
         try {
@@ -203,39 +207,52 @@ export default function AdminPage() {
                             <thead className="bg-white/5 text-[0.6rem] uppercase tracking-widest text-muted-foreground">
                                 <tr>
                                     <th className="px-10 py-6">Reference</th>
-                                    <th className="px-10 py-6">State / Value</th>
+                                    <th className="px-10 py-6">Contact & Location</th>
+                                    <th className="px-10 py-6">Plan / Status</th>
                                     <th className="px-10 py-6">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {activeTab === 'talents' && filteredProfiles.map(p => (
                                     <tr key={p.id}>
-                                        <td className="px-10 py-6 flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden">
-                                                {p.photo_url ? <img src={p.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{p.name?.[0]}</div>}
+                                        <td className="px-10 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden flex-shrink-0">
+                                                    {p.photo_url ? <img src={p.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary font-bold">{p.name?.[0]?.toUpperCase() || 'U'}</div>}
+                                                </div>
+                                                <div>
+                                                    <p className="text-white font-medium">{p.name || 'Anonymous'}</p>
+                                                    <p className="text-[0.6rem] text-primary uppercase tracking-tighter">{p.role}</p>
+                                                </div>
                                             </div>
-                                            <div><p className="text-white">{p.name}</p><p className="text-[0.6rem] text-muted-foreground uppercase">{p.role}</p></div>
                                         </td>
                                         <td className="px-10 py-6">
-                                            <span className={`px-2 py-1 rounded text-[0.5rem] uppercase tracking-widest ${p.plan === 'pro' ? 'bg-primary text-black' : 'bg-white/5 text-muted-foreground'}`}>{p.plan || 'free'}</span>
+                                            <div className="space-y-1">
+                                                <p className="text-xs text-white/70">{p.email || 'No email'}</p>
+                                                {p.phone && <p className="text-[0.65rem] text-muted-foreground">{p.phone}</p>}
+                                                {p.location && <div className="flex items-center gap-1 text-[0.6rem] text-muted-foreground/60"><MapPin size={10} /> {p.location}</div>}
+                                            </div>
                                         </td>
-                                        <td className="px-10 py-6 border-none">
+                                        <td className="px-10 py-6">
+                                            <span className={`px-2 py-1 rounded text-[0.5rem] uppercase tracking-widest font-bold ${p.plan === 'pro' ? 'bg-primary text-black' : 'bg-white/5 text-muted-foreground'}`}>{p.plan || 'free'}</span>
+                                        </td>
+                                        <td className="px-10 py-6">
                                             <div className="flex items-center gap-2">
                                                 <button onClick={async () => {
                                                     const newPlan = p.plan === 'pro' ? 'free' : 'pro';
                                                     await supabase.from('profiles').update({ plan: newPlan } as never).eq('id', p.id);
                                                     toast.success(`User set to ${newPlan.toUpperCase()}`);
                                                     fetchAllData();
-                                                }} className={`p-2 rounded-lg transition-colors ${p.plan === 'pro' ? 'text-amber-500 hover:bg-amber-500/10' : 'text-muted-foreground hover:bg-white/5'}`} title="Toggle PRO">
+                                                }} className={`p-2 rounded-lg transition-all ${p.plan === 'pro' ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`} title="Toggle PRO Status">
                                                     <Crown size={16} />
                                                 </button>
                                                 <button onClick={async () => {
-                                                    if (confirm('Delete user profile?')) {
+                                                    if (confirm(`Are you sure you want to delete profile for ${p.name}?`)) {
                                                         await supabase.from('profiles').delete().eq('id', p.id);
                                                         toast.success('Profile removed');
                                                         fetchAllData();
                                                     }
-                                                }} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg" title="Delete Permanent">
+                                                }} className="p-2 bg-white/5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all" title="Delete Account">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
