@@ -47,31 +47,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Single source of truth for initialization
+    let initialized = false;
+
+    const finalizeInitialization = () => {
+      if (!initialized) {
+        setLoading(false);
+        initialized = true;
+      }
+    };
+
+    // Safety timeout - ensure loading screen dispels after 8s regardless of network
+    const timeoutId = setTimeout(finalizeInitialization, 8000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchProfile(session.user.id);
+          await fetchProfile(session.user.id).catch(err => console.error("Initial profile fetch error:", err));
         } else {
           setProfile(null);
         }
-        setLoading(false);
+        finalizeInitialization();
       }
     );
 
+    // Initial check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
+      if (!initialized) {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchProfile(session.user.id).finally(finalizeInitialization);
+        } else {
+          finalizeInitialization();
+        }
       }
+    }).catch(err => {
+      console.error("Session initialization error:", err);
+      finalizeInitialization();
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeoutId);
+    };
+  }, [fetchProfile]);
 
   useEffect(() => {
     // Real-time listener for profile changes (e.g., PRO upgrade)
