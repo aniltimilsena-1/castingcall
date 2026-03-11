@@ -11,7 +11,7 @@ export type PageName =
 interface AppDrawerProps {
   open: boolean;
   onClose: () => void;
-  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects" }) => void;
+  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => void;
 }
 
 export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps) {
@@ -24,7 +24,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
     .toUpperCase()
     .slice(0, 2);
 
-  const go = (page: PageName, options?: { searchType?: "talents" | "projects" }) => {
+  const go = (page: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => {
     onNavigate(page, options);
     onClose();
   };
@@ -86,7 +86,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           </Section>
           <Hr />
           <Section label="Workspace">
-            <Item onClick={() => go("projects")}>Post a Casting</Item>
+            <Item onClick={() => go("projects", { openForm: true })}>Post a Casting</Item>
             <Item onClick={() => go("projects")}>Manage Applications</Item>
           </Section>
           <Hr />

@@ -44,6 +44,7 @@ const Index = () => {
   const [feedRefreshKey, setFeedRefreshKey] = useState(0);
   const [activeMessagePartnerId, setActiveMessagePartnerId] = useState<string | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [projectFormInitiallyOpen, setProjectFormInitiallyOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -129,7 +130,7 @@ const Index = () => {
     routerNavigate("/messages");
   };
 
-  const navigate = (p: PageName, options?: { searchType?: "talents" | "projects" }) => {
+  const navigate = (p: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => {
     if (AUTH_REQUIRED.includes(p) && !user) {
       setPage("auth");
       routerNavigate("/auth");
@@ -141,6 +142,12 @@ const Index = () => {
     } else if (p === 'search') {
       // Default search type if not specified
       setSearchInitialType('talents');
+    }
+
+    if (options?.openForm) {
+      setProjectFormInitiallyOpen(true);
+    } else {
+      setProjectFormInitiallyOpen(false);
     }
 
     if (p === "feed" && page === "feed") {
@@ -276,9 +283,9 @@ const Index = () => {
         {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
         {page === "auth" && <AuthPage onSuccess={() => setPage("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
-        {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
+        {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} />}
-        {page === "projects" && <MyProjectsPage onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
+        {page === "projects" && <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
         {page === "messages" && <MessagesPage onNavigate={navigate} initialPartnerId={activeMessagePartnerId} />}
         {page === "settings" && <SettingsPage />}
@@ -287,7 +294,17 @@ const Index = () => {
         {page === "help" && <HelpSupportPage />}
         {page === "terms" && <TermsPrivacyPage />}
         {page === "premium" && <PremiumPage />}
-        {page === "admin" && currentUserProfile?.role === "Admin" && <AdminPage />}
+        {page === "admin" && (
+          currentUserProfile?.role === "Admin" 
+            ? <AdminPage /> 
+            : <div className="min-h-screen flex items-center justify-center text-muted-foreground bg-background">
+                <div className="text-center p-8 bg-card border border-border rounded-3xl max-w-sm">
+                  <h2 className="text-xl font-display mb-2 text-white">Unauthorized</h2>
+                  <p className="text-sm mb-6">You don't have permission to access the Command Center.</p>
+                  <button onClick={() => navigate('home')} className="bg-primary text-black px-6 py-2 rounded-xl text-sm">Return Home</button>
+                </div>
+              </div>
+        )}
       </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}

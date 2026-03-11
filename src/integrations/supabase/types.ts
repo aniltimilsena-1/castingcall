@@ -96,6 +96,7 @@ export type Database = {
           trending_score?: number | null
           visual_search_keywords?: string | null
           is_verified?: boolean | null
+          phone?: string | null
         }
         Insert: {
           bio?: string | null
@@ -124,6 +125,7 @@ export type Database = {
           trending_score?: number | null
           visual_search_keywords?: string | null
           is_verified?: boolean | null
+          phone?: string | null
         }
         Update: {
           bio?: string | null
@@ -152,6 +154,7 @@ export type Database = {
           trending_score?: number | null
           visual_search_keywords?: string | null
           is_verified?: boolean | null
+          phone?: string | null
         }
         Relationships: []
       }
@@ -228,6 +231,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      saved_posts: {
+        Row: {
+          id: string
+          user_id: string
+          post_url: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          post_url: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          post_url?: string
+          created_at?: string
+        }
+        Relationships: []
       }
       photo_likes: {
         Row: {

@@ -8,7 +8,7 @@ import { Plus, Trash2, Edit3, FolderOpen, Layout, Clock, CheckCircle2, X, ImageI
 
 type Project = Tables<"projects">;
 
-export default function MyProjectsPage({ onProfileClick, onMessageClick }: { onProfileClick: (p: any) => void, onMessageClick: (uid: string) => void }) {
+export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMessageClick }: { initialOpenForm?: boolean, onProfileClick: (p: any) => void, onMessageClick: (uid: string) => void }) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +71,11 @@ export default function MyProjectsPage({ onProfileClick, onMessageClick }: { onP
   useEffect(() => {
     fetchProjects();
     fetchMyApplications();
-  }, [user, fetchProjects, fetchMyApplications]);
+    if (initialOpenForm) {
+      resetForm();
+      setShowForm(true);
+    }
+  }, [user, fetchProjects, fetchMyApplications, initialOpenForm]);
 
   const respondToInvitation = async (appId: string, status: 'accepted' | 'rejected' | 'pending') => {
     const { error } = await supabase

@@ -6,7 +6,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical } from "lucide-react";
+import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical, Share2, Flag } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
@@ -14,6 +14,12 @@ import ProfileDetailDialog from "./ProfileDetailDialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useVideo } from "@/contexts/VideoContext";
 
 // Profile type is now imported from profileService
@@ -23,11 +29,12 @@ interface SearchPageProps {
   role?: string;
   initialType?: "talents" | "projects";
   onBack: () => void;
+  onTypeChange?: (type: "talents" | "projects") => void;
   onProfileClick: (profile: Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] }) => void;
   onlineUsers?: Set<string>;
 }
 
-export default function SearchPage({ query, role, initialType = "talents", onBack, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
+export default function SearchPage({ query, role, initialType = "talents", onBack, onTypeChange, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
   const { user, profile: currentUserProfile } = useAuth();
   const [searchType, setSearchType] = useState<"talents" | "projects">(initialType);
 
@@ -163,13 +170,13 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         </button>
         <div className="flex bg-secondary/30 backdrop-blur-xl p-1.5 rounded-2xl border border-white/5 shadow-2xl self-center md:self-auto">
           <button
-            onClick={() => setSearchType("talents")}
+            onClick={() => { setSearchType("talents"); onTypeChange?.("talents"); }}
             className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-black shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-white"}`}
           >
             Talents
           </button>
           <button
-            onClick={() => setSearchType("projects")}
+            onClick={() => { setSearchType("projects"); onTypeChange?.("projects"); }}
             className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-black shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-white"}`}
           >
             Casting Calls
@@ -422,19 +429,42 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   {p.bio && <p className="text-sm text-muted-foreground/50 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
                 </div>
 
-                <div className="flex items-center gap-3 flex-shrink-0 self-end md:self-auto mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={(e) => toggleSave(e, p.id)}
-                    className={`p-2 md:p-3 rounded-xl border transition-all ${savedTalentIds.includes(p.id) ? 'bg-primary/20 border-primary text-primary shadow-xl shadow-primary/10' : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary/50'}`}
-                  >
-                    <Bookmark size={20} fill={savedTalentIds.includes(p.id) ? "currentColor" : "none"} />
-                  </button>
+                <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-auto mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => onProfileClick(p)}
-                    className="bg-primary text-primary-foreground px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-xs font-normal uppercase tracking-[1px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
+                    className="bg-primary text-primary-foreground px-4 md:px-6 py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
                   >
                     View Profile
                   </button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-2.5 rounded-xl border bg-secondary/40 border-border text-muted-foreground hover:border-primary/50 transition-all outline-none">
+                        <MoreVertical size={18} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-card border-border p-1.5 shadow-2xl z-[50]">
+                      <DropdownMenuItem 
+                        onClick={(e) => toggleSave(e, p.id)}
+                        className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-xs ${savedTalentIds.includes(p.id) ? 'text-primary bg-primary/5' : 'text-foreground hover:bg-primary/10'}`}
+                      >
+                        <Bookmark size={16} fill={savedTalentIds.includes(p.id) ? "currentColor" : "none"} />
+                        <span className="font-medium">{savedTalentIds.includes(p.id) ? "Unsave Talent" : "Save Talent"}</span>
+                      </DropdownMenuItem>
+                      
+                      <DropdownMenuItem 
+                        onClick={() => {
+                          const url = `${window.location.origin}/profile/${p.id}`;
+                          navigator.clipboard.writeText(url);
+                          toast.success("Profile link copied!");
+                        }}
+                        className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-primary/10 cursor-pointer text-xs"
+                      >
+                        <Share2 size={16} />
+                        <span className="font-medium">Share Profile</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             ))}
@@ -861,24 +891,40 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
               <div className="text-xs text-primary font-body uppercase tracking-wider">{owner?.role || "Talent"}</div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = url || '';
-                  link.download = `media_${Date.now()}`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  toast.success("Downloading media...");
-                }}
-                className="p-2 text-muted-foreground hover:text-primary transition-colors bg-secondary/30 rounded-lg"
-                title="Download Media"
-              >
-                <Plus size={18} /> {/* Using Plus for "Save" or just direct button */}
-              </button>
-              <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
-                <MoreVertical size={18} />
-              </button>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-2 text-muted-foreground hover:text-primary transition-colors bg-secondary/30 rounded-lg outline-none">
+                    <MoreVertical size={18} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 bg-card border-border p-1.5 shadow-2xl z-[600]">
+                  <DropdownMenuItem 
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-primary/10 cursor-pointer text-xs group"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = url || '';
+                      link.download = `media_${Date.now()}`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      toast.success("Downloading media...");
+                    }}
+                  >
+                    <Plus size={16} className="text-primary" /> 
+                    <span className="font-medium">Save to Device</span>
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem 
+                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-primary/10 cursor-pointer text-xs group text-red-500 hover:text-red-600"
+                    onClick={() => toast.info("Report feature coming soon")}
+                  >
+                    <Flag size={16} /> 
+                    <span className="font-medium">Report Media</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             </div>
           </div>
 

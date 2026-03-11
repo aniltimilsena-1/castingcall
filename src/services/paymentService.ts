@@ -14,9 +14,9 @@ export const paymentService = {
 
     async getPurchasedPosts(userId: string) {
         const { data: purchases } = await supabase
-            .from("purchased_content" as any)
+            .from("photo_purchases" as any)
             .select("photo_url")
-            .eq("user_id", userId);
+            .eq("buyer_id", userId);
         return new Set((purchases || []).map((p: any) => p.photo_url));
     },
 

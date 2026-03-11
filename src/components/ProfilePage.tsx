@@ -107,19 +107,27 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       setVisualSearchKeywords((profile as any).visual_search_keywords || "");
 
       const fetchCaptions = async () => {
-        const { data } = await supabase.from('photo_captions').select('photo_url, description, is_premium, price').eq('user_id', profile.user_id);
-        const caps: Record<string, { description: string; is_premium: boolean; price: number }> = {};
-        data?.forEach(c => caps[c.photo_url] = {
-          description: c.description || "",
-          is_premium: !!c.is_premium,
-          price: c.price || 0
-        });
-        setCaptions(caps);
+        try {
+          const { data } = await supabase.from('photo_captions').select('photo_url, description, is_premium, price').eq('user_id', profile.user_id);
+          const caps: Record<string, { description: string; is_premium: boolean; price: number }> = {};
+          data?.forEach(c => caps[c.photo_url] = {
+            description: c.description || "",
+            is_premium: !!c.is_premium,
+            price: c.price || 0
+          });
+          setCaptions(caps);
+        } catch (err) {
+          console.error("Error fetching captions:", err);
+        }
       };
 
       const fetchProducts = async () => {
-        const { data } = await supabase.from('digital_products' as any).select('*').eq('seller_id', profile.user_id);
-        setDigitalProducts(data || []);
+        try {
+          const { data } = await supabase.from('digital_products' as any).select('*').eq('seller_id', profile.user_id);
+          setDigitalProducts(data || []);
+        } catch (err) {
+          console.error("Error fetching products:", err);
+        }
       };
 
       fetchCaptions();
@@ -127,12 +135,16 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     }
   }, [profile]);
 
+  if (!profile && !user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground animate-pulse">Loading Profile...</div>;
+  if (!profile) return null; // Wait for profile row to load via AuthContext fetchProfile
+
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
     try {
       const updates = {
         name,
+        phone,
         role,
         location,
         bio, height,

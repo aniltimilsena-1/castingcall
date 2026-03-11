@@ -2,8 +2,14 @@ import { useEffect, useState } from "react";
 import { adminService } from "@/services/adminService";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
-import { Users, Shield, Search, DollarSign, Trash2, Globe, Crown, X, MapPin } from "lucide-react";
+import { Users, Shield, Search, DollarSign, Trash2, Globe, Crown, X, MapPin, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Profile = Tables<"profiles">;
 type Project = Tables<"projects">;
@@ -237,25 +243,43 @@ export default function AdminPage() {
                                             <span className={`px-2 py-1 rounded text-[0.5rem] uppercase tracking-widest font-bold ${p.plan === 'pro' ? 'bg-primary text-black' : 'bg-white/5 text-muted-foreground'}`}>{p.plan || 'free'}</span>
                                         </td>
                                         <td className="px-10 py-6">
-                                            <div className="flex items-center gap-2">
-                                                <button onClick={async () => {
-                                                    const newPlan = p.plan === 'pro' ? 'free' : 'pro';
-                                                    await supabase.from('profiles').update({ plan: newPlan } as never).eq('id', p.id);
-                                                    toast.success(`User set to ${newPlan.toUpperCase()}`);
-                                                    fetchAllData();
-                                                }} className={`p-2 rounded-lg transition-all ${p.plan === 'pro' ? 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`} title="Toggle PRO Status">
-                                                    <Crown size={16} />
-                                                </button>
-                                                <button onClick={async () => {
-                                                    if (confirm(`Are you sure you want to delete profile for ${p.name}?`)) {
-                                                        await supabase.from('profiles').delete().eq('id', p.id);
-                                                        toast.success('Profile removed');
-                                                        fetchAllData();
-                                                    }
-                                                }} className="p-2 bg-white/5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all" title="Delete Account">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="p-2 text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-white/5 outline-none">
+                                                        <MoreVertical size={18} />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-52 bg-card border-border p-1.5 shadow-2xl z-[50]">
+                                                    <DropdownMenuItem 
+                                                        onClick={async () => {
+                                                            const newPlan = p.plan === 'pro' ? 'free' : 'pro';
+                                                            await supabase.from('profiles').update({ plan: newPlan } as never).eq('id', p.id);
+                                                            toast.success(`User set to ${newPlan.toUpperCase()}`);
+                                                            fetchAllData();
+                                                        }}
+                                                        className={`flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-xs ${p.plan === 'pro' ? 'text-amber-500 bg-amber-500/5' : 'text-foreground hover:bg-primary/10'}`}
+                                                    >
+                                                        <Crown size={18} />
+                                                        <span className="font-medium">{p.plan === 'pro' ? 'Downgrade to FREE' : 'Upgrade to PRO'}</span>
+                                                    </DropdownMenuItem>
+                                                    
+                                                    <div className="h-px bg-white/5 my-1 mx-2" />
+                                                    
+                                                    <DropdownMenuItem 
+                                                        onClick={async () => {
+                                                            if (confirm(`Are you sure you want to delete profile for ${p.name}?`)) {
+                                                                await supabase.from('profiles').delete().eq('id', p.id);
+                                                                toast.success('Profile removed');
+                                                                fetchAllData();
+                                                            }
+                                                        }}
+                                                        className="flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-xs text-red-500 hover:bg-red-500/10"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                        <span className="font-medium">Delete Account</span>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </td>
                                     </tr>
                                 ))}

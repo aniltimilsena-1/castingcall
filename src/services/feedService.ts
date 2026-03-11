@@ -107,27 +107,44 @@ export const feedService = {
     },
 
     async getSavedPostUrls(userId: string) {
-        const { data, error } = await supabase
-            .from("saved_posts")
-            .select("post_url")
-            .eq("user_id", userId);
-        if (error) throw error;
-        return (data || []).map(s => s.post_url);
+        try {
+            const { data, error } = await supabase
+                .from("saved_posts" as any)
+                .select("post_url")
+                .eq("user_id", userId);
+            if (error) {
+                console.warn("Saved posts table not found or error:", error.message);
+                return [];
+            }
+            return (data || []).map((s: any) => s.post_url);
+        } catch (_) {
+            return [];
+        }
     },
 
     async savePost(userId: string, postUrl: string) {
-        const { error } = await supabase
-            .from("saved_posts")
-            .insert({ user_id: userId, post_url: postUrl });
-        if (error) throw error;
+        try {
+            const { error } = await supabase
+                .from("saved_posts" as any)
+                .insert({ user_id: userId, post_url: postUrl });
+            if (error) throw error;
+        } catch (err: any) {
+            console.error("Save post error:", err);
+            throw err;
+        }
     },
 
     async unsavePost(userId: string, postUrl: string) {
-        const { error } = await supabase
-            .from("saved_posts")
-            .delete()
-            .eq("user_id", userId)
-            .eq("post_url", postUrl);
-        if (error) throw error;
+        try {
+            const { error } = await supabase
+                .from("saved_posts" as any)
+                .delete()
+                .eq("user_id", userId)
+                .eq("post_url", postUrl);
+            if (error) throw error;
+        } catch (err: any) {
+            console.error("Unsave post error:", err);
+            throw err;
+        }
     }
 };

@@ -128,48 +128,53 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                 const shuffled = items.sort(() => Math.random() - 0.4);
                 setFeed(shuffled);
 
-                // Fetch social data (likes/comments)
-                const mediaUrls = shuffled.map(i => i.url);
-                const [likeRows, commentRows] = await Promise.all([
-                    feedService.getLikes(mediaUrls),
-                    feedService.getComments(mediaUrls)
-                ]);
-
-                // Map likes
-                const likeMap: Record<string, { count: number; liked: boolean }> = {};
-                mediaUrls.forEach(url => {
-                    const itemLikes = likeRows.filter((l: any) => l.photo_url === url);
-                    likeMap[url] = {
-                        count: itemLikes.length,
-                        liked: !!(user && itemLikes.find((l: any) => l.user_id === user.id))
-                    };
-                });
-                setLikes(likeMap);
-
-                // Map comments (need unique commenters)
-                const uniqueCommenters = Array.from(new Set(commentRows.map((c: any) => c.user_id)));
-                const commenterProfiles = await feedService.getCommenters(uniqueCommenters);
-
-                const commentMap: Record<string, any[]> = {};
-                mediaUrls.forEach(url => {
-                    commentMap[url] = commentRows
-                        .filter((c: any) => c.photo_url === url)
-                        .map((c: any) => {
-                            const p = commenterProfiles.find((pr: any) => pr.user_id === c.user_id);
-                            return { ...c, commenter: p?.name || "Unknown", commenter_photo: p?.photo_url || null };
-                        });
-                });
-                setComments(commentMap);
-
-                if (user) {
-                    const [subs, purchased, saved] = await Promise.all([
-                        paymentService.getFanSubscriptions(user.id),
-                        paymentService.getPurchasedPosts(user.id),
-                        feedService.getSavedPostUrls(user.id)
+                // Fetch social data (likes/comments) safely
+                try {
+                    const mediaUrls = shuffled.map(i => i.url);
+                    const [likeRows, commentRows] = await Promise.all([
+                        feedService.getLikes(mediaUrls),
+                        feedService.getComments(mediaUrls)
                     ]);
-                    setSubscriptions(new Set(subs));
-                    setPurchasedPosts(purchased);
-                    setSavedPostUrls(new Set(saved));
+    
+                    // Map likes
+                    const likeMap: Record<string, { count: number; liked: boolean }> = {};
+                    mediaUrls.forEach(url => {
+                        const itemLikes = (likeRows || []).filter((l: any) => l.photo_url === url);
+                        likeMap[url] = {
+                            count: itemLikes.length,
+                            liked: !!(user && itemLikes.find((l: any) => l.user_id === user.id))
+                        };
+                    });
+                    setLikes(likeMap);
+    
+                    // Map comments (need unique commenters)
+                    const uniqueCommenters = Array.from(new Set((commentRows || []).map((c: any) => c.user_id)));
+                    const commenterProfiles = await feedService.getCommenters(uniqueCommenters);
+    
+                    const commentMap: Record<string, any[]> = {};
+                    mediaUrls.forEach(url => {
+                        commentMap[url] = (commentRows || [])
+                            .filter((c: any) => c.photo_url === url)
+                            .map((c: any) => {
+                                const p = commenterProfiles.find((pr: any) => pr.user_id === c.user_id);
+                                return { ...c, commenter: p?.name || "Unknown", commenter_photo: p?.photo_url || null };
+                            });
+                    });
+                    setComments(commentMap);
+    
+                    if (user) {
+                        const [subs, purchased, saved] = await Promise.all([
+                            paymentService.getFanSubscriptions(user.id).catch(() => []),
+                            paymentService.getPurchasedPosts(user.id).catch(() => new Set<string>()),
+                            feedService.getSavedPostUrls(user.id).catch(() => [])
+                        ]);
+                        setSubscriptions(new Set(subs));
+                        setPurchasedPosts(purchased);
+                        setSavedPostUrls(new Set(saved));
+                    }
+                } catch (socialErr) {
+                    console.error("Non-critical social data load failure:", socialErr);
+                    // We don't fail the whole feed if likes/comments fail
                 }
             } catch (err) {
                 console.error("Feed load error:", err);
@@ -370,6 +375,9 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                         onCommentSubmit={() => handleComment(openPost.url)}
                         onDeleteComment={(cid) => handleDeleteComment(cid, openPost.url)}
                         onProfileClick={onProfileClick}
+                        onSavePost={() => handleToggleSavePost(openPost.url)}
+                        onSharePost={() => handleSharePost(openPost)}
+                        isSavedPost={savedPostUrls.has(openPost.url)}
                     />
                 )}
             </AnimatePresence>
@@ -608,54 +616,48 @@ function FeedCard({
                     <span className="text-[0.7rem] text-white font-medium drop-shadow-lg">{commentList.length || "0"}</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onTip}>
-                    <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-amber-500">
-                        <Gift size={28} strokeWidth={2} />
-                    </button>
-                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-lg">TIP</span>
-                </div>
-
-                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onSharePost}>
-                    <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white">
-                        <Send size={26} strokeWidth={2} className="rotate-[-10deg]" />
-                    </button>
-                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-lg">Share</span>
-                </div>
-
-                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onSavePost}>
-                    <button className={`w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all ${isSavedPost ? 'text-primary' : 'text-white'}`}>
-                        <Bookmark size={26} strokeWidth={2} fill={isSavedPost ? 'currentColor' : 'none'} />
-                    </button>
-                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-lg">{isSavedPost ? 'Saved' : 'Save'}</span>
-                </div>
-
-                {item.type === 'video' && isUnlocked && (
-                    <button onClick={handlePip} className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all">
-                        <Minimize2 size={24} strokeWidth={2} />
-                    </button>
-                )}
-
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white transition-all outline-none">
+                        <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all outline-none">
                             <MoreVertical size={24} />
                         </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-black/80 backdrop-blur-xl border-white/10 rounded-2xl p-1 text-white shadow-2xl">
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={onSharePost}>
-                            <Share size={14} className="text-muted-foreground" /> Share to...
+                    <DropdownMenuContent align="end" className="w-52 bg-black/95 backdrop-blur-2xl border-white/10 rounded-2xl p-1.5 text-white shadow-2xl z-[300]">
+                        <DropdownMenuItem className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={onTip}>
+                            <Gift size={16} className="text-amber-500" /> Support with Tip
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={() => {
+                        
+                        <DropdownMenuItem className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={onSavePost}>
+                            <Bookmark size={16} className={isSavedPost ? "text-primary fill-primary" : "text-muted-foreground"} /> 
+                            {isSavedPost ? "Remove from Saved" : "Save this Post"}
+                        </DropdownMenuItem>
+
+                        {item.type === 'video' && isUnlocked && (
+                            <DropdownMenuItem className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={handlePip}>
+                                <Minimize2 size={16} className="text-muted-foreground" /> Picture-in-Picture
+                            </DropdownMenuItem>
+                        )}
+
+                        <div className="h-px bg-white/10 my-1 mx-2" />
+
+                        <DropdownMenuItem className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={onSharePost}>
+                            <Share size={16} className="text-muted-foreground" /> Share to...
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={() => {
                             navigator.clipboard.writeText(`${window.location.origin}/profile/${item.owner.id}`);
                             toast.success("Profile link copied!");
                         }}>
-                            <Send size={14} className="text-muted-foreground" /> Copy Profile Link
+                            <Send size={16} className="text-muted-foreground" /> Copy Profile Link
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs">
-                            <EyeOff size={14} className="text-muted-foreground" /> Not Interested
+                        
+                        <div className="h-px bg-white/10 my-1 mx-2" />
+                        
+                        <DropdownMenuItem className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs">
+                            <EyeOff size={16} className="text-muted-foreground" /> Not Interested
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs text-red-400 group">
-                            <Flag size={14} className="text-red-400/50 group-hover:text-red-400" /> Report Content
+                        <DropdownMenuItem className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs text-red-400 group">
+                            <Flag size={16} className="text-red-400/50 group-hover:text-red-400" /> Report Content
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -859,9 +861,16 @@ interface PostModalProps {
     onCommentSubmit: () => void;
     onDeleteComment: (commentId: string) => void;
     onProfileClick?: (profile: any) => void;
+    onSavePost: () => void;
+    onSharePost: () => void;
+    isSavedPost: boolean;
 }
 
-function PostModal({ item, likeData, commentList, commentValue, isPostingComment, onClose, onLike, onCommentChange, onCommentSubmit, onDeleteComment, onProfileClick }: PostModalProps) {
+function PostModal({ 
+    item, likeData, commentList, commentValue, isPostingComment, 
+    onClose, onLike, onCommentChange, onCommentSubmit, onDeleteComment, 
+    onProfileClick, onSavePost, onSharePost, isSavedPost 
+}: PostModalProps) {
     const { user, profile: currentUserProfile } = useAuth();
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -910,14 +919,46 @@ function PostModal({ item, likeData, commentList, commentValue, isPostingComment
                         <div className="text-[0.65rem] text-primary/70">{item.owner.role || "Member"}</div>
                     </div>
                 </button>
-                {/* Like button */}
-                <button
-                    onClick={onLike}
-                    className={`flex items-center gap-1 transition-all ${likeData.liked ? "text-red-500" : "text-muted-foreground hover:text-red-400"}`}
-                >
-                    <Heart size={20} fill={likeData.liked ? "currentColor" : "none"} />
-                    {likeData.count > 0 && <span className="text-sm font-normal">{likeData.count}</span>}
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={onLike}
+                        className={`flex items-center gap-1 p-2 transition-all ${likeData.liked ? "text-red-500" : "text-muted-foreground hover:text-red-400"}`}
+                    >
+                        <Heart size={20} fill={likeData.liked ? "currentColor" : "none"} />
+                        {likeData.count > 0 && <span className="text-sm font-normal">{likeData.count}</span>}
+                    </button>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <button className="p-2 text-muted-foreground hover:text-primary transition-colors outline-none">
+                                <MoreVertical size={20} />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-52 bg-card border-border p-1.5 shadow-2xl z-[600]">
+                            <DropdownMenuItem 
+                                onClick={onSavePost}
+                                className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs"
+                            >
+                                <Bookmark size={16} className={isSavedPost ? "text-primary fill-primary" : "text-muted-foreground"} /> 
+                                {isSavedPost ? "Remove from Saved" : "Save this Post"}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem 
+                                onClick={onSharePost}
+                                className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-white/10 cursor-pointer text-xs"
+                            >
+                                <Share size={16} className="text-muted-foreground" /> Share to...
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem 
+                                className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-500/10 cursor-pointer text-xs text-red-400"
+                                onClick={() => toast.info("Report feature coming soon")}
+                            >
+                                <Flag size={16} /> Report Content
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </div>
 
             {/* ── Media (full width) ── */}

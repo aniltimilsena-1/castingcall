@@ -13,7 +13,7 @@ interface NavbarProps {
   onPremiumClick: () => void;
   onNotificationClick: () => void;
   onMessagesClick: () => void;
-  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects" }) => void;
+  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => void;
   activePage: PageName;
   searchType?: "talents" | "projects";
 }
@@ -101,7 +101,7 @@ export default function Navbar({
           <button onClick={() => onNavigate("search", { searchType: "talents" })} className={navItemClass("search", "talents")}>
             <Users size={14} /> Actors
           </button>
-          <button onClick={() => onNavigate("projects")} className={navItemClass("projects")}>
+          <button onClick={() => onNavigate("projects", { openForm: true })} className={navItemClass("projects")}>
             <PlusCircle size={14} /> Post Casting
           </button>
         </div>

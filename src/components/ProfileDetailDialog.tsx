@@ -6,11 +6,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
+import { Flag, MoreHorizontal } from "lucide-react";
 
 // Profile type imported from profileService
 
@@ -307,44 +314,66 @@ export default function ProfileDetailDialog({
                                                         {onDirectMessage ? "Message Hub" : (isMessaging ? "Cancel Message" : "Send Quick Message")}
                                                     </button>
                                                 )}
-                                                <button
-                                                    onClick={(e) => onToggleSave(e, profile.id)}
-                                                    className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSaved ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
-                                                >
-                                                    <Bookmark size={18} fill={isSaved ? "currentColor" : "none"} />
-                                                    {isSaved ? "Saved to List" : "Save Talent"}
-                                                </button>
+                                                <div className="flex items-center gap-3">
+                                                    {user?.id !== profile.user_id && (
+                                                        <button
+                                                            onClick={handleSubscribe}
+                                                            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 shadow-glow'}`}
+                                                        >
+                                                            {isSubscribed ? <Check size={18} /> : <Crown size={18} />}
+                                                            {isSubscribed ? "Active Fan Pass" : "Get Fan Pass"}
+                                                        </button>
+                                                    )}
 
-                                                {user?.id !== profile.user_id && (
-                                                    <button
-                                                        onClick={handleSubscribe}
-                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 shadow-glow'}`}
-                                                    >
-                                                        {isSubscribed ? <Check size={18} /> : <Crown size={18} />}
-                                                        {isSubscribed ? "Active Fan Pass" : "Get Fan Pass"}
-                                                    </button>
-                                                )}
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <button className="flex items-center justify-center w-12 h-12 rounded-xl bg-secondary border border-border text-white hover:border-primary transition-all outline-none">
+                                                                <MoreVertical size={20} />
+                                                            </button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-56 bg-card border-border p-1.5 shadow-2xl z-[501]">
+                                                            <DropdownMenuItem
+                                                                onClick={(e) => onToggleSave(e, profile.id)}
+                                                                className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-xs ${isSaved ? 'text-primary bg-primary/5' : 'text-foreground hover:bg-primary/10'}`}
+                                                            >
+                                                                <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />
+                                                                <span className="font-medium">{isSaved ? "Saved to List" : "Save Talent"}</span>
+                                                            </DropdownMenuItem>
 
-                                                {user?.id !== profile.user_id && userProjects.length > 0 && (
-                                                    <button
-                                                        onClick={() => setIsInviting(!isInviting)}
-                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isInviting ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary'}`}
-                                                    >
-                                                        <UserPlus size={18} />
-                                                        Invite to Project
-                                                    </button>
-                                                )}
-                                                <button
-                                                    onClick={() => {
-                                                        const url = `${window.location.origin}/profile/${profile.id}`;
-                                                        navigator.clipboard.writeText(url);
-                                                        toast.success("Profile link copied to clipboard!");
-                                                    }}
-                                                    className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border bg-secondary border-border text-white hover:border-primary"
-                                                >
-                                                    <Share2 size={18} />
-                                                    Share Profile
-                                                </button>
+                                                            <DropdownMenuItem
+                                                                onClick={() => {
+                                                                    const url = `${window.location.origin}/profile/${profile.id}`;
+                                                                    navigator.clipboard.writeText(url);
+                                                                    toast.success("Profile link copied!");
+                                                                }}
+                                                                className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-primary/10 cursor-pointer text-xs"
+                                                            >
+                                                                <Share2 size={16} />
+                                                                <span className="font-medium">Share Profile</span>
+                                                            </DropdownMenuItem>
+
+                                                            {user?.id !== profile.user_id && userProjects.length > 0 && (
+                                                                <DropdownMenuItem
+                                                                    onClick={() => setIsInviting(!isInviting)}
+                                                                    className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-xs ${isInviting ? 'text-primary bg-primary/5' : 'text-foreground hover:bg-primary/10'}`}
+                                                                >
+                                                                    <UserPlus size={16} />
+                                                                    <span className="font-medium">Invite to Project</span>
+                                                                </DropdownMenuItem>
+                                                            )}
+
+                                                            <div className="h-px bg-white/5 my-1 mx-2" />
+
+                                                            <DropdownMenuItem
+                                                                className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-red-500/10 cursor-pointer text-xs text-red-400"
+                                                                onClick={() => toast.info("Report feature coming soon")}
+                                                            >
+                                                                <Flag size={16} />
+                                                                <span className="font-medium">Report Talent</span>
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
                                             </div>
 
                                             {isInviting && (

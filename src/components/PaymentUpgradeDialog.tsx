@@ -40,7 +40,7 @@ export default function PaymentUpgradeDialog({
         setUploading(true);
         try {
             const fileExt = file.name.split('.').pop();
-            const filePath = `payments/${user.id}/${Math.random()}.${fileExt}`;
+            const filePath = `${user.id}/${Math.random()}.${fileExt}`;
 
             const { error: uploadError } = await supabase.storage.from('payments').upload(filePath, file);
             if (uploadError) throw uploadError;
