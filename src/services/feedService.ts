@@ -104,5 +104,30 @@ export const feedService = {
             .delete()
             .eq("id", commentId);
         if (error) throw error;
+    },
+
+    async getSavedPostUrls(userId: string) {
+        const { data, error } = await supabase
+            .from("saved_posts")
+            .select("post_url")
+            .eq("user_id", userId);
+        if (error) throw error;
+        return (data || []).map(s => s.post_url);
+    },
+
+    async savePost(userId: string, postUrl: string) {
+        const { error } = await supabase
+            .from("saved_posts")
+            .insert({ user_id: userId, post_url: postUrl });
+        if (error) throw error;
+    },
+
+    async unsavePost(userId: string, postUrl: string) {
+        const { error } = await supabase
+            .from("saved_posts")
+            .delete()
+            .eq("user_id", userId)
+            .eq("post_url", postUrl);
+        if (error) throw error;
     }
 };

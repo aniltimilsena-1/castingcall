@@ -9,6 +9,13 @@ import { Heart, MessageCircle, Send, Bookmark, Sparkles, ArrowLeft, X, Crown, Lo
 import { toast } from "sonner";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 import { useVideo } from "@/contexts/VideoContext";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Share, Flag, UserMinus, EyeOff } from "lucide-react";
 
 interface FeedItem {
     id: string; // unique: profile_id + url
@@ -56,6 +63,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
     // ── Subs & Purchases state
     const [subscriptions, setSubscriptions] = useState<Set<string>>(new Set());
     const [purchasedPosts, setPurchasedPosts] = useState<Set<string>>(new Set());
+    const [savedPostUrls, setSavedPostUrls] = useState<Set<string>>(new Set());
 
     const [paymentModal, setPaymentModal] = useState<{
         open: boolean;
@@ -154,12 +162,14 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                 setComments(commentMap);
 
                 if (user) {
-                    const [subs, purchased] = await Promise.all([
+                    const [subs, purchased, saved] = await Promise.all([
                         paymentService.getFanSubscriptions(user.id),
-                        paymentService.getPurchasedPosts(user.id)
+                        paymentService.getPurchasedPosts(user.id),
+                        feedService.getSavedPostUrls(user.id)
                     ]);
                     setSubscriptions(new Set(subs));
                     setPurchasedPosts(purchased);
+                    setSavedPostUrls(new Set(saved));
                 }
             } catch (err) {
                 console.error("Feed load error:", err);
@@ -240,6 +250,58 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
             toast.error(err.message || "Failed to post comment");
         } finally {
             setPostingComment(null);
+        }
+    };
+
+    // ─── Save Post handler ────────────────────────────────────────────────────
+    const handleToggleSavePost = async (mediaUrl: string) => {
+        if (!user) {
+            toast.error("Please log in to save posts");
+            return;
+        }
+
+        const isSaved = savedPostUrls.has(mediaUrl);
+        try {
+            if (isSaved) {
+                await feedService.unsavePost(user.id, mediaUrl);
+                setSavedPostUrls(prev => {
+                    const next = new Set(prev);
+                    next.delete(mediaUrl);
+                    return next;
+                });
+                toast.info("Post removed from saved");
+            } else {
+                await feedService.savePost(user.id, mediaUrl);
+                setSavedPostUrls(prev => {
+                    const next = new Set(prev);
+                    next.add(mediaUrl);
+                    return next;
+                });
+                toast.success("Post saved successfully!");
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Failed to save post");
+        }
+    };
+
+    // ─── Share Post handler ───────────────────────────────────────────────────
+    const handleSharePost = async (item: FeedItem) => {
+        const shareData = {
+            title: `Check out ${item.owner.name} on CaastingCall`,
+            text: item.caption || `Post by ${item.owner.name}`,
+            url: `${window.location.origin}/profile/${item.owner.id}?post=${encodeURIComponent(item.url)}`,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error("Share failed", err);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(shareData.url);
+            toast.success("Link copied to clipboard!");
         }
     };
 
@@ -362,6 +424,9 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                                         });
                                     }
                                 }}
+                                isSavedPost={savedPostUrls.has(item.url)}
+                                onSavePost={() => handleToggleSavePost(item.url)}
+                                onSharePost={() => handleSharePost(item)}
                                 onTip={() => {
                                     setPaymentModal({
                                         open: true,
@@ -420,13 +485,16 @@ interface FeedCardProps {
     onOpenPost: () => void;
     onUnlock: (type: 'unlock' | 'fan_pass') => void;
     onTip: () => void;
+    onSavePost: () => void;
+    onSharePost: () => void;
+    isSavedPost?: boolean;
     index: number;
 }
 
 function FeedCard({
     item, isUnlocked, likeData, commentList, commentValue, commentsOpen,
     isPostingComment, onLike, onDeleteComment, onToggleComments, onCommentChange,
-    onCommentSubmit, onProfileClick, onOpenPost, onUnlock, onTip, index
+    onCommentSubmit, onProfileClick, onOpenPost, onUnlock, onTip, onSavePost, onSharePost, isSavedPost, index
 }: FeedCardProps) {
     const { user, profile: currentUserProfile } = useAuth();
     const { setPipVideo, setIsPipOpen } = useVideo();
@@ -547,20 +615,18 @@ function FeedCard({
                     <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-lg">TIP</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={() => {
-                    const url = `${window.location.origin}/profile/${item.owner.id}`;
-                    navigator.clipboard.writeText(url);
-                    toast.success("Link copied!");
-                }}>
+                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onSharePost}>
                     <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white">
                         <Send size={26} strokeWidth={2} className="rotate-[-10deg]" />
                     </button>
+                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-lg">Share</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer">
-                    <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white">
-                        <Bookmark size={26} strokeWidth={2} />
+                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onSavePost}>
+                    <button className={`w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all ${isSavedPost ? 'text-primary' : 'text-white'}`}>
+                        <Bookmark size={26} strokeWidth={2} fill={isSavedPost ? 'currentColor' : 'none'} />
                     </button>
+                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-lg">{isSavedPost ? 'Saved' : 'Save'}</span>
                 </div>
 
                 {item.type === 'video' && isUnlocked && (
@@ -569,9 +635,30 @@ function FeedCard({
                     </button>
                 )}
 
-                <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white">
-                    <MoreVertical size={24} />
-                </button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white transition-all outline-none">
+                            <MoreVertical size={24} />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-black/80 backdrop-blur-xl border-white/10 rounded-2xl p-1 text-white shadow-2xl">
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={onSharePost}>
+                            <Share size={14} className="text-muted-foreground" /> Share to...
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs" onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/profile/${item.owner.id}`);
+                            toast.success("Profile link copied!");
+                        }}>
+                            <Send size={14} className="text-muted-foreground" /> Copy Profile Link
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs">
+                            <EyeOff size={14} className="text-muted-foreground" /> Not Interested
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/10 cursor-pointer text-xs text-red-400 group">
+                            <Flag size={14} className="text-red-400/50 group-hover:text-red-400" /> Report Content
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             {/* Overlaid Information (Bottom Left) */}
