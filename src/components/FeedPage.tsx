@@ -5,7 +5,7 @@ import { profileService, Profile } from "@/services/profileService";
 import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Send, Bookmark, Sparkles, RefreshCw, ArrowLeft, X, Crown, Lock, Unlock, Gift, Minimize2, Trash2, Play } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Sparkles, ArrowLeft, X, Crown, Lock, Unlock, Gift, Minimize2, Trash2, Play, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 import { useVideo } from "@/contexts/VideoContext";
@@ -312,15 +312,6 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                 )}
             </AnimatePresence>
 
-            <div className="absolute top-6 right-6 z-50 flex flex-col gap-4">
-                <button
-                    onClick={handleRefresh}
-                    className={`w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:border-primary transition-all shadow-2xl ${refreshing ? 'animate-spin text-primary' : ''}`}
-                    title="Refresh Feed"
-                >
-                    <RefreshCw size={24} />
-                </button>
-            </div>
 
             <div className="h-full overflow-y-scroll snap-y snap-mandatory no-scrollbar scroll-smooth">
                 {feed.map((item, idx) => {
@@ -441,8 +432,24 @@ function FeedCard({
     const { setPipVideo, setIsPipOpen } = useVideo();
     const [isPlaying, setIsPlaying] = useState(false);
     const [heartAnim, setHeartAnim] = useState(false);
+    const [progress, setProgress] = useState(0);
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const updateProgress = () => {
+            if (video.duration) {
+                const p = (video.currentTime / video.duration) * 100;
+                setProgress(p);
+            }
+        };
+
+        video.addEventListener('timeupdate', updateProgress);
+        return () => video.removeEventListener('timeupdate', updateProgress);
+    }, []);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -515,108 +522,119 @@ function FeedCard({
             </div>
 
             {/* Overlaid UI (Actions - Right Side) */}
-            <div className="absolute right-4 bottom-32 flex flex-col gap-6 z-20 items-center">
-                <button
-                    className="flex flex-shrink-0 flex-col items-center gap-1 group"
-                    onClick={() => onProfileClick?.({ user_id: item.owner.id, name: item.owner.name, photo_url: item.owner.photo_url, role: item.owner.role, plan: item.owner.plan })}
-                >
-                    <div className="w-12 h-12 rounded-full border-2 border-primary overflow-hidden bg-secondary">
-                        {item.owner.photo_url ? (
-                            <img src={item.owner.photo_url} className="w-full h-full object-cover" alt="" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center font-display text-primary uppercase">{item.owner.name[0]}</div>
-                        )}
-                    </div>
-                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center -mt-2.5 z-10 border-2 border-black group-hover:scale-110 transition-transform">
-                        <ArrowLeft size={10} className="text-black rotate-[-90deg]" />
-                    </div>
-                </button>
-
-                <div className="flex flex-col items-center gap-1">
+            {/* Overlaid UI (Actions - Right Side) */}
+            <div className="absolute right-4 bottom-24 flex flex-col gap-5 z-20 items-center">
+                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onLike}>
                     <button
-                        onClick={onLike}
-                        className={`w-12 h-12 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center transition-all ${likeData.liked ? "text-red-500 scale-110" : "text-white hover:text-red-400"}`}
+                        className={`w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all ${likeData.liked ? "text-red-500" : "text-white"}`}
                     >
-                        <Heart size={26} fill={likeData.liked ? "currentColor" : "none"} />
+                        <Heart size={28} fill={likeData.liked ? "currentColor" : "none"} strokeWidth={likeData.liked ? 0 : 2} />
                     </button>
-                    <span className="text-[0.65rem] text-white font-medium drop-shadow-md">{likeData.count || ""}</span>
+                    <span className="text-[0.7rem] text-white font-medium drop-shadow-lg">{likeData.count || "0"}</span>
+                </div>
+                
+                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onToggleComments}>
+                    <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white">
+                        <MessageCircle size={28} strokeWidth={2} />
+                    </button>
+                    <span className="text-[0.7rem] text-white font-medium drop-shadow-lg">{commentList.length || "0"}</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1">
-                    <button
-                        onClick={onToggleComments}
-                        className="w-12 h-12 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:text-primary transition-colors"
-                    >
-                        <MessageCircle size={26} fill="none" />
+                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onTip}>
+                    <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-amber-500">
+                        <Gift size={28} strokeWidth={2} />
                     </button>
-                    <span className="text-[0.65rem] text-white font-medium drop-shadow-md">{commentList.length || ""}</span>
+                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-lg">TIP</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1">
-                    <button
-                        onClick={onTip}
-                        className="w-12 h-12 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-amber-500 hover:scale-110 transition-transform"
-                    >
-                        <Gift size={26} />
+                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={() => {
+                    const url = `${window.location.origin}/profile/${item.owner.id}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success("Link copied!");
+                }}>
+                    <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white">
+                        <Send size={26} strokeWidth={2} className="rotate-[-10deg]" />
                     </button>
-                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-md">TIPS</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1">
-                    <button
-                        onClick={() => {
-                            const url = `${window.location.origin}/profile/${item.owner.id}`;
-                            navigator.clipboard.writeText(url);
-                            toast.success("Profile link copied!");
-                        }}
-                        className="w-12 h-12 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white hover:text-primary transition-colors"
-                    >
-                        <Send size={24} className="rotate-[-20deg]" />
+                <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer">
+                    <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white">
+                        <Bookmark size={26} strokeWidth={2} />
                     </button>
-                    <span className="text-[0.6rem] text-white font-medium uppercase tracking-tighter drop-shadow-md">SHARE</span>
                 </div>
 
                 {item.type === 'video' && isUnlocked && (
-                    <button
-                        onClick={handlePip}
-                        className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white transition-colors"
-                    >
-                        <Minimize2 size={20} />
+                    <button onClick={handlePip} className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/80 hover:text-white transition-all">
+                        <Minimize2 size={24} strokeWidth={2} />
                     </button>
                 )}
 
-                <button className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white">
-                    <Bookmark size={20} />
+                <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/60 hover:text-white">
+                    <MoreVertical size={24} />
                 </button>
             </div>
 
             {/* Overlaid Information (Bottom Left) */}
-            <div className="absolute left-4 bottom-16 right-20 z-10 text-white pointer-events-none group">
-                <div className="pointer-events-auto inline-flex items-center gap-2 mb-3">
-                    <span className="font-display text-lg tracking-wide uppercase drop-shadow-lg">{item.owner.name}</span>
-                    {(item.owner.plan === 'pro' || item.owner.role === 'Admin') && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
+            <div className="absolute left-4 bottom-10 right-20 z-10 text-white flex flex-col gap-4 pointer-events-none">
+                <div className="flex items-center gap-3 pointer-events-auto">
+                    <button 
+                        onClick={() => onProfileClick?.({ user_id: item.owner.id, name: item.owner.name, photo_url: item.owner.photo_url, role: item.owner.role, plan: item.owner.plan })}
+                        className="w-10 h-10 rounded-full border border-white/20 overflow-hidden bg-stone-800"
+                    >
+                        {item.owner.photo_url ? (
+                            <img src={item.owner.photo_url} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-primary font-bold">{item.owner.name[0]}</div>
+                        )}
+                    </button>
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm tracking-tight drop-shadow-md">{item.owner.name}</span>
+                            {(item.owner.plan === 'pro' || item.owner.role === 'Admin') && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
+                            <span className="text-white/40 text-xs">·</span>
+                            <button className="text-[0.65rem] font-bold border border-white/30 rounded-md px-2 py-0.5 hover:bg-white/10 transition-colors uppercase tracking-widest">Follow</button>
+                        </div>
+                        <span className="text-[0.6rem] opacity-60 uppercase tracking-widest">{item.owner.role}</span>
+                    </div>
                 </div>
-                <p className="text-sm line-clamp-2 leading-relaxed opacity-90 drop-shadow-md mb-3 pointer-events-auto">
-                    {item.caption}
-                </p>
-                <div className="flex items-center gap-3 opacity-70 text-[0.65rem] uppercase tracking-widest pointer-events-auto mt-2">
-                    <span className="flex items-center gap-1"><Sparkles size={10} /> {item.owner.role}</span>
-                    <span>·</span>
-                    <span>{timeAgo(item.createdAt)}</span>
+
+                <div className="pointer-events-auto max-w-[90%]">
+                    <p className="text-sm leading-relaxed drop-shadow-md line-clamp-2">
+                        {item.caption}
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-2.5 pointer-events-auto opacity-70">
+                    <Sparkles size={12} className="text-primary" />
+                    <div className="text-[0.6rem] uppercase tracking-[2px] overflow-hidden whitespace-nowrap">
+                        <motion.div animate={{ x: [0, -100, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }}>
+                            Original Audio · {item.owner.name}
+                        </motion.div>
+                    </div>
                 </div>
             </div>
 
+            {/* Video Progress Bar */}
+            {item.type === 'video' && isUnlocked && (
+                <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-white/20 z-50 overflow-hidden">
+                    <motion.div 
+                        className="h-full bg-white/60" 
+                        style={{ width: `${progress}%` }}
+                    />
+                </div>
+            )}
+
             {/* Music Disc Aesthetic */}
-            <div className="absolute right-4 bottom-14 z-20">
+            <div className="absolute right-4 bottom-10 z-20">
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="w-10 h-10 rounded-full bg-gradient-to-tr from-stone-800 to-stone-500 border-4 border-stone-900 shadow-2xl flex items-center justify-center overflow-hidden"
+                    className="w-8 h-8 rounded-full bg-gradient-to-tr from-stone-900 to-stone-700 border-[3px] border-stone-800/80 shadow-2xl flex items-center justify-center overflow-hidden"
                 >
                     {item.owner.photo_url ? (
-                        <img src={item.owner.photo_url} className="w-full h-full object-cover opacity-50 contrast-125" alt="" />
+                        <img src={item.owner.photo_url} className="w-full h-full object-cover opacity-60 contrast-125" alt="" />
                     ) : (
-                        <div className="w-4 h-4 rounded-full bg-stone-900" />
+                        <div className="w-3 h-3 rounded-full bg-stone-950" />
                     )}
                 </motion.div>
             </div>
