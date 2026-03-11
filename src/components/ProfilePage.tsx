@@ -133,7 +133,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     try {
       const updates = {
         name,
-        phone,
         role,
         location,
         bio, height,

@@ -139,9 +139,8 @@ export default function ProfileDetailDialog({
             if (error) throw error;
 
             // Send Notification
-            await supabase.from("notifications" as any).insert({
+            await supabase.from("notifications").insert({
                 user_id: profile.user_id,
-                actor_id: user.id,
                 title: "New Project Invitation",
                 message: `${currentUserProfile?.name || 'Someone'} invited you to their project: ${userProjects.find(p => p.id === projectId)?.title}`,
                 is_read: false

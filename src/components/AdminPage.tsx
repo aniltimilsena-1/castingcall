@@ -58,8 +58,8 @@ export default function AdminPage() {
             const mergedFeed: AdminFeedItem[] = [];
             const captionsMap = new Map((data.feedItems || []).map(f => [f.photo_url, f as FeedPost]));
 
-            (data.profiles || []).forEach(profile => {
-                const photos = profile.photos || [];
+            (data.profiles || []).forEach((profile: Profile) => {
+                const photos = (profile as any).photos || [];
                 photos.forEach((url: string) => {
                     const caption = captionsMap.get(url);
                     mergedFeed.push({
@@ -99,10 +99,10 @@ export default function AdminPage() {
         }
     };
 
-    const handleRejectPayment = async (id: string) => {
+    const handleRejectPayment = async (v: AdminVerification) => {
         if (!confirm("Reject this payment?")) return;
         try {
-            await adminService.rejectPayment(id);
+            await adminService.rejectPayment(v);
             toast.info("Payment rejected.");
             fetchAllData();
         } catch (err: unknown) {
@@ -183,10 +183,10 @@ export default function AdminPage() {
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-                    <StatsCard icon={<Globe className="text-blue-500" size={20} />} label="Global Market" value="Worldwide" trend="LIVE" color="blue" />
-                    <StatsCard icon={<Users size={20} />} label="Total Talents" value={profiles.length.toString()} trend="+12%" color="primary" />
-                    <StatsCard icon={<DollarSign size={20} />} label="Total Revenue (USD)" value={`$${usdRevenue}`} trend="STRIPE" color="green" />
-                    <StatsCard icon={<DollarSign size={20} />} label="Total Revenue (NPR)" value={`Rs.${nprRevenue}`} trend="NEPAL" color="amber" />
+                    <StatsCard icon={<Globe className="text-blue-500" size={20} />} label="Market Scope" value="Global" trend="" color="blue" />
+                    <StatsCard icon={<Users size={20} />} label="Total Talents" value={profiles.length.toString()} trend="" color="primary" />
+                    <StatsCard icon={<DollarSign size={20} />} label="Total Revenue (USD)" value={`$${usdRevenue}`} trend="" color="green" />
+                    <StatsCard icon={<DollarSign size={20} />} label="Total Revenue (NPR)" value={`Rs.${nprRevenue}`} trend="" color="amber" />
                 </div>
 
                 <div className="bg-card/20 backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden">
@@ -323,7 +323,7 @@ export default function AdminPage() {
                                                 {v.status === 'pending' && (
                                                     <div className="flex gap-2">
                                                         <button onClick={() => handleApprovePayment(v)} className="bg-primary text-black px-4 py-2 rounded-xl text-[0.6rem] font-bold uppercase tracking-wider hover:opacity-90 transition-opacity">Approve</button>
-                                                        <button onClick={() => handleRejectPayment(v.id)} className="bg-white/5 text-red-500 px-3 py-2 rounded-xl text-[0.6rem] hover:bg-red-500/10"><X size={14} /></button>
+                                                        <button onClick={() => handleRejectPayment(v)} className="bg-white/5 text-red-500 px-3 py-2 rounded-xl text-[0.6rem] hover:bg-red-500/10"><X size={14} /></button>
                                                     </div>
                                                 )}
                                                 {v.status !== 'pending' && <span className="text-xs text-muted-foreground italic">{v.status === 'approved' ? 'Verified' : 'Declined'}</span>}

@@ -132,7 +132,7 @@ const Index = () => {
   const navigate = (p: PageName, options?: { searchType?: "talents" | "projects" }) => {
     if (AUTH_REQUIRED.includes(p) && !user) {
       setPage("auth");
-      routerNavigate("/");
+      routerNavigate("/auth");
       return;
     }
 
@@ -143,7 +143,6 @@ const Index = () => {
       setSearchInitialType('talents');
     }
 
-    // Tapping Feed tab while already on feed → refresh
     if (p === "feed" && page === "feed") {
       setFeedRefreshKey(k => k + 1);
       return;
@@ -152,8 +151,8 @@ const Index = () => {
 
     // Sync URL
     if (p === "home") routerNavigate("/");
+    else if (p === "auth") routerNavigate("/auth");
     else if (p === "profile" && user) routerNavigate(`/profile/${user.id}`);
-    else if (p === "auth") routerNavigate("/"); // Auth is usually a overlay or specific page, but here it's a "page state"
     else routerNavigate(`/${p}`);
   };
 
@@ -162,8 +161,9 @@ const Index = () => {
     const path = location.pathname;
     const { page: pageParam } = (params as any);
 
-    if (path === "/") {
-      setPage("home");
+    if (path === "/" || path === "/auth") {
+      if (path === "/auth") setPage("auth");
+      else setPage("home");
     } else if (path.startsWith("/profile")) {
       if (id && (!user || id !== user.id)) {
         // Handled by other effect for third-party profile viewing
@@ -176,7 +176,7 @@ const Index = () => {
       if (p) {
         if (AUTH_REQUIRED.includes(p) && !user && !loading) {
           setPage("auth");
-          routerNavigate("/", { replace: true });
+          routerNavigate("/auth", { replace: true });
         } else {
           setPage(p);
         }
@@ -263,6 +263,7 @@ const Index = () => {
         onMessagesClick={() => navigate("messages")}
         onNavigate={navigate}
         activePage={page}
+        searchType={searchInitialType}
       />
 
       <AppDrawer

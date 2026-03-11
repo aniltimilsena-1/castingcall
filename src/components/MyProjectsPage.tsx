@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
@@ -6,13 +6,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Edit3, FolderOpen, Layout, Clock, CheckCircle2, X, ImageIcon, Search, MapPin, DollarSign, Briefcase, Users, Eye, Check, UserPlus, Video, MessageSquare } from "lucide-react";
 
-type Project = Tables<"projects"> & {
-  thumbnail_url?: string | null;
-  requirements?: string | null;
-  role_category?: string | null;
-  location?: string | null;
-  salary_range?: string | null;
-};
+type Project = Tables<"projects">;
 
 export default function MyProjectsPage({ onProfileClick, onMessageClick }: { onProfileClick: (p: any) => void, onMessageClick: (uid: string) => void }) {
   const { user } = useAuth();
@@ -42,7 +36,7 @@ export default function MyProjectsPage({ onProfileClick, onMessageClick }: { onP
     salary_range: ""
   });
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     const { data, error } = await supabase
@@ -58,32 +52,31 @@ export default function MyProjectsPage({ onProfileClick, onMessageClick }: { onP
       setProjects(data || []);
     }
     setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchProjects();
-    fetchMyApplications();
   }, [user]);
 
-  const fetchMyApplications = async () => {
+  const fetchMyApplications = useCallback(async () => {
     if (!user) return;
     setAppsLoading(true);
     const { data } = await supabase
-      .from('applications' as any)
+      .from('applications')
       .select(`
         *,
         projects:project_id (title, description, thumbnail_url, role_category, status)
       `)
-      .eq('applicant_id', user.id)
-      .order('created_at', { ascending: false }) as any;
+      .eq('applicant_id', user.id);
     setMyApplications(data || []);
     setAppsLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchProjects();
+    fetchMyApplications();
+  }, [user, fetchProjects, fetchMyApplications]);
 
   const respondToInvitation = async (appId: string, status: 'accepted' | 'rejected' | 'pending') => {
     const { error } = await supabase
-      .from('applications' as any)
-      .update({ status } as any)
+      .from('applications')
+      .update({ status })
       .eq('id', appId);
 
     if (error) {

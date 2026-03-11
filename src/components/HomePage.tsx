@@ -27,6 +27,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
   const { profile: currentUserProfile } = useAuth();
   const [featured, setFeatured] = useState<any[]>([]);
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
+  const [statsData, setStatsData] = useState({ talents: "0", projects: "0", visits: "0", casts: "0" });
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -54,9 +55,23 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         console.error("Failed to load recent projects");
       }
     };
-    fetchFeatured();
-    fetchRecentProjects();
-  }, [currentUserProfile?.role]);
+      fetchRecentProjects();
+
+      const fetchStats = async () => {
+        try {
+          const stats = await profileService.getGlobalStats();
+          setStatsData({
+            talents: stats.talentsCount > 1000 ? `${(stats.talentsCount / 1000).toFixed(1)}k+` : stats.talentsCount.toString(),
+            projects: stats.projectsCount > 1000 ? `${(stats.projectsCount / 1000).toFixed(1)}k+` : stats.projectsCount.toString(),
+            visits: stats.viewsCount > 1000 ? `${(stats.viewsCount / 1000).toFixed(1)}k+` : stats.viewsCount.toString(),
+            casts: stats.successCount > 1000 ? `${(stats.successCount / 1000).toFixed(1)}k+` : stats.successCount.toString()
+          });
+        } catch (err) {
+          console.error("Failed to load global stats");
+        }
+      };
+      fetchStats();
+    }, [currentUserProfile?.role]);
 
   return (
     <div className="min-h-screen bg-[#070708] text-foreground selection:bg-primary/30 overflow-x-hidden">
@@ -147,10 +162,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       <section className="py-20 px-8 max-w-7xl mx-auto border-y border-white/5 relative z-30">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           {[
-            { label: "Talents Registered", value: "25k+" },
-            { label: "Active Project", value: "1.2k+" },
-            { label: "Monthly Visits", value: "480k" },
-            { label: "Successful Casts", value: "8k+" },
+            { label: "Talents Registered", value: statsData.talents },
+            { label: "Active Project", value: statsData.projects },
+            { label: "Monthly Visits", value: statsData.visits },
+            { label: "Successful Casts", value: statsData.casts },
           ].map((stat, i) => (
             <motion.div
               key={i}

@@ -110,7 +110,7 @@ export const profileService = {
         const { data, error } = await supabase
             .from("applications" as any)
             .select("project_id")
-            .eq("user_id", talentId);
+            .eq("applicant_id", talentId);
         if (error) throw error;
         return (data || []).map((a: any) => a.project_id);
     },
@@ -119,7 +119,7 @@ export const profileService = {
         const { data, error } = await supabase
             .from("digital_products" as any)
             .select("*")
-            .eq("user_id", talentId)
+            .eq("seller_id", talentId)
             .eq("is_active", true);
         if (error) throw error;
         return data || [];
@@ -148,5 +148,21 @@ export const profileService = {
             .eq("user_id", userId)
             .eq("talent_profile_id", talentProfileId);
         if (error) throw error;
+    },
+
+    async getGlobalStats() {
+        const [profilesRes, projectsRes, viewsRes, appsRes] = await Promise.all([
+            supabase.from("profiles").select("id", { count: 'exact', head: true }),
+            supabase.from("projects").select("id", { count: 'exact', head: true }),
+            supabase.from("profile_views" as any).select("*", { count: 'exact', head: true }),
+            supabase.from("applications" as any).select("id", { count: 'exact', head: true })
+        ]);
+
+        return {
+            talentsCount: profilesRes.count || 0,
+            projectsCount: projectsRes.count || 0,
+            viewsCount: viewsRes.count || 0,
+            successCount: appsRes.count || 0
+        };
     }
 };

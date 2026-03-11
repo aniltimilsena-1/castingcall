@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -82,6 +82,63 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
 
   const EMOJIS = ["😀", "😂", "🤣", "😍", "🥰", "😎", "🔥", "💯", "✨", "👍", "❤️", "✅"];
 
+  const loadConversations = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { data: messages } = await supabase.from("messages").select("*").or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`).order("created_at", { ascending: false });
+      if (!messages) { setLoading(false); return; }
+      const partnerIds = new Set<string>();
+      messages.forEach((m) => { partnerIds.add(m.sender_id === user.id ? m.receiver_id : m.sender_id); });
+      const { data: profiles } = await supabase.from("profiles").select("user_id, name, photo_url").in("user_id", Array.from(partnerIds));
+      const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
+      const convMap = new Map<string, Conversation>();
+      messages.forEach((m) => {
+        const partnerId = m.sender_id === user.id ? m.receiver_id : m.sender_id;
+        if (!convMap.has(partnerId)) {
+          const p = profileMap.get(partnerId);
+          let preview = m.content;
+          if (preview.startsWith('[IMAGE]:')) preview = "📷 Photo";
+          else if (preview.startsWith('[VIDEO]:')) preview = "🎥 Video";
+          else if (preview.startsWith('[FILE]:')) preview = "📎 File";
+
+          convMap.set(partnerId, {
+            partnerId,
+            partnerName: p?.name || "Unknown",
+            lastMessage: preview,
+            lastTime: m.created_at,
+            unread: 0,
+            partnerPhoto: p?.photo_url || null
+          });
+        }
+        if (m.receiver_id === user.id && !m.is_read) {
+          const conv = convMap.get(partnerId);
+          if (conv) conv.unread++;
+        }
+      });
+
+      const sortedConvs = Array.from(convMap.values()).sort((a, b) =>
+        new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()
+      );
+
+      setConversations(sortedConvs);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const loadThread = useCallback(async (partnerId: string) => {
+    if (!user) return;
+    setSelectedPartner(partnerId);
+    const { data: p } = await supabase.from("profiles").select("*").eq("user_id", partnerId).maybeSingle();
+    setPartnerProfile(p);
+    const { data } = await supabase.from("messages").select("*").or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`).order("created_at", { ascending: true });
+    setThread(data || []);
+    await supabase.from("messages").update({ is_read: true }).eq("sender_id", partnerId).eq("receiver_id", user.id);
+  }, [user]);
+
   useEffect(() => {
     if (!user) return;
     loadConversations();
@@ -90,7 +147,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
     };
     fetchSaved();
-  }, [user]);
+  }, [user, loadConversations]);
 
   useEffect(() => {
     if (!user) return;
@@ -170,56 +227,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     }
   }, [initialPartnerId]);
 
-  const loadConversations = async () => {
-    if (!user) return;
-    const { data: messages } = await supabase.from("messages").select("*").or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`).order("created_at", { ascending: false });
-    if (!messages) { setLoading(false); return; }
-    const partnerIds = new Set<string>();
-    messages.forEach((m) => { partnerIds.add(m.sender_id === user.id ? m.receiver_id : m.sender_id); });
-    const { data: profiles } = await supabase.from("profiles").select("user_id, name, photo_url").in("user_id", Array.from(partnerIds));
-    const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
-    const convMap = new Map<string, Conversation>();
-    messages.forEach((m) => {
-      const partnerId = m.sender_id === user.id ? m.receiver_id : m.sender_id;
-      if (!convMap.has(partnerId)) {
-        const p = profileMap.get(partnerId);
-        let preview = m.content;
-        if (preview.startsWith('[IMAGE]:')) preview = "📷 Photo";
-        else if (preview.startsWith('[VIDEO]:')) preview = "🎥 Video";
-        else if (preview.startsWith('[FILE]:')) preview = "📎 File";
 
-        convMap.set(partnerId, {
-          partnerId,
-          partnerName: p?.name || "Unknown",
-          lastMessage: preview,
-          lastTime: m.created_at,
-          unread: 0,
-          partnerPhoto: p?.photo_url || null
-        });
-      }
-      if (m.receiver_id === user.id && !m.is_read) {
-        const conv = convMap.get(partnerId);
-        if (conv) conv.unread++;
-      }
-    });
-
-    const sortedConvs = Array.from(convMap.values()).sort((a, b) =>
-      new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()
-    );
-
-    setConversations(sortedConvs);
-    setLoading(false);
-  };
-
-  const loadThread = async (partnerId: string) => {
-    if (!user) return;
-    setSelectedPartner(partnerId);
-    const { data: p } = await supabase.from("profiles").select("*").eq("user_id", partnerId).maybeSingle();
-    setPartnerProfile(p);
-    const { data } = await supabase.from("messages").select("*").or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`).order("created_at", { ascending: true });
-    setThread(data || []);
-    await supabase.from("messages").update({ is_read: true }).eq("sender_id", partnerId).eq("receiver_id", user.id);
-  };
 
   const sendMessage = async () => {
     if (!user || !selectedPartner) return;

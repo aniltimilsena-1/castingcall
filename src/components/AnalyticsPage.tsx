@@ -88,26 +88,8 @@ export default function AnalyticsPage() {
         ((acceptedApps || 0) * 15)
       ));
 
-      // 6. Simmons AI Feedback (Mocked logic for now)
-      const insights = [
-        {
-          type: "skill",
-          title: "Audition Technique",
-          desc: "Your eye contact in video reels is excellent. Try reducing micro-expressions during dramatic pauses.",
-          impact: "+12% Success Rate",
-          icon: Lightbulb,
-          color: "text-amber-500"
-        },
-        {
-          type: "feedback",
-          title: "Portfolio Variety",
-          desc: "Your profile is heavily weighted towards 'Street' style. Producers for 'Luxury' brands are active now.",
-          impact: "+20% Reach",
-          icon: MessageSquare,
-          color: "text-blue-500"
-        }
-      ];
-      setAiInsights(insights);
+      // 6. Simmons AI Feedback (Empty for now until real AI is linked)
+      setAiInsights([]);
 
       setViewStats({
         totalViews: views?.length || 0,
@@ -242,9 +224,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid sm:grid-cols-3 gap-6">
-        <StatsCard label="Portfolio Clicks" value={viewStats.portfolioInteractions.toString()} icon={Zap} desc="Deep engagement" />
-        <StatsCard label="Profile Strength" value="Elite" icon={Target} desc="Top 5% in category" />
-        <StatsCard label="Network Reach" value="2.4k" icon={TrendingUp} desc="+14% this month" />
+        <StatsCard label="Portfolio Clicks" value={viewStats.portfolioInteractions.toString()} icon={Zap} desc="Direct interactions" />
       </div>
     </motion.div>
   );

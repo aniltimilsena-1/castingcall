@@ -19,10 +19,7 @@ export default function NotificationsPage({ onOpenPhoto }: NotificationsPageProp
     if (!user) return;
     const { data } = await supabase
       .from("notifications")
-      .select(`
-        *,
-        actor:profiles!actor_id (name, photo_url)
-      `)
+      .select('*')
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
     setNotifs(data || []);
@@ -54,7 +51,7 @@ export default function NotificationsPage({ onOpenPhoto }: NotificationsPageProp
 
   const markAllRead = async () => {
     if (!user) return;
-    const { error } = await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id).eq("is_read", false);
+    const { error } = await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id);
     if (error) {
       console.error("Mark all read error:", error);
       toast.error("Failed to mark all as read. Check permissions.");
@@ -100,14 +97,8 @@ export default function NotificationsPage({ onOpenPhoto }: NotificationsPageProp
             >
               {/* Profile Photo or Unread Dot */}
               <div className="relative flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-secondary border border-border overflow-hidden">
-                  {n.actor?.photo_url ? (
-                    <img src={n.actor.photo_url} className="w-full h-full object-cover" alt="" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-display text-lg text-primary">
-                      {n.actor?.name?.[0] || '?'}
-                    </div>
-                  )}
+                <div className="w-12 h-12 rounded-full bg-secondary border border-border overflow-hidden flex items-center justify-center font-display text-lg text-primary">
+                  <Bell className="w-6 h-6" />
                 </div>
                 {!n.is_read && (
                   <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary border-2 border-card rounded-full" />

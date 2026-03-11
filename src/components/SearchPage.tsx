@@ -6,7 +6,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search } from "lucide-react";
+import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
@@ -60,7 +60,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       try {
         if (looksLikeQuery || visualSearchMode) {
           setIsScanning(true);
-          await new Promise(r => setTimeout(r, 800)); // AI analyzing feel
         }
 
         if (searchType === "talents") {
@@ -406,11 +405,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   <div className="flex flex-wrap gap-4 md:gap-8 mb-4">
                     {p.location && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
-                    {(looksLikeQuery || visualSearchMode) && (
-                      <span className="text-[0.6rem] bg-primary/20 text-primary px-3 py-1 rounded-full border border-primary/30 font-display uppercase tracking-widest flex items-center gap-2 animate-pulse">
-                        <Sparkles size={10} /> 98.4% MATCH
-                      </span>
-                    )}
                     {p.trending_score !== undefined && p.trending_score > 80 && (
                       <span className="text-[0.6rem] bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-full border border-orange-500/20 font-normal uppercase tracking-widest flex items-center gap-2">
                         <TrendingUp size={10} /> Hot

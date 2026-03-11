@@ -15,11 +15,12 @@ interface NavbarProps {
   onMessagesClick: () => void;
   onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects" }) => void;
   activePage: PageName;
+  searchType?: "talents" | "projects";
 }
 
 export default function Navbar({
   onSearch, onAuthClick, onMenuClick, onLogoClick, onPremiumClick,
-  onNotificationClick, onMessagesClick, onNavigate, activePage
+  onNotificationClick, onMessagesClick, onNavigate, activePage, searchType
 }: NavbarProps) {
   const { user, profile } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -68,9 +69,9 @@ export default function Navbar({
     }
   };
 
-  const navItemClass = (id: PageName) => `
+  const navItemClass = (id: PageName, currentSearchType?: string) => `
     flex items-center gap-2 px-4 py-1.5 rounded-full text-[0.7rem] uppercase tracking-wider font-semibold transition-all
-    ${activePage === id ? 'bg-primary text-black' : 'text-muted-foreground hover:text-primary hover:bg-primary/5'}
+    ${activePage === id && (!currentSearchType || searchType === currentSearchType) ? 'bg-primary text-black' : 'text-muted-foreground hover:text-primary hover:bg-primary/5'}
   `;
 
   return (
@@ -94,10 +95,10 @@ export default function Navbar({
           <button onClick={() => onNavigate("home")} className={navItemClass("home")}>
             <Home size={14} /> Home
           </button>
-          <button onClick={() => onNavigate("search", { searchType: "projects" })} className={navItemClass("search")}>
+          <button onClick={() => onNavigate("search", { searchType: "projects" })} className={navItemClass("search", "projects")}>
             <Briefcase size={14} /> Casting Calls
           </button>
-          <button onClick={() => onNavigate("search", { searchType: "talents" })} className={navItemClass("search")}>
+          <button onClick={() => onNavigate("search", { searchType: "talents" })} className={navItemClass("search", "talents")}>
             <Users size={14} /> Actors
           </button>
           <button onClick={() => onNavigate("projects")} className={navItemClass("projects")}>

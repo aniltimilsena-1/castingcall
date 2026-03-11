@@ -72,22 +72,20 @@ export const adminService = {
         } as any);
 
         // Create notification
-        await supabase.from("notifications" as any).insert({
+        await supabase.from("notifications").insert({
             user_id: v.user_id,
             title: "Payment Approved",
-            content: `Your payment for ${pType.toUpperCase()} has been verified. Access granted!`,
-            type: "payment"
+            message: `Your payment for ${pType.toUpperCase()} has been verified. Access granted!`,
         });
     },
 
     async rejectPayment(v: any) {
-        await supabase.from("payment_verifications" as any).update({ status: 'rejected' }).eq("id", v.id);
+        await supabase.from("payment_verifications").update({ status: 'rejected' } as any).eq("id", v.id);
 
-        await supabase.from("notifications" as any).insert({
+        await supabase.from("notifications").insert({
             user_id: v.user_id,
             title: "Payment Rejected",
-            content: `Your payment for ${v.payment_type?.toUpperCase()} was rejected. Please check your details.`,
-            type: "payment"
+            message: `Your payment for ${v.payment_type?.toUpperCase()} was rejected. Please check your details.`,
         });
     },
 

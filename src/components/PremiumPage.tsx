@@ -11,6 +11,7 @@ export default function PremiumPage() {
     const [success, setSuccess] = useState(false);
     const [isNepal, setIsNepal] = useState<boolean | null>(null);
     const [showPayment, setShowPayment] = useState(false);
+    const [talentsCount, setTalentsCount] = useState("0");
 
     const isPro = isPremium;
 
@@ -34,8 +35,19 @@ export default function PremiumPage() {
         if (status === "success") {
             setSuccess(true);
             refreshProfile();
-            window.history.replaceState({}, document.title, "/premium");
         }
+
+        const fetchStats = async () => {
+            try {
+                const { count } = await supabase.from("profiles").select("id", { count: 'exact', head: true });
+                if (count) {
+                    setTalentsCount(count > 1000 ? `${(count / 1000).toFixed(1)}k+` : count.toString());
+                }
+            } catch (err) {
+                console.error("Failed to load talent count");
+            }
+        };
+        fetchStats();
     }, [refreshProfile]);
 
     const price = isNepal ? "499" : "4.99";
@@ -103,7 +115,7 @@ export default function PremiumPage() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-10" />
                 <Wallet className="text-primary w-8 h-8 mx-auto mb-8" />
                 <h3 className="text-4xl text-white font-display italic mb-4">The Smart Move for Your Talent</h3>
-                <p className="text-muted-foreground text-sm uppercase tracking-widest mb-10">Trusted by over 50k+ talents globally across 15+ countries.</p>
+                <p className="text-muted-foreground text-sm uppercase tracking-widest mb-10">Trusted by over {talentsCount} talents globally across the network.</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     <Benefit icon={<Crown size={20} />} label="Premium Badge" />
                     <Benefit icon={<Sparkles size={20} />} label="Priority Listing" />

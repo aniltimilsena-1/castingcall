@@ -75,7 +75,8 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
           onSuccess();
         }
       }
-    } catch (e: any) {
+    } catch (err: unknown) {
+      const e = err as any;
       console.error("Auth Error details:", e);
       if (e.message === "Failed to fetch") {
         toast.error("Network Error: Could not reach the server. Please check your internet or VPN.");
