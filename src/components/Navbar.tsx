@@ -179,9 +179,10 @@ export default function Navbar({
 
           <button
             onClick={onMenuClick}
-            className="p-2 rounded-full bg-secondary/20 lg:hidden text-muted-foreground hover:text-primary transition-colors hover:bg-secondary"
+            className="px-3 py-1.5 rounded-full bg-secondary/20 text-muted-foreground hover:text-primary transition-colors hover:bg-secondary flex items-center gap-2"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-4 h-4" />
+            <span className="hidden lg:inline text-[0.65rem] font-medium uppercase tracking-widest">More</span>
           </button>
         </div>
       </div>
