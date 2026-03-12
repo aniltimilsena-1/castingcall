@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { followService, FollowProfile } from "@/services/followService";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2 } from "lucide-react";
+import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users } from "lucide-react";
 import { useVideo } from "@/contexts/VideoContext";
 import { Badge } from "@/components/ui/badge";
 
@@ -83,6 +84,33 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const [newLooksLike, setNewLooksLike] = useState("");
   const [visualSearchKeywords, setVisualSearchKeywords] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Follow counts & list modal
+  const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
+  const [followModal, setFollowModal] = useState<"followers" | "following" | null>(null);
+  const [followList, setFollowList] = useState<FollowProfile[]>([]);
+  const [followListLoading, setFollowListLoading] = useState(false);
+
+  // Load follow counts on mount / profile change
+  useEffect(() => {
+    if (!profile?.user_id) return;
+    followService.getCounts(profile.user_id).then(setFollowCounts);
+  }, [profile?.user_id]);
+
+  const openFollowModal = async (type: "followers" | "following") => {
+    setFollowModal(type);
+    setFollowListLoading(true);
+    try {
+      const list = type === "followers"
+        ? await followService.getFollowers(profile!.user_id)
+        : await followService.getFollowing(profile!.user_id);
+      setFollowList(list);
+    } catch {
+      toast.error("Failed to load list");
+    } finally {
+      setFollowListLoading(false);
+    }
+  };
 
   // Populate form fields whenever profile changes
   useEffect(() => {
@@ -232,6 +260,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   // ──────────────────────────────────────────────────────────────────────
   if (!isEditing) {
     return (
+      <>
       <motion.div
         className="max-w-[860px] mx-auto px-4 md:px-6 py-10"
         initial={{ opacity: 0, y: 16 }}
@@ -322,7 +351,26 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </span>
               )}
             </div>
-            <div className="text-primary font-normal text-sm uppercase tracking-[2px] mb-4">{profile?.role || "Role not set"}</div>
+            <div className="text-primary font-normal text-sm uppercase tracking-[2px] mb-3">{profile?.role || "Role not set"}</div>
+
+            {/* ── Followers / Following row ── */}
+            <div className="flex items-center gap-5 mb-4">
+              <button
+                onClick={() => openFollowModal("followers")}
+                className="flex flex-col items-start hover:opacity-70 transition-opacity"
+              >
+                <span className="text-xl font-display text-white leading-tight">{followCounts.followers.toLocaleString()}</span>
+                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">Followers</span>
+              </button>
+              <div className="w-px h-8 bg-white/10" />
+              <button
+                onClick={() => openFollowModal("following")}
+                className="flex flex-col items-start hover:opacity-70 transition-opacity"
+              >
+                <span className="text-xl font-display text-white leading-tight">{followCounts.following.toLocaleString()}</span>
+                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">Following</span>
+              </button>
+            </div>
 
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-5">
               {profile?.location && (
@@ -459,6 +507,80 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           </button>
         </div>
       </motion.div>
+
+      {/* ── Followers / Following Modal ── */}
+      <AnimatePresence>
+        {followModal && (
+          <>
+            <motion.div
+              key="follow-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[400]"
+              onClick={() => setFollowModal(null)}
+            />
+            <motion.div
+              key="follow-panel"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 40 }}
+              transition={{ type: "spring", damping: 28, stiffness: 350 }}
+              className="fixed inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-[401] w-full md:max-w-md bg-card border border-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
+            >
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Users size={18} className="text-primary" />
+                  <h3 className="font-display text-lg text-white capitalize">{followModal}</h3>
+                  <span className="text-sm text-muted-foreground">
+                    ({followModal === "followers" ? followCounts.followers : followCounts.following})
+                  </span>
+                </div>
+                <button
+                  onClick={() => setFollowModal(null)}
+                  className="text-muted-foreground hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1">
+                {followListLoading ? (
+                  <div className="flex flex-col items-center gap-3 py-16">
+                    <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <p className="text-[0.65rem] uppercase tracking-[3px] text-muted-foreground animate-pulse">Loading...</p>
+                  </div>
+                ) : followList.length === 0 ? (
+                  <div className="flex flex-col items-center py-16 gap-3">
+                    <Users size={36} className="text-muted-foreground/20" />
+                    <p className="text-muted-foreground text-sm">
+                      {followModal === "followers" ? "No followers yet." : "Not following anyone yet."}
+                    </p>
+                  </div>
+                ) : (
+                  followList.map((fp) => (
+                    <div key={fp.user_id} className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-white/5 transition-colors">
+                      <div className="w-11 h-11 rounded-full bg-secondary border border-border flex-shrink-0 overflow-hidden flex items-center justify-center font-display text-xl text-primary">
+                        {fp.photo_url
+                          ? <img src={fp.photo_url} alt={fp.name} className="w-full h-full object-cover" />
+                          : (fp.name || "?")[0].toUpperCase()
+                        }
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-normal text-white truncate">{fp.name}</span>
+                          {fp.plan === "pro" && <Crown size={12} className="text-amber-500 flex-shrink-0" />}
+                        </div>
+                        <span className="text-[0.6rem] uppercase tracking-[0.15em] text-primary/60">{fp.role}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      </>
     );
   }
 

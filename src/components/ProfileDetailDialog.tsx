@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { profileService, Profile } from "@/services/profileService";
 import { paymentService } from "@/services/paymentService";
 import { messageService } from "@/services/messageService";
+import { followService } from "@/services/followService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical, UserCheck, Users } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
 import {
@@ -72,6 +73,11 @@ export default function ProfileDetailDialog({
 
     const [isNepal, setIsNepal] = useState<boolean | null>(null);
 
+    // ── Follow State
+    const [isFollowingProfile, setIsFollowingProfile] = useState(false);
+    const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
+    const [followLoading, setFollowLoading] = useState(false);
+
     // Detect User Location (Country)
     useEffect(() => {
         const detectLocation = async () => {
@@ -92,6 +98,43 @@ export default function ProfileDetailDialog({
             profileService.trackProfileView(profile.id, user?.id);
         }
     }, [open, profile?.id, user?.id]);
+
+    // Load follow state whenever dialog opens
+    useEffect(() => {
+        if (!open || !profile?.user_id) return;
+        const loadFollowData = async () => {
+            const counts = await followService.getCounts(profile.user_id);
+            setFollowCounts(counts);
+            if (user?.id && user.id !== profile.user_id) {
+                const following = await followService.isFollowing(user.id, profile.user_id);
+                setIsFollowingProfile(following);
+            }
+        };
+        loadFollowData();
+    }, [open, profile?.user_id, user?.id]);
+
+    const handleToggleFollow = async () => {
+        if (!user) { toast.error("Sign in to follow"); return; }
+        if (!profile?.user_id) return;
+        setFollowLoading(true);
+        try {
+            if (isFollowingProfile) {
+                await followService.unfollow(user.id, profile.user_id);
+                setIsFollowingProfile(false);
+                setFollowCounts(prev => ({ ...prev, followers: Math.max(0, prev.followers - 1) }));
+                toast.info("Unfollowed");
+            } else {
+                await followService.follow(user.id, profile.user_id);
+                setIsFollowingProfile(true);
+                setFollowCounts(prev => ({ ...prev, followers: prev.followers + 1 }));
+                toast.success("Following!");
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Action failed");
+        } finally {
+            setFollowLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (open && profile?.id) {
@@ -295,6 +338,19 @@ export default function ProfileDetailDialog({
                                                 )}
                                             </div>
 
+                                            {/* ── Follow counts ── */}
+                                            <div className="flex items-center gap-6 mb-6">
+                                                <div className="flex flex-col items-center md:items-start">
+                                                    <span className="text-xl font-display text-white">{followCounts.followers.toLocaleString()}</span>
+                                                    <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
+                                                </div>
+                                                <div className="w-px h-8 bg-white/10" />
+                                                <div className="flex flex-col items-center md:items-start">
+                                                    <span className="text-xl font-display text-white">{followCounts.following.toLocaleString()}</span>
+                                                    <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Following</span>
+                                                </div>
+                                            </div>
+
                                             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                                                 <button
                                                     onClick={() => setShowFullProfile(true)}
@@ -302,6 +358,21 @@ export default function ProfileDetailDialog({
                                                 >
                                                     View All Profile Details
                                                 </button>
+                                                {/* ── Follow Button ── */}
+                                                {user?.id !== profile.user_id && (
+                                                    <button
+                                                        onClick={handleToggleFollow}
+                                                        disabled={followLoading}
+                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border shadow-lg ${
+                                                            isFollowingProfile
+                                                                ? 'bg-primary/10 border-primary text-primary hover:bg-red-500/10 hover:border-red-500 hover:text-red-400'
+                                                                : 'bg-primary border-primary text-black hover:opacity-90 shadow-primary/20'
+                                                        } disabled:opacity-50`}
+                                                    >
+                                                        {isFollowingProfile ? <UserCheck size={18} /> : <Users size={18} />}
+                                                        {followLoading ? '...' : isFollowingProfile ? 'Following' : 'Follow'}
+                                                    </button>
+                                                )}
                                                 {user?.id !== profile.user_id && (
                                                     <button
                                                         onClick={() => {
