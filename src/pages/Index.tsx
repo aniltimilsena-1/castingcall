@@ -121,7 +121,8 @@ const Index = () => {
   const handleProfileClick = (p: any) => {
     setSelectedProfileForDialog(p);
     setProfileDialogOpen(true);
-    routerNavigate(`/profile/${p.id}`);
+    const profileId = p.id || p.user_id;
+    routerNavigate(`/profile/${profileId}`);
   };
 
   const handleMessageClick = (userId: string) => {
@@ -233,7 +234,7 @@ const Index = () => {
       return;
     }
     if (role === 'post') {
-      navigate("projects");
+      navigate("projects", { openForm: true });
       return;
     }
     setSearchRole(role);
@@ -338,7 +339,7 @@ const Index = () => {
         }}
         user={user}
         currentUserProfile={currentUserProfile}
-        isSaved={selectedProfileForDialog ? savedTalentIds.includes(selectedProfileForDialog.id) : false}
+        isSaved={selectedProfileForDialog ? savedTalentIds.includes(selectedProfileForDialog.id ?? selectedProfileForDialog.user_id) : false}
         onToggleSave={toggleSave}
         isOnline={selectedProfileForDialog ? onlineUsers.has(selectedProfileForDialog.user_id) : false}
         onDirectMessage={() => {

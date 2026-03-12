@@ -10,7 +10,7 @@ interface HomePageProps {
   onCategoryClick: (role: string) => void;
   onProfileClick: (profile: any) => void;
   onTermsClick: () => void;
-  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects" }) => void;
+  onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects"; openForm?: boolean }) => void;
   onlineUsers?: Set<string>;
 }
 
@@ -55,23 +55,23 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         console.error("Failed to load recent projects");
       }
     };
-      fetchRecentProjects();
-
-      const fetchStats = async () => {
-        try {
-          const stats = await profileService.getGlobalStats();
-          setStatsData({
-            talents: stats.talentsCount > 1000 ? `${(stats.talentsCount / 1000).toFixed(1)}k+` : stats.talentsCount.toString(),
-            projects: stats.projectsCount > 1000 ? `${(stats.projectsCount / 1000).toFixed(1)}k+` : stats.projectsCount.toString(),
-            visits: stats.viewsCount > 1000 ? `${(stats.viewsCount / 1000).toFixed(1)}k+` : stats.viewsCount.toString(),
-            casts: stats.successCount > 1000 ? `${(stats.successCount / 1000).toFixed(1)}k+` : stats.successCount.toString()
-          });
-        } catch (err) {
-          console.error("Failed to load global stats");
-        }
-      };
-      fetchStats();
-    }, [currentUserProfile?.role]);
+    const fetchStats = async () => {
+      try {
+        const stats = await profileService.getGlobalStats();
+        setStatsData({
+          talents: stats.talentsCount > 1000 ? `${(stats.talentsCount / 1000).toFixed(1)}k+` : stats.talentsCount.toString(),
+          projects: stats.projectsCount > 1000 ? `${(stats.projectsCount / 1000).toFixed(1)}k+` : stats.projectsCount.toString(),
+          visits: stats.viewsCount > 1000 ? `${(stats.viewsCount / 1000).toFixed(1)}k+` : stats.viewsCount.toString(),
+          casts: stats.successCount > 1000 ? `${(stats.successCount / 1000).toFixed(1)}k+` : stats.successCount.toString()
+        });
+      } catch (err) {
+        console.error("Failed to load global stats");
+      }
+    };
+    fetchFeatured();
+    fetchRecentProjects();
+    fetchStats();
+  }, [currentUserProfile?.role]);
 
   return (
     <div className="min-h-screen bg-[#070708] text-foreground selection:bg-primary/30 overflow-x-hidden">

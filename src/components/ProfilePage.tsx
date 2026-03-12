@@ -135,8 +135,15 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     }
   }, [profile]);
 
-  if (!profile && !user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground animate-pulse">Loading Profile...</div>;
-  if (!profile) return null; // Wait for profile row to load via AuthContext fetchProfile
+  if (!user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Please sign in to view your profile.</div>;
+  if (!profile) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4 text-muted-foreground">
+        <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <p className="text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Loading Profile...</p>
+      </div>
+    </div>
+  );
 
   const handleSave = async () => {
     if (!user) return;
@@ -239,7 +246,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
-                const url = `${window.location.origin}/profile/${profile?.id}`;
+                const url = `${window.location.origin}/profile/${profile?.user_id}`;
                 navigator.clipboard.writeText(url);
                 toast.success("Profile link copied to clipboard!");
               }}

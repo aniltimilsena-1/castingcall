@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
@@ -28,100 +28,124 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMounted = useRef(true);
 
-  const fetchProfile = useCallback(async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", userId)
-        .maybeSingle(); // Better than single() to avoid error on missing profile
+        .maybeSingle();
 
       if (error) {
         console.error("Profile fetch error:", error);
+        return null;
       }
-      setProfile(data);
+      return data;
     } catch (err) {
       console.error("Unexpected fetchProfile error:", err);
+      return null;
     }
   }, []);
 
   useEffect(() => {
-    // Single source of truth for initialization
-    let initialized = false;
+    isMounted.current = true;
 
-    const finalizeInitialization = () => {
-      if (!initialized) {
-        setLoading(false);
-        initialized = true;
+    // Step 1: Get existing session first (synchronous local check via Supabase)
+    const initAuth = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+
+        if (!isMounted.current) return;
+
+        if (initialSession?.user) {
+          setSession(initialSession);
+          setUser(initialSession.user);
+          // Fetch profile before clearing loading state
+          const profileData = await fetchProfile(initialSession.user.id);
+          if (isMounted.current) {
+            setProfile(profileData);
+          }
+        }
+      } catch (err) {
+        console.error("Session initialization error:", err);
+      } finally {
+        // Always clear loading after initial check
+        if (isMounted.current) {
+          setLoading(false);
+        }
       }
     };
 
-    // Safety timeout - ensure loading screen dispels after 8s regardless of network
-    const timeoutId = setTimeout(finalizeInitialization, 8000);
+    initAuth();
 
+    // Step 2: Listen for auth state changes AFTER initial load
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id).catch(err => console.error("Initial profile fetch error:", err));
+      async (event, newSession) => {
+        if (!isMounted.current) return;
+
+        // Update session and user immediately
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+
+        if (event === 'SIGNED_OUT') {
+          setProfile(null);
+          return;
+        }
+
+        if (newSession?.user) {
+          const profileData = await fetchProfile(newSession.user.id);
+          if (isMounted.current) {
+            setProfile(profileData);
+          }
         } else {
           setProfile(null);
         }
-        finalizeInitialization();
       }
     );
 
-    // Initial check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!initialized) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchProfile(session.user.id).finally(finalizeInitialization);
-        } else {
-          finalizeInitialization();
-        }
+    // Safety net: force loading off after 5 seconds max
+    const safetyTimer = setTimeout(() => {
+      if (isMounted.current) {
+        setLoading(false);
       }
-    }).catch(err => {
-      console.error("Session initialization error:", err);
-      finalizeInitialization();
-    });
+    }, 5000);
 
     return () => {
+      isMounted.current = false;
       subscription.unsubscribe();
-      clearTimeout(timeoutId);
+      clearTimeout(safetyTimer);
     };
   }, [fetchProfile]);
 
+  // Real-time profile update listener
   useEffect(() => {
-    // Real-time listener for profile changes (e.g., PRO upgrade)
-    let profileSubscription: { unsubscribe: () => void } | null = null;
-    if (user) {
-      const channel = supabase
-        .channel(`profile-${user.id}`)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` },
-          (payload) => {
-            const newProfile = payload.new as Profile;
-            const oldProfile = payload.old as Profile;
+    if (!user) return;
 
-            setProfile(newProfile);
-            // Only show toast if it's a meaningful change (like plan)
-            if (oldProfile && oldProfile.plan !== newProfile.plan) {
-              toast.success("Account status updated!");
-            }
+    const channel = supabase
+      .channel(`profile-realtime-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const newProfile = payload.new as Profile;
+          const oldProfile = payload.old as Profile;
+          setProfile(newProfile);
+          if (oldProfile?.plan !== newProfile.plan) {
+            toast.success("Account status updated!");
           }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            profileSubscription = { unsubscribe: () => { supabase.removeChannel(channel); } };
-          }
-        });
-    }
+        }
+      )
+      .subscribe();
 
     return () => {
-      if (profileSubscription) profileSubscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [user]);
 
@@ -130,14 +154,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { name, role }, // Passed into auth metadata → DB trigger picks these up
-      },
+      options: { data: { name, role } },
     });
     if (error) throw error;
 
-    // Explicitly upsert the profile row with name + role using the returned user ID
-    // This is more reliable than calling getUser() immediately after signUp
     const newUserId = data.user?.id;
     if (newUserId) {
       await supabase
@@ -154,9 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithPhone = async (phone: string, metadata?: { name: string, role: string }) => {
     const { error } = await supabase.auth.signInWithOtp({
       phone,
-      options: {
-        data: metadata
-      }
+      options: { data: metadata }
     });
     if (error) throw error;
   };
@@ -169,19 +187,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithOAuth = async (provider: 'google' | 'facebook') => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: window.location.origin,
-      }
+      options: { redirectTo: window.location.origin }
     });
     if (error) throw error;
   };
 
   const signOut = async () => {
+    setProfile(null);
+    setUser(null);
+    setSession(null);
     await supabase.auth.signOut();
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) {
+      const profileData = await fetchProfile(user.id);
+      if (isMounted.current) setProfile(profileData);
+    }
   };
 
   const isPremium = profile?.role === "Admin" || profile?.plan === "pro";

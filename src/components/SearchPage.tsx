@@ -392,7 +392,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                       (p.name || "U")[0].toUpperCase()
                     )}
                     {onlineUsers.has(p.user_id) && (
-                      <div className="absolute bottom-0 right-1 w-4 h-4 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 animate-pulse" title="Online" />
+                      <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 animate-pulse" title="Online" />
                     )}
                   </div>
                   {p.plan === "pro" && (

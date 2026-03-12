@@ -333,7 +333,7 @@ export default function ProfileDetailDialog({
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end" className="w-56 bg-card border-border p-1.5 shadow-2xl z-[501]">
                                                             <DropdownMenuItem
-                                                                onClick={(e) => onToggleSave(e, profile.id)}
+                                                                onClick={(e) => onToggleSave(e, profile.id ?? profile.user_id)}
                                                                 className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-xs ${isSaved ? 'text-primary bg-primary/5' : 'text-foreground hover:bg-primary/10'}`}
                                                             >
                                                                 <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} />

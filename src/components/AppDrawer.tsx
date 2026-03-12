@@ -30,10 +30,10 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
   };
 
   const handleLogout = async () => {
-    await signOut();
-    toast.success("Signed out. See you soon!");
     onClose();
     onNavigate("home");
+    await signOut();
+    toast.success("Signed out. See you soon!");
   };
 
   return (
