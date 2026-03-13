@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
   },
 });
 
-console.log("🛠️ App.tsx script loading... [v13]");
+console.log("🛠️ App.tsx script loading... [v15]");
 
 const App = () => {
   console.log("🎬 App component executing...");
