@@ -1,17 +1,19 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
+import App from "./App.tsx";
+import "./index.css";
 
-console.log("🚀 STARTING PURE REACT RENDER...");
+console.log("🚀 STARTING APP RENDER...");
 
 try {
   const rootElement = document.getElementById("root");
   if (rootElement) {
     const root = createRoot(rootElement);
-    root.render(React.createElement("h1", { style: { color: "#FFD700", textAlign: "center", marginTop: "100px" } }, "⚛️ PURE REACT IS RENDERING"));
-    console.log("✅ Render call sent.");
+    root.render(<App />);
+    console.log("✅ Render call sent to ReactDOM.");
   } else {
     console.error("❌ ROOT NOT FOUND");
   }
 } catch (err) {
-  console.error("💥 REACT RENDER CRASHED:", err);
+  console.error("💥 MAIN.TSX CRASHED:", err);
 }
