@@ -1,6 +1,15 @@
 import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
+import "./index.css";
 
-const root = document.getElementById("root");
-if (root) {
-  root.innerHTML = "<div style='background: #000; color: #FFD700; height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif;'><h1>🚀 SYSTEM DIAGNOSTIC: JS IS EXECUTING</h1></div>";
+console.log("🚀 CaastingCall Application Mounting...");
+
+try {
+  const root = document.getElementById("root");
+  if (!root) throw new Error("Root element (#root) not found in index.html");
+  
+  createRoot(root).render(<App />);
+  console.log("✅ Render call successful.");
+} catch (err) {
+  console.error("💥 CRITICAL RENDER FAILURE:", err);
 }
