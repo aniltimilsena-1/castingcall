@@ -3,7 +3,7 @@ import React from "react";
 import App from "./App.tsx";
 import "./index.css";
 
-console.log("🚀 STARTING APP RENDER...");
+console.log("🚀 STARTING APP RENDER... (v13)");
 
 try {
   const rootElement = document.getElementById("root");
