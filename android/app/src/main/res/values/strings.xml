@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">User Hub</string>
-    <string name="title_activity_main">User Hub</string>
-    <string name="package_name">com.userhub.expansion</string>
-    <string name="custom_url_scheme">com.userhub.expansion</string>
-</resources>
