@@ -49,73 +49,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const initialized = useRef(false);
+
   useEffect(() => {
     isMounted.current = true;
 
-    // Step 1: Get existing session first (synchronous local check via Supabase)
-    const initAuth = async () => {
+    const initialize = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
-
-        if (!isMounted.current) return;
-
+        
         if (initialSession?.user) {
           setSession(initialSession);
           setUser(initialSession.user);
-          // Fetch profile before clearing loading state
-          const profileData = await fetchProfile(initialSession.user.id);
-          if (isMounted.current) {
-            setProfile(profileData);
-          }
+          const p = await fetchProfile(initialSession.user.id);
+          if (isMounted.current) setProfile(p);
         }
       } catch (err) {
-        console.error("Session initialization error:", err);
+        console.error("Auth init error:", err);
       } finally {
-        // Always clear loading after initial check
         if (isMounted.current) {
+          initialized.current = true;
           setLoading(false);
         }
       }
     };
 
-    initAuth();
+    initialize();
 
-    // Step 2: Listen for auth state changes AFTER initial load
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        if (!isMounted.current) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      if (!isMounted.current) return;
 
-        // Update session and user immediately
+      // Skip the initial event if we are still initializing via getSession
+      if (!initialized.current && event === 'INITIAL_SESSION') return;
+
+      if (event === 'SIGNED_OUT') {
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
         setSession(newSession);
         setUser(newSession?.user ?? null);
-
-        if (event === 'SIGNED_OUT') {
-          setProfile(null);
-          return;
-        }
-
+        
         if (newSession?.user) {
-          const profileData = await fetchProfile(newSession.user.id);
+          const p = await fetchProfile(newSession.user.id);
           if (isMounted.current) {
-            setProfile(profileData);
+            setProfile(p);
+            setLoading(false);
           }
-        } else {
-          setProfile(null);
         }
       }
-    );
-
-    // Safety net: force loading off after 3 seconds max (reduced from 5)
-    const safetyTimer = setTimeout(() => {
-      if (isMounted.current && loading) {
-        setLoading(false);
-      }
-    }, 3000);
+    });
 
     return () => {
       isMounted.current = false;
       subscription.unsubscribe();
-      clearTimeout(safetyTimer);
     };
   }, [fetchProfile]);
 
