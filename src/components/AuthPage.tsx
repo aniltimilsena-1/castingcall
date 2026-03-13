@@ -40,8 +40,8 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
     setLoading(true);
     try {
       await signInWithOAuth(provider);
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "OAuth failed");
       setLoading(false);
     }
   };
@@ -53,8 +53,8 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
       await resetPassword(resetEmail);
       toast.success("Password reset link sent to your email! 📧");
       setTab("login");
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to send reset email");
     } finally {
       setLoading(false);
     }
@@ -98,12 +98,13 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         }
       }
     } catch (err: unknown) {
-      const e = err as any;
-      console.error("Auth Error details:", e);
-      if (e.message === "Failed to fetch") {
+      console.error("Auth Error details:", err);
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred during auth";
+      
+      if (errorMessage === "Failed to fetch") {
         toast.error("Network Error: Could not reach the server. Please check your internet or VPN.");
       } else {
-        toast.error(e.message || "An unexpected error occurred during auth");
+        toast.error(errorMessage);
       }
     } finally {
       setLoading(false);

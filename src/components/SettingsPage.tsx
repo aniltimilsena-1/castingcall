@@ -33,8 +33,8 @@ export default function SettingsPage() {
       if (error) throw error;
       await refreshProfile();
       toast.success("Settings saved!");
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to save profile");
     } finally {
       setSaving(false);
     }
@@ -66,8 +66,8 @@ export default function SettingsPage() {
       toast.success("Password updated successfully!");
       setOldPassword("");
       setNewPassword("");
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update password");
     } finally {
       setSaving(false);
     }

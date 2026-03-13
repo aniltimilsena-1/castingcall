@@ -14,7 +14,7 @@ interface AuthContextType {
   signIn: (email: string, pass: string) => Promise<void>;
   signUp: (email: string, pass: string, name: string, role: string) => Promise<void>;
   signInWithOAuth: (provider: 'google') => Promise<void>;
-  signInWithPhone: (phone: string, metadata?: any) => Promise<void>;
+  signInWithPhone: (phone: string, metadata?: Record<string, unknown>) => Promise<void>;
   verifyOTP: (phone: string, token: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -154,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   };
 
-  const signInWithPhone = async (phone: string, metadata?: any) => {
+  const signInWithPhone = async (phone: string, metadata?: Record<string, unknown>) => {
     const { error } = await supabase.auth.signInWithOtp({
       phone,
       options: { data: metadata }
