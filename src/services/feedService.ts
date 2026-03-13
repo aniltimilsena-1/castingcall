@@ -32,19 +32,28 @@ export const feedService = {
     },
 
     async getCaptionMap() {
-        const { data: captionRows } = await supabase
-            .from("photo_captions")
-            .select("photo_url, description, is_premium, price");
+        try {
+            const { data: captionRows, error } = await supabase
+                .from("photo_captions")
+                .select("*");
 
-        const captionMap: Record<string, { description: string, isPremium: boolean, price: number }> = {};
-        (captionRows || []).forEach(row => {
-            captionMap[row.photo_url] = {
-                description: row.description || "",
-                isPremium: row.is_premium || false,
-                price: row.price || 0
-            };
-        });
-        return captionMap;
+            if (error) {
+                console.warn("Caption fetch error:", error.message);
+                return {};
+            }
+
+            const captionMap: Record<string, { description: string, isPremium: boolean, price: number }> = {};
+            (captionRows || []).forEach((row: any) => {
+                captionMap[row.photo_url] = {
+                    description: row.description || "",
+                    isPremium: row.is_premium || false,
+                    price: row.price || 0
+                };
+            });
+            return captionMap;
+        } catch (_) {
+            return {};
+        }
     },
 
     async getLikes(urls: string[]) {

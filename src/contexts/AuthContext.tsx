@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useRef } from "react";
-import { Session, User } from "@supabase/supabase-js";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { User, Session } from "@supabase/supabase-js";
 import { Tables } from "@/integrations/supabase/types";
-import { toast } from "sonner";
 
 type Profile = Tables<"profiles">;
 
@@ -11,26 +10,34 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
-  isPremium: boolean;
-  signUp: (email: string, password: string, name: string, role: string) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signInWithPhone: (phone: string, metadata?: { name: string, role: string }) => Promise<void>;
-  verifyOTP: (phone: string, token: string) => Promise<void>;
-  signInWithOAuth: (provider: 'google' | 'facebook') => Promise<void>;
   signOut: () => Promise<void>;
+  signIn: (email: string, pass: string) => Promise<void>;
+  signUp: (email: string, pass: string, name: string, role: string) => Promise<void>;
+  signInWithOAuth: (provider: 'google') => Promise<void>;
+  signInWithPhone: (phone: string, metadata?: any) => Promise<void>;
+  verifyOTP: (phone: string, token: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  isPremium: boolean;
+  isRecovering: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const isMounted = useRef(true);
+  const initialized = useRef(false);
+  const fetchingProfile = useRef<string | null>(null);
 
-  const fetchProfile = useCallback(async (userId: string): Promise<Profile | null> => {
+  const [isRecovering, setIsRecovering] = useState(false);
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    if (fetchingProfile.current === userId) return;
+    fetchingProfile.current = userId;
+
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -38,131 +45,116 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq("user_id", userId)
         .maybeSingle();
 
-      if (error) {
+      if (error && error.code !== "PGRST116") {
         console.error("Profile fetch error:", error);
-        return null;
       }
-      return data;
+      setProfile(data || null);
     } catch (err) {
-      console.error("Unexpected fetchProfile error:", err);
-      return null;
+      console.error("Unexpected profile fetch error:", err);
+    } finally {
+      fetchingProfile.current = null;
     }
   }, []);
 
-  const initialized = useRef(false);
+  const refreshProfile = useCallback(async () => {
+    if (user) {
+      await fetchProfile(user.id);
+    }
+  }, [user, fetchProfile]);
 
   useEffect(() => {
-    isMounted.current = true;
+    let mounted = true;
+
+    const safetyTimer = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("Auth initialization timed out; forcing app load.");
+        setLoading(false);
+      }
+    }, 5500);
 
     const initialize = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
-        if (initialSession?.user) {
+        if (mounted) {
+          if (error) console.error("Session fetch error:", error);
+          
           setSession(initialSession);
-          setUser(initialSession.user);
-          const p = await fetchProfile(initialSession.user.id);
-          if (isMounted.current) setProfile(p);
+          setUser(initialSession?.user ?? null);
+          
+          if (initialSession?.user) {
+            await fetchProfile(initialSession.user.id);
+          }
         }
       } catch (err) {
         console.error("Auth init error:", err);
       } finally {
-        if (isMounted.current) {
+        if (mounted) {
           initialized.current = true;
           setLoading(false);
+          clearTimeout(safetyTimer);
         }
       }
     };
 
     initialize();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (!isMounted.current) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      if (!mounted) return;
 
-      // Skip the initial event if we are still initializing via getSession
-      if (!initialized.current && event === 'INITIAL_SESSION') return;
+      const newUser = currentSession?.user ?? null;
+      setSession(currentSession);
+      setUser(newUser);
 
-      if (event === 'SIGNED_OUT') {
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setLoading(false);
-        return;
+      if (event === "PASSWORD_RECOVERY") {
+        setIsRecovering(true);
       }
 
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (newSession?.user) {
-          const p = await fetchProfile(newSession.user.id);
-          if (isMounted.current) {
-            setProfile(p);
-            setLoading(false);
-          }
+      if (event === "SIGNED_OUT") {
+        setProfile(null);
+        setIsRecovering(false);
+        setLoading(false);
+      } else if (newUser) {
+        if (event === "USER_UPDATED") {
+          setIsRecovering(false); // Password update finished
+        }
+        if (initialized.current) {
+          await fetchProfile(newUser.id);
+          setLoading(false);
         }
       }
     });
 
     return () => {
-      isMounted.current = false;
+      mounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, [fetchProfile]);
 
-  // Real-time profile update listener
-  useEffect(() => {
-    if (!user) return;
+  const signIn = async (email: string, pass: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+  };
 
-    const channel = supabase
-      .channel(`profile-realtime-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          const newProfile = payload.new as Profile;
-          const oldProfile = payload.old as Profile;
-          setProfile(newProfile);
-          if (oldProfile?.plan !== newProfile.plan) {
-            toast.success("Account status updated!");
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  const signUp = async (email: string, password: string, name: string, role: string) => {
-    if (role === "Admin") throw new Error("Unauthorized role");
-    const { data, error } = await supabase.auth.signUp({
+  const signUp = async (email: string, pass: string, name: string, role: string) => {
+    const { error } = await supabase.auth.signUp({
       email,
-      password,
+      password: pass,
       options: { data: { name, role } },
     });
     if (error) throw error;
-
-    const newUserId = data.user?.id;
-    if (newUserId) {
-      await supabase
-        .from("profiles")
-        .upsert({ user_id: newUserId, name, role, email }, { onConflict: "user_id" });
-    }
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const signInWithOAuth = async (provider: 'google') => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: window.location.origin }
+    });
     if (error) throw error;
   };
 
-  const signInWithPhone = async (phone: string, metadata?: { name: string, role: string }) => {
+  const signInWithPhone = async (phone: string, metadata?: any) => {
     const { error } = await supabase.auth.signInWithOtp({
       phone,
       options: { data: metadata }
@@ -171,43 +163,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const verifyOTP = async (phone: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
+    const { error } = await supabase.auth.verifyOtp({
+      phone,
+      token,
+      type: 'sms'
+    });
     if (error) throw error;
   };
 
-  const signInWithOAuth = async (provider: 'google' | 'facebook') => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin }
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/settings`,
     });
     if (error) throw error;
   };
 
   const signOut = async () => {
-    setProfile(null);
-    setUser(null);
-    setSession(null);
-    await supabase.auth.signOut();
-  };
-
-  const refreshProfile = async () => {
-    if (user) {
-      const profileData = await fetchProfile(user.id);
-      if (isMounted.current) setProfile(profileData);
+    try {
+      setLoading(true);
+      await supabase.auth.signOut();
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+    } catch (error) {
+      console.error("Error signing out:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isPremium = profile?.role === "Admin" || profile?.plan === "pro";
+  const isPremium = profile?.plan === "pro" || profile?.role === "Admin";
 
-  return (
-    <AuthContext.Provider value={{ session, user, profile, loading, isPremium, signUp, signIn, signInWithPhone, verifyOTP, signInWithOAuth, signOut, refreshProfile }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  const value = {
+    session,
+    user,
+    profile,
+    loading,
+    signOut,
+    signIn,
+    signUp,
+    signInWithOAuth,
+    signInWithPhone,
+    verifyOTP,
+    resetPassword,
+    refreshProfile,
+    isPremium,
+    isRecovering,
+  };
 
-export function useAuth() {
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
   return context;
-}
+};

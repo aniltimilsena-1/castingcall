@@ -151,18 +151,28 @@ export const profileService = {
     },
 
     async getGlobalStats() {
-        const [profilesRes, projectsRes, viewsRes, appsRes] = await Promise.all([
-            supabase.from("profiles").select("id", { count: 'exact', head: true }),
-            supabase.from("projects").select("id", { count: 'exact', head: true }),
-            supabase.from("profile_views" as any).select("*", { count: 'exact', head: true }),
-            supabase.from("applications" as any).select("id", { count: 'exact', head: true })
+        const fetchCount = async (table: string) => {
+            try {
+                const { count, error } = await supabase.from(table as any).select("id", { count: 'exact', head: true });
+                if (error) return 0;
+                return count || 0;
+            } catch {
+                return 0;
+            }
+        };
+
+        const [talentsCount, projectsCount, viewsCount, appsCount] = await Promise.all([
+            fetchCount("profiles"),
+            fetchCount("projects"),
+            fetchCount("profile_views"),
+            fetchCount("applications")
         ]);
 
         return {
-            talentsCount: profilesRes.count || 0,
-            projectsCount: projectsRes.count || 0,
-            viewsCount: viewsRes.count || 0,
-            successCount: appsRes.count || 0
+            talentsCount,
+            projectsCount,
+            viewsCount,
+            successCount: appsCount
         };
     }
 };

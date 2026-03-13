@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
 
 export default function SettingsPage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, isRecovering } = useAuth();
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
@@ -41,19 +41,22 @@ export default function SettingsPage() {
   };
 
   const handleChangePassword = async () => {
-    if (!oldPassword) { toast.error("Please enter your current password"); return; }
+    if (!isRecovering && !oldPassword) { toast.error("Please enter your current password"); return; }
     if (newPassword.length < 6) { toast.error("New password must be at least 6 characters"); return; }
 
     try {
       setSaving(true);
-      // Verify old password by attempting a silent sign-in
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: user?.email || "",
-        password: oldPassword,
-      });
+      
+      if (!isRecovering) {
+        // Verify old password by attempting a silent sign-in
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user?.email || "",
+          password: oldPassword,
+        });
 
-      if (signInError) {
-        throw new Error("Incorrect current password. Please try again.");
+        if (signInError) {
+          throw new Error("Incorrect current password. Please try again.");
+        }
       }
 
       // Update to new password
@@ -72,6 +75,12 @@ export default function SettingsPage() {
 
   return (
     <motion.div className="max-w-[680px] mx-auto px-4 py-12" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+      {isRecovering && (
+        <div className="bg-primary/10 border border-primary/30 rounded-2xl p-6 mb-8 text-center animate-pulse">
+          <h2 className="text-primary font-display text-xl mb-1">Password Recovery Active</h2>
+          <p className="text-xs text-primary/70">Please set a new password for your account below. No current password is required.</p>
+        </div>
+      )}
       <h1 className="font-display text-4xl text-primary mb-1">Settings</h1>
       <p className="text-muted-foreground text-sm mb-8">Manage your account preferences</p>
 
@@ -157,7 +166,9 @@ export default function SettingsPage() {
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
         <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Change Password</h3>
-        <InputField label="CURRENT PASSWORD" type="password" value={oldPassword} onChange={setOldPassword} placeholder="Enter your old password" />
+        {!isRecovering && (
+          <InputField label="CURRENT PASSWORD" type="password" value={oldPassword} onChange={setOldPassword} placeholder="Enter your old password" />
+        )}
         <InputField label="NEW PASSWORD" type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 6 characters" />
         <button onClick={handleChangePassword} className="border-[1.5px] border-border text-foreground px-8 py-3 rounded-lg font-body font-normal text-sm hover:border-primary hover:text-primary transition-colors">
           Update Password

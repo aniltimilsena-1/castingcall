@@ -2,24 +2,42 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const adminService = {
     async getAllAdminData() {
-        const [pRes, prRes, fRes, aRes, sRes, tRes, vRes] = await Promise.all([
-            supabase.from("profiles").select("*").order("created_at", { ascending: false }),
-            supabase.from("projects").select("*").order("created_at", { ascending: false }),
-            supabase.from("photo_captions").select("*").order("created_at", { ascending: false }),
-            supabase.from("applications").select("*, projects:project_id(title)").order("created_at", { ascending: false }),
-            supabase.from("audition_slots").select("*, projects:project_id(title)").order("start_time", { ascending: true }),
-            supabase.from("transactions").select("*").order("created_at", { ascending: false }),
-            supabase.from("payment_verifications").select("*").order("created_at", { ascending: false })
+        // Individual fetches with catch to prevent one failure from breaking everything
+        const fetchTable = async (table: string, query: string = "*", order: any = { column: "created_at", ascending: false }) => {
+            try {
+                const { data, error } = await supabase
+                    .from(table as any)
+                    .select(query)
+                    .order(order.column, { ascending: order.ascending });
+                if (error) {
+                    console.warn(`Admin fetch error for table ${table}:`, error.message);
+                    return [];
+                }
+                return data || [];
+            } catch (err) {
+                console.error(`Unexpected error fetching ${table}:`, err);
+                return [];
+            }
+        };
+
+        const [profiles, projects, feedItems, applications, schedules, finances, verifications] = await Promise.all([
+            fetchTable("profiles"),
+            fetchTable("projects"),
+            fetchTable("photo_captions"),
+            fetchTable("applications", "*, projects:project_id(title)"),
+            fetchTable("audition_slots", "*, projects:project_id(title)", { column: "start_time", ascending: true }),
+            fetchTable("transactions"),
+            fetchTable("payment_verifications")
         ]);
 
         return {
-            profiles: pRes.data || [],
-            projects: prRes.data || [],
-            feedItems: fRes.data || [],
-            applications: aRes.data || [],
-            schedules: sRes.data || [],
-            finances: tRes.data || [],
-            verifications: vRes.data || []
+            profiles,
+            projects,
+            feedItems,
+            applications,
+            schedules,
+            finances,
+            verifications
         };
     },
 
