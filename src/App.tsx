@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
   },
 });
 
-console.log("🛠️ App.tsx script loading...");
+console.log("🛠️ App.tsx script loading... [BUN-REMOVAL-VERIFY-1]");
 
 const App = () => {
   console.log("🎬 App component executing...");
