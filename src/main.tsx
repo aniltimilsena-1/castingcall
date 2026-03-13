@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
+import App from "./SafeApp.tsx";
 import "./index.css";
 
 console.log("🚀 CaastingCall Application Mounting...");
