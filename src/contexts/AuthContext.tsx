@@ -105,12 +105,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // Safety net: force loading off after 5 seconds max
+    // Safety net: force loading off after 3 seconds max (reduced from 5)
     const safetyTimer = setTimeout(() => {
-      if (isMounted.current) {
+      if (isMounted.current && loading) {
         setLoading(false);
       }
-    }, 5000);
+    }, 3000);
 
     return () => {
       isMounted.current = false;

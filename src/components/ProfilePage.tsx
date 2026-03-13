@@ -54,7 +54,7 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
-  const { user, profile, isPremium, refreshProfile } = useAuth();
+  const { user, profile, loading, isPremium, refreshProfile } = useAuth();
   const { setPipVideo, setIsPipOpen } = useVideo();
 
   // Mode
@@ -259,6 +259,24 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   // VIEW MODE
   // ──────────────────────────────────────────────────────────────────────
   if (!isEditing) {
+    if (!profile && !loading) {
+       return (
+         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-6">
+           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+             <User size={32} />
+           </div>
+           <h2 className="text-xl font-display text-white">Profile Not Found</h2>
+           <p className="text-sm text-muted-foreground max-w-xs">We couldn't retrieve your profile data. Try refreshing or updating your info.</p>
+           <button 
+             onClick={() => setIsEditing(true)}
+             className="bg-primary text-black px-8 py-2.5 rounded-xl text-sm font-medium mt-2"
+           >
+             Create Profile
+           </button>
+         </div>
+       );
+    }
+
     return (
       <>
       <motion.div

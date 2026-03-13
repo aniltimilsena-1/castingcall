@@ -151,38 +151,49 @@ const Index = () => {
       setProjectFormInitiallyOpen(false);
     }
 
-    if (p === "feed" && page === "feed") {
-      setFeedRefreshKey(k => k + 1);
-      return;
-    }
     setPage(p);
 
-    // Sync URL
+    // Sync URL - important for persistence on refresh
     if (p === "home") routerNavigate("/");
     else if (p === "auth") routerNavigate("/auth");
+    else if (location.pathname.startsWith("/profile") && id === (user?.id || '')) {
+       // Already on own profile path
+    }
     else if (p === "profile" && user) routerNavigate(`/profile/${user.id}`);
+    else if (p === "search") {
+       // Support search params if needed
+       routerNavigate("/search");
+    }
     else routerNavigate(`/${p}`);
   };
 
-  // Sync state with URL on load and changes
+  // Sync state with URL on load and path changes
   useEffect(() => {
+    if (loading) return; // Wait for auth to settle
+
     const path = location.pathname;
     const { page: pageParam } = (params as any);
 
-    if (path === "/" || path === "/auth") {
-      if (path === "/auth") setPage("auth");
-      else setPage("home");
+    if (path === "/" || path === "") {
+      setPage("home");
+    } else if (path === "/auth") {
+      if (user) navigate("home");
+      else setPage("auth");
     } else if (path.startsWith("/profile")) {
-      if (id && (!user || id !== user.id)) {
-        // Handled by other effect for third-party profile viewing
-      } else {
+      const profileId = id || path.split('/').pop();
+      if (profileId && user && profileId === user.id) {
         setPage("profile");
+      } else if (profileId) {
+        // Third-party profile view - Index stays on whatever it was or home
+        // The dialog effect covers the modal.
+      } else if (user) {
+        // Just /profile with no ID, sync to /profile/my-id
+        routerNavigate(`/profile/${user.id}`, { replace: true });
       }
     } else {
-      // Use either the page param or the first part of the path
       const p = (pageParam || path.substring(1).split('/')[0]) as PageName;
       if (p) {
-        if (AUTH_REQUIRED.includes(p) && !user && !loading) {
+        if (AUTH_REQUIRED.includes(p) && !user) {
           setPage("auth");
           routerNavigate("/auth", { replace: true });
         } else {
@@ -190,7 +201,7 @@ const Index = () => {
         }
       }
     }
-  }, [location.pathname, params, user, loading, id]);
+  }, [location.pathname, params, user, loading, id, routerNavigate]);
 
   // Handle viewing specific profiles via URL
   useEffect(() => {
@@ -282,7 +293,7 @@ const Index = () => {
 
       <main className={`flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} pb-16 md:pb-0`}>
         {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
-        {page === "auth" && <AuthPage onSuccess={() => setPage("home")} />}
+        {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
         {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} />}
