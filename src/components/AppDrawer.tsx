@@ -15,14 +15,16 @@ interface AppDrawerProps {
 }
 
 export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps) {
-  const { user, profile, isPremium, signOut } = useAuth();
+  const { user, profile, loading, isPremium, signOut } = useAuth();
 
-  const initials = (profile?.name || user?.email || "?")
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = loading 
+    ? "" 
+    : (profile?.name || user?.email || "?")
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2);
 
   const go = (page: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => {
     onNavigate(page, options);
@@ -31,9 +33,9 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 
   const handleLogout = async () => {
     onClose();
-    onNavigate("home");
     await signOut();
-    toast.success("Signed out. See you soon!");
+    onNavigate("home");
+    toast.success("Signed out successfully");
   };
 
   return (
@@ -60,7 +62,9 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           </button>
 
           <div className="w-[52px] h-[52px] rounded-full bg-secondary border-2 border-primary flex items-center justify-center font-display text-xl text-primary flex-shrink-0 overflow-hidden">
-            {profile?.photo_url ? (
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+            ) : profile?.photo_url ? (
               <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
             ) : (
               initials
@@ -68,10 +72,10 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           </div>
           <div className="min-w-0">
             <div className="font-normal text-sm text-foreground truncate">
-              {profile?.name || "Guest"}
+              {loading ? "Syncing..." : (profile?.name || (user ? "Account" : "Guest"))}
             </div>
             <div className="text-xs text-muted-foreground mt-0.5 truncate">
-              {profile?.role || (user ? "Member" : "Not signed in")}
+              {loading ? "Please wait" : (profile?.role || (user ? "Member" : "Not signed in"))}
             </div>
           </div>
         </div>

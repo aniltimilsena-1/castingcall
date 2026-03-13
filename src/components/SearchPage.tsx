@@ -368,7 +368,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6">
           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Syncing Database...</p>
+          <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Scanning Talent Database...</p>
         </div>
       ) : searchType === "talents" ? (
         results.length === 0 ? (
@@ -392,11 +392,11 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                       (p.name || "U")[0].toUpperCase()
                     )}
                     {onlineUsers.has(p.user_id) && (
-                      <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 animate-pulse" title="Online" />
+                      <div className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 shadow-glow shadow-green-500/50" title="Online" />
                     )}
                   </div>
-                  {p.plan === "pro" && (
-                    <div className="absolute -bottom-2 bg-primary text-black text-[0.55rem] font-normal px-3 py-1 rounded-full shadow-lg tracking-tighter">PREMIUM</div>
+                  {(p.plan === "pro" || p.role === "Admin") && (
+                    <div className="absolute -bottom-1.5 bg-amber-500 text-black text-[0.5rem] font-bold px-2.5 py-0.5 rounded-md shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>
                   )}
                 </div>
 

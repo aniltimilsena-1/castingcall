@@ -290,7 +290,7 @@ export default function ProfileDetailDialog({
                                                     (profile?.name || "U")[0].toUpperCase()
                                                 )}
                                                 {isOnline && (
-                                                    <div className="absolute bottom-4 right-4 w-5 h-5 bg-green-500 border-4 border-background rounded-full z-10" title="Online" />
+                                                    <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-[3px] border-[#1c1c1c] rounded-full z-20 shadow-glow shadow-green-500/50" title="Online" />
                                                 )}
                                             </div>
                                             <div className="font-display text-lg text-white uppercase tracking-wider flex items-center gap-2">

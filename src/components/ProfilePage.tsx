@@ -164,11 +164,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   }, [profile]);
 
   if (!user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Please sign in to view your profile.</div>;
-  if (!profile) return (
+  if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-4 text-muted-foreground">
         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <p className="text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Loading Profile...</p>
+        <p className="text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Syncing Profile Data...</p>
       </div>
     </div>
   );

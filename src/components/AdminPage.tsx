@@ -170,6 +170,15 @@ export default function AdminPage() {
     // Final total (using higher of two sources for NPR for resilience)
     const nprRevenue = Math.max(manualApprovedRevenue, nprFromTransactions);
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-6">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Syncing Command Center...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#050505] text-white/90 pb-20">
             <div className="p-6 md:p-12 max-w-[1500px] mx-auto">

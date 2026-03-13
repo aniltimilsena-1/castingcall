@@ -352,11 +352,11 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                       )}
 
                       {onlineUsers.has(p.user_id) && (
-                        <div className="absolute inset-0 border-2 border-primary/40 rounded-full animate-ping" />
+                        <div className="absolute inset-0 border-2 border-primary/20 rounded-full shadow-[inset_0_0_10px_rgba(34,197,94,0.2)]" />
                       )}
                     </div>
                     {onlineUsers.has(p.user_id) && (
-                      <div className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-[#0d0d0f] rounded-full z-10" />
+                      <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-[#0d0d0f] rounded-full z-10 shadow-glow shadow-green-500/50" />
                     )}
                   </div>
 
