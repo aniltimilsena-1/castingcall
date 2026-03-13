@@ -1,15 +1,17 @@
 import { createRoot } from "react-dom/client";
-import App from "./SafeApp.tsx";
-import "./index.css";
+import React from "react";
 
-console.log("🚀 CaastingCall Application Mounting...");
+console.log("🚀 STARTING PURE REACT RENDER...");
 
 try {
-  const root = document.getElementById("root");
-  if (!root) throw new Error("Root element (#root) not found in index.html");
-  
-  createRoot(root).render(<App />);
-  console.log("✅ Render call successful.");
+  const rootElement = document.getElementById("root");
+  if (rootElement) {
+    const root = createRoot(rootElement);
+    root.render(React.createElement("h1", { style: { color: "#FFD700", textAlign: "center", marginTop: "100px" } }, "⚛️ PURE REACT IS RENDERING"));
+    console.log("✅ Render call sent.");
+  } else {
+    console.error("❌ ROOT NOT FOUND");
+  }
 } catch (err) {
-  console.error("💥 CRITICAL RENDER FAILURE:", err);
+  console.error("💥 REACT RENDER CRASHED:", err);
 }
