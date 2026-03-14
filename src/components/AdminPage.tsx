@@ -124,23 +124,30 @@ export default function AdminPage() {
     const handleDeleteProject = async (id: string) => {
         if (!confirm("Are you sure? This will remove the casting call forever.")) return;
         try {
-            await adminService.deleteProject(id);
+            const { error } = await adminService.deleteProject(id);
+            if (error) throw error;
             toast.info("Project removed.");
             fetchAllData();
-        } catch (err) {
-            toast.error("Failed to delete project");
+        } catch (err: any) {
+            console.error("Delete project error:", err);
+            toast.error("Failed to delete project: " + (err.message || "Unknown error"));
         }
     };
 
-    const handleDeleteUser = async (userId: string) => {
-        if (!confirm('Delete user profile?')) return;
+    const handleDeleteUser = async (profileId: string, isInternalId = false) => {
+        if (!confirm('Delete user account and profile?')) return;
         try {
-            await adminService.deleteProfile(userId);
+            const { error } = isInternalId 
+                ? await supabase.from("profiles").delete().eq("id", profileId)
+                : await supabase.from("profiles").delete().eq("user_id", profileId);
+
+            if (error) throw error;
+            
             toast.success('Profile removed');
             fetchAllData();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Delete user error:", err);
-            toast.error("Failed to delete user profile.");
+            toast.error("Failed to delete user profile: " + (err.message || "Unknown error"));
         }
     };
 
@@ -262,9 +269,13 @@ export default function AdminPage() {
                                                     <DropdownMenuItem 
                                                         onClick={async () => {
                                                             const newPlan = p.plan === 'pro' ? 'free' : 'pro';
-                                                            await supabase.from('profiles').update({ plan: newPlan } as never).eq('id', p.id);
-                                                            toast.success(`User set to ${newPlan.toUpperCase()}`);
-                                                            fetchAllData();
+                                                            const { error } = await supabase.from('profiles').update({ plan: newPlan } as never).eq('id', p.id);
+                                                            if (error) {
+                                                                toast.error("Error: " + error.message);
+                                                            } else {
+                                                                toast.success(`User set to ${newPlan.toUpperCase()}`);
+                                                                fetchAllData();
+                                                            }
                                                         }}
                                                         className={`flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-xs ${p.plan === 'pro' ? 'text-amber-500 bg-amber-500/5' : 'text-foreground hover:bg-primary/10'}`}
                                                     >
@@ -275,13 +286,7 @@ export default function AdminPage() {
                                                     <div className="h-px bg-white/5 my-1 mx-2" />
                                                     
                                                     <DropdownMenuItem 
-                                                        onClick={async () => {
-                                                            if (confirm(`Are you sure you want to delete profile for ${p.name}?`)) {
-                                                                await supabase.from('profiles').delete().eq('id', p.id);
-                                                                toast.success('Profile removed');
-                                                                fetchAllData();
-                                                            }
-                                                        }}
+                                                        onClick={() => handleDeleteUser(p.user_id)}
                                                         className="flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-xs text-red-500 hover:bg-red-500/10"
                                                     >
                                                         <Trash2 size={18} />
@@ -312,7 +317,22 @@ export default function AdminPage() {
                                                 </div>
                                             </td>
                                             <td className="px-10 py-6">
-                                                <button onClick={async () => { if (confirm('Delete post?')) { await supabase.from('photo_captions').delete().eq('photo_url', f.url); toast.success('Deleted'); fetchAllData(); } }} className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"><Trash2 size={16} /></button>
+                                                <button 
+                                                    onClick={async () => { 
+                                                        if (confirm('Delete post?')) { 
+                                                            const { error } = await supabase.from('photo_captions').delete().eq('photo_url', f.url); 
+                                                            if (error) {
+                                                                toast.error("Error: " + error.message);
+                                                            } else {
+                                                                toast.success('Deleted'); 
+                                                                fetchAllData(); 
+                                                            }
+                                                        } 
+                                                    }} 
+                                                    className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </td>
                                         </tr>
                                     );

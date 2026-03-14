@@ -108,7 +108,7 @@ export const adminService = {
     },
 
     async deleteProfile(userId: string) {
-        await supabase.from("profiles").delete().eq("user_id", userId);
+        return await supabase.from("profiles").delete().eq("user_id", userId);
     },
 
     async updateTalentBadge(userId: string, plan: string) {
@@ -116,6 +116,6 @@ export const adminService = {
     },
 
     async deleteProject(projectId: string) {
-        await supabase.from("projects").delete().eq("id", projectId);
+        return await supabase.from("projects").delete().eq("id", projectId);
     }
 };

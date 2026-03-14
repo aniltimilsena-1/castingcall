@@ -535,7 +535,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[400]"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[400] pointer-events-auto"
               onClick={() => setFollowModal(null)}
             />
             <motion.div
@@ -544,7 +544,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 40 }}
               transition={{ type: "spring", damping: 28, stiffness: 350 }}
-              className="fixed inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-[401] w-full md:max-w-md bg-card border border-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
+              className="fixed inset-x-0 bottom-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 z-[401] w-full md:max-w-md bg-card border border-border rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh] pointer-events-auto"
             >
               <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
                 <div className="flex items-center gap-2">
@@ -554,12 +554,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     ({followModal === "followers" ? followCounts.followers : followCounts.following})
                   </span>
                 </div>
-                <button
-                  onClick={() => setFollowModal(null)}
-                  className="text-muted-foreground hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5"
+                <div
+                  onClick={(e) => { e.stopPropagation(); setFollowModal(null); }}
+                  className="text-muted-foreground hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5 cursor-pointer pointer-events-auto"
                 >
                   <X size={20} />
-                </button>
+                </div>
               </div>
               <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1">
                 {followListLoading ? (
@@ -593,6 +593,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     </div>
                   ))
                 )}
+              </div>
+              <div className="p-4 border-t border-border flex-shrink-0 bg-secondary/10">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setFollowModal(null); }}
+                  className="w-full py-3 bg-secondary hover:bg-secondary/80 text-white rounded-xl text-sm font-medium transition-all pointer-events-auto"
+                >
+                  Close
+                </button>
               </div>
             </motion.div>
           </>
