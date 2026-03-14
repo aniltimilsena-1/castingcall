@@ -35,8 +35,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-    // Disable Navigator.locks — prevents "lock timed out" when app is open in multiple tabs
-    lock: undefined,
     detectSessionInUrl: true,
   }
 });
