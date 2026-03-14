@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { profileService, Profile } from "@/services/profileService";
 import { paymentService } from "@/services/paymentService";
 import { messageService } from "@/services/messageService";
-import { followService } from "@/services/followService";
+import { followService, FollowProfile } from "@/services/followService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical, UserCheck, Users } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
@@ -77,6 +77,24 @@ export default function ProfileDetailDialog({
     const [isFollowingProfile, setIsFollowingProfile] = useState(false);
     const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
     const [followLoading, setFollowLoading] = useState(false);
+    const [followModal, setFollowModal] = useState<"followers" | "following" | null>(null);
+    const [followList, setFollowList] = useState<FollowProfile[]>([]);
+    const [followListLoading, setFollowListLoading] = useState(false);
+
+    const openFollowModal = async (type: "followers" | "following") => {
+        setFollowModal(type);
+        setFollowListLoading(true);
+        try {
+            const list = type === "followers"
+                ? await followService.getFollowers(profile!.user_id)
+                : await followService.getFollowing(profile!.user_id);
+            setFollowList(list);
+        } catch {
+            toast.error("Failed to load list");
+        } finally {
+            setFollowListLoading(false);
+        }
+    };
 
     // Detect User Location (Country)
     useEffect(() => {
@@ -340,15 +358,15 @@ export default function ProfileDetailDialog({
 
                                             {/* ── Follow counts ── */}
                                             <div className="flex items-center gap-6 mb-6">
-                                                <div className="flex flex-col items-center md:items-start">
+                                                <button onClick={() => openFollowModal("followers")} className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity">
                                                     <span className="text-xl font-display text-white">{followCounts.followers.toLocaleString()}</span>
                                                     <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
-                                                </div>
+                                                </button>
                                                 <div className="w-px h-8 bg-white/10" />
-                                                <div className="flex flex-col items-center md:items-start">
+                                                <button onClick={() => openFollowModal("following")} className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity">
                                                     <span className="text-xl font-display text-white">{followCounts.following.toLocaleString()}</span>
                                                     <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Following</span>
-                                                </div>
+                                                </button>
                                             </div>
 
                                             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
@@ -575,6 +593,34 @@ export default function ProfileDetailDialog({
                                                     )}
                                                 </div>
                                                 <h2 className="font-display text-2xl text-white">{profile?.name}</h2>
+                                                
+                                                {/* Full Profile View Follow Stats & Button */}
+                                                <div className="flex items-center gap-6 mt-2">
+                                                    <button onClick={() => openFollowModal("followers")} className="flex flex-col items-center hover:opacity-70 transition-opacity">
+                                                        <span className="text-xl font-display text-white">{followCounts.followers.toLocaleString()}</span>
+                                                        <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
+                                                    </button>
+                                                    <div className="w-px h-8 bg-white/10" />
+                                                    <button onClick={() => openFollowModal("following")} className="flex flex-col items-center hover:opacity-70 transition-opacity">
+                                                        <span className="text-xl font-display text-white">{followCounts.following.toLocaleString()}</span>
+                                                        <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Following</span>
+                                                    </button>
+                                                </div>
+                                                
+                                                {user?.id !== profile.user_id && (
+                                                    <button
+                                                        onClick={handleToggleFollow}
+                                                        disabled={followLoading}
+                                                        className={`mt-2 w-full max-w-[200px] flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border shadow-lg ${
+                                                            isFollowingProfile
+                                                                ? 'bg-primary/10 border-primary text-primary hover:bg-red-500/10 hover:border-red-500 hover:text-red-400'
+                                                                : 'bg-primary border-primary text-black hover:opacity-90 shadow-primary/20'
+                                                        } disabled:opacity-50`}
+                                                    >
+                                                        {isFollowingProfile ? <UserCheck size={18} /> : <Users size={18} />}
+                                                        {followLoading ? '...' : isFollowingProfile ? 'Following' : 'Follow'}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
 
@@ -745,6 +791,78 @@ export default function ProfileDetailDialog({
                     }
                 }}
             />
+            {/* ── Followers / Following Modal ── */}
+            <AnimatePresence>
+                {followModal && (
+                    <>
+                        <motion.div
+                            key="follow-backdrop"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[2000]"
+                            onClick={() => setFollowModal(null)}
+                        />
+                        <motion.div
+                            key="follow-panel"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ type: "spring", damping: 28, stiffness: 350 }}
+                            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[2001] w-full max-w-md bg-card border border-border rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh] mx-4"
+                        >
+                            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
+                                <div className="flex items-center gap-2">
+                                    <Users size={18} className="text-primary" />
+                                    <h3 className="font-display text-lg text-white capitalize">{followModal}</h3>
+                                    <span className="text-sm text-muted-foreground">
+                                        ({followModal === "followers" ? followCounts.followers : followCounts.following})
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => setFollowModal(null)}
+                                    className="text-muted-foreground hover:text-white transition-colors p-1 rounded-lg hover:bg-white/5"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1">
+                                {followListLoading ? (
+                                    <div className="flex flex-col items-center gap-3 py-16">
+                                        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                        <p className="text-[0.65rem] uppercase tracking-[3px] text-muted-foreground animate-pulse">Loading...</p>
+                                    </div>
+                                ) : followList.length === 0 ? (
+                                    <div className="flex flex-col items-center py-16 gap-3">
+                                        <Users size={36} className="text-muted-foreground/20" />
+                                        <p className="text-muted-foreground text-sm">
+                                            {followModal === "followers" ? "No followers yet." : "Not following anyone yet."}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    followList.map((fp) => (
+                                        <div key={fp.user_id} className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-white/5 transition-colors cursor-pointer">
+                                            <div className="w-11 h-11 rounded-full bg-secondary border border-border flex-shrink-0 overflow-hidden flex items-center justify-center font-display text-xl text-primary">
+                                                {fp.photo_url
+                                                    ? <img src={fp.photo_url} alt={fp.name} className="w-full h-full object-cover" />
+                                                    : (fp.name || "?")[0].toUpperCase()
+                                                }
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-sm font-normal text-white truncate">{fp.name}</span>
+                                                    {fp.plan === "pro" && <Crown size={12} className="text-amber-500 flex-shrink-0" />}
+                                                </div>
+                                                <span className="text-[0.6rem] uppercase tracking-[0.15em] text-primary/60">{fp.role}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </>
     );
 }
