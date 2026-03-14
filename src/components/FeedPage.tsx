@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { feedService } from "@/services/feedService";
 import { profileService, Profile } from "@/services/profileService";
+import { followService } from "@/services/followService";
 import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,6 +65,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
     const [subscriptions, setSubscriptions] = useState<Set<string>>(new Set());
     const [purchasedPosts, setPurchasedPosts] = useState<Set<string>>(new Set());
     const [savedPostUrls, setSavedPostUrls] = useState<Set<string>>(new Set());
+    const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
 
     const [paymentModal, setPaymentModal] = useState<{
         open: boolean;
@@ -163,14 +165,16 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                     setComments(commentMap);
     
                     if (user) {
-                        const [subs, purchased, saved] = await Promise.all([
+                        const [subs, purchased, saved, follows] = await Promise.all([
                             paymentService.getFanSubscriptions(user.id).catch(() => []),
                             paymentService.getPurchasedPosts(user.id).catch(() => new Set<string>()),
-                            feedService.getSavedPostUrls(user.id).catch(() => [])
+                            feedService.getSavedPostUrls(user.id).catch(() => []),
+                            followService.getFollowing(user.id).catch(() => [])
                         ]);
                         setSubscriptions(new Set(subs));
                         setPurchasedPosts(purchased);
                         setSavedPostUrls(new Set(saved));
+                        setFollowedUsers(new Set(follows.map((f: any) => f.user_id)));
                     }
                 } catch (socialErr) {
                     console.error("Non-critical social data load failure:", socialErr);
@@ -255,6 +259,36 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
             toast.error(err.message || "Failed to post comment");
         } finally {
             setPostingComment(null);
+        }
+    };
+
+    // ─── Follow handler ───────────────────────────────────────────────────────
+    const handleToggleFollow = async (profileId: string) => {
+        if (!user) {
+            toast.error("Please log in to follow");
+            return;
+        }
+        const isFollowing = followedUsers.has(profileId);
+        try {
+            if (isFollowing) {
+                await followService.unfollow(user.id, profileId);
+                setFollowedUsers(prev => {
+                    const next = new Set(prev);
+                    next.delete(profileId);
+                    return next;
+                });
+                toast.info("Unfollowed");
+            } else {
+                await followService.follow(user.id, profileId);
+                setFollowedUsers(prev => {
+                    const next = new Set(prev);
+                    next.add(profileId);
+                    return next;
+                });
+                toast.success("Following!");
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Failed to follow");
         }
     };
 
@@ -432,6 +466,8 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                                         });
                                     }
                                 }}
+                                isFollowing={followedUsers.has(item.owner.id)}
+                                onToggleFollow={() => handleToggleFollow(item.owner.id)}
                                 isSavedPost={savedPostUrls.has(item.url)}
                                 onSavePost={() => handleToggleSavePost(item.url)}
                                 onSharePost={() => handleSharePost(item)}
@@ -495,6 +531,8 @@ interface FeedCardProps {
     onTip: () => void;
     onSavePost: () => void;
     onSharePost: () => void;
+    isFollowing: boolean;
+    onToggleFollow: () => void;
     isSavedPost?: boolean;
     index: number;
 }
@@ -502,7 +540,7 @@ interface FeedCardProps {
 function FeedCard({
     item, isUnlocked, likeData, commentList, commentValue, commentsOpen,
     isPostingComment, onLike, onDeleteComment, onToggleComments, onCommentChange,
-    onCommentSubmit, onProfileClick, onOpenPost, onUnlock, onTip, onSavePost, onSharePost, isSavedPost, index
+    onCommentSubmit, onProfileClick, onOpenPost, onUnlock, onTip, onSavePost, onSharePost, isFollowing, onToggleFollow, isSavedPost, index
 }: FeedCardProps) {
     const { user, profile: currentUserProfile } = useAuth();
     const { setPipVideo, setIsPipOpen } = useVideo();
@@ -680,8 +718,21 @@ function FeedCard({
                         <div className="flex items-center gap-2">
                             <span className="font-bold text-sm tracking-tight drop-shadow-md">{item.owner.name}</span>
                             {(item.owner.plan === 'pro' || item.owner.role === 'Admin') && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
-                            <span className="text-white/40 text-xs">·</span>
-                            <button className="text-[0.65rem] font-bold border border-white/30 rounded-md px-2 py-0.5 hover:bg-white/10 transition-colors uppercase tracking-widest">Follow</button>
+                            {item.owner.id !== user?.id && (
+                                <>
+                                    <span className="text-white/40 text-xs">·</span>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); onToggleFollow(); }}
+                                        className={`text-[0.65rem] font-bold border rounded-md px-2 py-0.5 transition-colors uppercase tracking-widest ${
+                                            isFollowing 
+                                                ? 'border-white/10 bg-white/10 text-white/50 hover:bg-white/20' 
+                                                : 'border-white/30 hover:bg-white/10 text-white'
+                                        }`}
+                                    >
+                                        {isFollowing ? 'Following' : 'Follow'}
+                                    </button>
+                                </>
+                            )}
                         </div>
                         <span className="text-[0.6rem] opacity-60 uppercase tracking-widest">{item.owner.role}</span>
                     </div>
