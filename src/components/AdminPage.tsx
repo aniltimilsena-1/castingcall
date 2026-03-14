@@ -269,7 +269,7 @@ export default function AdminPage() {
                                                     <DropdownMenuItem 
                                                         onClick={async () => {
                                                             const newPlan = p.plan === 'pro' ? 'free' : 'pro';
-                                                            const { error } = await supabase.from('profiles').update({ plan: newPlan } as never).eq('id', p.id);
+                                                            const { error } = await supabase.from('profiles').update({ plan: newPlan } as any).eq('id', p.id);
                                                             if (error) {
                                                                 toast.error("Error: " + error.message);
                                                             } else {
