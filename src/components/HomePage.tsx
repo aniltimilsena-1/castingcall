@@ -112,7 +112,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             transition={{ duration: 0.8, delay: 0.2 }}
             className="font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.9] tracking-tighter text-white mb-6 uppercase"
           >
-            Find <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-amber-500 italic font-normal">Casting</span> Opportunities <br />
+            CaastingCall: <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-amber-500 italic font-normal">Casting</span> Opportunities <br />
             <span className="text-white/80">for Actors & Creators</span>
           </motion.h1>
 
