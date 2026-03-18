@@ -192,8 +192,13 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
 
           <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
             <div className="flex items-center gap-6">
-              <h3 className="font-display text-2xl text-white flex items-center gap-3">
-                <SlidersHorizontal className="text-primary" size={20} />
+              <h3 
+                className="font-display text-2xl text-white flex items-center gap-3 cursor-pointer hover:text-primary/80 transition-all active:scale-95"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 group-hover:border-primary/40 transition-all">
+                  <SlidersHorizontal className="text-primary" size={20} />
+                </div>
                 Smart Filters
               </h3>
               <div className="flex items-center gap-3 bg-secondary/50 px-4 py-2 rounded-full border border-white/5">
@@ -228,7 +233,16 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+          <motion.div 
+            initial={false}
+            animate={{ 
+              height: showFilters ? "auto" : 0,
+              opacity: showFilters ? 1 : 0,
+              marginTop: showFilters ? 32 : 0
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10 overflow-hidden"
+          >
             <div>
               <label className="block text-[0.6rem] font-normal tracking-[3px] uppercase text-primary mb-4">Mood</label>
               <div className="flex flex-wrap gap-2">
@@ -276,7 +290,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                 ))}
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
