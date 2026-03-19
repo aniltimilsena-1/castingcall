@@ -146,6 +146,16 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
 
   const handleThumbnailUpload = async (file: File) => {
     if (!user) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Thumbnail too large (max 5MB)");
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image for the thumbnail");
+      return;
+    }
+
     try {
       const fileExt = file.name.split('.').pop();
       const filePath = `project-thumbnails/${user.id}-${Math.random()}.${fileExt}`;
@@ -162,6 +172,16 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
 
   const handleUpdateAudition = async (appId: string, file: File) => {
     if (!user) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("Video too large (max 50MB)");
+      return;
+    }
+    if (!file.type.startsWith('video/') && !file.type.startsWith('audio/')) {
+      toast.error("Please upload a video or audio file for the audition");
+      return;
+    }
+
     try {
       toast.loading("Uploading new self-tape...");
       const fileExt = file.name.split('.').pop();

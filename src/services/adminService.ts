@@ -2,10 +2,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const adminService = {
     async getAllAdminData() {
-        const fetchTable = async (table: any, query: string = "*", order: any = { column: "created_at", ascending: false }): Promise<any[]> => {
+        const fetchTable = async (table: string, query: string = "*", order: { column: string, ascending: boolean } = { column: "created_at", ascending: false }): Promise<any[]> => {
             try {
-                const { data, error } = await supabase
-                    .from(table as any)
+                const { data, error } = await (supabase
+                    .from(table as any) as any)
                     .select(query)
                     .order(order.column, { ascending: order.ascending });
                 if (error) {
@@ -45,22 +45,22 @@ export const adminService = {
         const meta = v.metadata || {};
 
         if (pType === 'pro') {
-            await supabase.from("profiles").update({ plan: 'pro' } as any).eq("user_id", v.user_id);
+            await (supabase.from("profiles") as any).update({ plan: 'pro' }).eq("user_id", v.user_id);
         } else if (pType === 'fan_pass') {
-            await supabase.from("fan_subscriptions" as any).insert({
+            await (supabase.from("fan_subscriptions" as any) as any).insert({
                 subscriber_id: v.user_id,
                 talent_id: meta.talent_id,
                 status: 'active',
                 expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
             });
         } else if (pType === 'product') {
-            await supabase.from("product_purchases").insert({
+            await (supabase.from("product_purchases" as any) as any).insert({
                 buyer_id: v.user_id,
                 product_id: meta.product_id,
                 amount_paid: v.amount
             });
         } else if (pType === 'tip') {
-            await supabase.from("tips").insert({
+            await (supabase.from("tips" as any) as any).insert({
                 sender_id: v.user_id,
                 receiver_id: meta.talent_id,
                 amount: v.amount,
@@ -68,7 +68,7 @@ export const adminService = {
                 message: "Gift approved by admin"
             });
         } else if (pType === 'unlock') {
-            await supabase.from("photo_purchases").insert({
+            await (supabase.from("photo_purchases" as any) as any).insert({
                 buyer_id: v.user_id,
                 photo_url: meta.post_url,
                 amount_paid: v.amount
@@ -76,20 +76,20 @@ export const adminService = {
         }
 
         // Mark verified
-        await supabase.from("payment_verifications" as any).update({ status: 'approved' }).eq("id", v.id);
+        await (supabase.from("payment_verifications" as any) as any).update({ status: 'approved' }).eq("id", v.id);
 
         // Create transaction record
-        await supabase.from("transactions" as any).insert({
+        await (supabase.from("transactions" as any) as any).insert({
             user_id: v.user_id,
             amount: v.amount,
             currency: v.currency || 'NPR',
             payment_type: pType,
             payment_method: 'manual_verification',
             metadata: meta
-        } as any);
+        });
 
         // Create notification
-        await supabase.from("notifications").insert({
+        await (supabase.from("notifications" as any) as any).insert({
             user_id: v.user_id,
             title: "Payment Approved",
             message: `Your payment for ${pType.toUpperCase()} has been verified. Access granted!`,
@@ -97,9 +97,9 @@ export const adminService = {
     },
 
     async rejectPayment(v: any) {
-        await supabase.from("payment_verifications").update({ status: 'rejected' } as any).eq("id", v.id);
+        await (supabase.from("payment_verifications" as any) as any).update({ status: 'rejected' }).eq("id", v.id);
 
-        await supabase.from("notifications").insert({
+        await (supabase.from("notifications" as any) as any).insert({
             user_id: v.user_id,
             title: "Payment Rejected",
             message: `Your payment for ${v.payment_type?.toUpperCase()} was rejected. Please check your details.`,
@@ -107,14 +107,14 @@ export const adminService = {
     },
 
     async deleteProfile(userId: string) {
-        return await supabase.from("profiles").delete().eq("user_id", userId);
+        return await (supabase.from("profiles" as any) as any).delete().eq("user_id", userId);
     },
 
     async updateTalentBadge(userId: string, plan: string) {
-        await supabase.from("profiles").update({ plan } as any).eq("user_id", userId);
+        await (supabase.from("profiles" as any) as any).update({ plan }).eq("user_id", userId);
     },
 
     async deleteProject(projectId: string) {
-        return await supabase.from("projects").delete().eq("id", projectId);
+        return await (supabase.from("projects" as any) as any).delete().eq("id", projectId);
     }
 };

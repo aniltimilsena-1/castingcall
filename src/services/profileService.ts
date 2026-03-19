@@ -116,10 +116,11 @@ export const profileService = {
     },
 
     async getDigitalProducts(talentId: string) {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase
             .from("digital_products")
             .select("*")
-            .eq("seller_id", talentId);
+            .eq("seller_id", talentId)
+            .eq("is_active", true) as any);
         if (error) throw error;
         return data || [];
     },

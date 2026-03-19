@@ -128,7 +128,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       }
     };
     fetchTrending();
-  }, [query, role, user, searchType, selectedMoods, selectedStyles, selectedTraits, isTrending, looksLikeQuery, visualSearchMode]);
+  }, [query, role, user, searchType, selectedMoods, selectedStyles, selectedTraits, isTrending, looksLikeQuery, visualSearchMode, currentUserProfile?.role, currentUserProfile?.id]);
 
   const toggleSave = async (e: React.MouseEvent, profileId: string) => {
     e.stopPropagation();
@@ -531,6 +531,16 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
     try {
       let videoUrl = null;
       if (videoFile) {
+        if (videoFile.size > 50 * 1024 * 1024) {
+          toast.error("Video too large (max 50MB)");
+          setLoading(false);
+          return;
+        }
+        if (!videoFile.type.startsWith('video/') && !videoFile.type.startsWith('audio/')) {
+          toast.error("Invalid file type (Video/Audio only)");
+          setLoading(false);
+          return;
+        }
         setUploadingVideo(true);
         const fileExt = videoFile.name.split('.').pop();
         const filePath = `auditions/${user.id}/${project.id}-${Math.random()}.${fileExt}`;

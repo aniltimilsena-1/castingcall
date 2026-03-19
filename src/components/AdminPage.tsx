@@ -90,9 +90,10 @@ export default function AdminPage() {
             if (data.finances) setFinances(data.finances as any[]);
             if (data.verifications) setVerifications(data.verifications as any[]);
 
-        } catch (err) {
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : String(err);
             console.error("Fetch error:", err);
-            toast.error("Failed to load admin data.");
+            toast.error("Failed to load admin data: " + errorMessage);
         } finally {
             setLoading(false);
         }
@@ -104,8 +105,8 @@ export default function AdminPage() {
             toast.success("Payment approved! User updated.");
             fetchAllData();
         } catch (err: unknown) {
-            const error = err as Error;
-            toast.error("Approval failed: " + error.message);
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            toast.error("Approval failed: " + errorMessage);
         }
     };
 
@@ -116,8 +117,8 @@ export default function AdminPage() {
             toast.info("Payment rejected.");
             fetchAllData();
         } catch (err: unknown) {
-            const error = err as Error;
-            toast.error("Rejection failed: " + error.message);
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            toast.error("Rejection failed: " + errorMessage);
         }
     };
 
@@ -129,9 +130,9 @@ export default function AdminPage() {
             toast.info("Project removed.");
             fetchAllData();
         } catch (err: unknown) {
-            const error = err as Error;
-            console.error("Delete project error:", error);
-            toast.error("Failed to delete project: " + (error.message || "Unknown error"));
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            console.error("Delete project error:", err);
+            toast.error("Failed to delete project: " + errorMessage);
         }
     };
 
@@ -147,9 +148,9 @@ export default function AdminPage() {
             toast.success('Profile removed');
             fetchAllData();
         } catch (err: unknown) {
-            const error = err as Error;
-            console.error("Delete user error:", error);
-            toast.error("Failed to delete user profile: " + (error.message || "Unknown error"));
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            console.error("Delete user error:", err);
+            toast.error("Failed to delete user profile: " + errorMessage);
         }
     };
 
