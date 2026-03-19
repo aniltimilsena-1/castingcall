@@ -45,41 +45,47 @@ export const adminService = {
         const meta = v.metadata || {};
 
         if (pType === 'pro') {
-            await (supabase.from("profiles") as any).update({ plan: 'pro' }).eq("user_id", v.user_id);
+            const { error: e1 } = await (supabase.from("profiles") as any).update({ plan: 'pro' }).eq("user_id", v.user_id);
+            if (e1) throw e1;
         } else if (pType === 'fan_pass') {
-            await (supabase.from("fan_subscriptions" as any) as any).insert({
+            const { error: e2 } = await (supabase.from("fan_subscriptions" as any) as any).insert({
                 subscriber_id: v.user_id,
                 talent_id: meta.talent_id,
                 status: 'active',
                 expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
             });
+            if (e2) throw e2;
         } else if (pType === 'product') {
-            await (supabase.from("product_purchases" as any) as any).insert({
+            const { error: e3 } = await (supabase.from("product_purchases" as any) as any).insert({
                 buyer_id: v.user_id,
                 product_id: meta.product_id,
                 amount_paid: v.amount
             });
+            if (e3) throw e3;
         } else if (pType === 'tip') {
-            await (supabase.from("tips" as any) as any).insert({
+            const { error: e4 } = await (supabase.from("tips" as any) as any).insert({
                 sender_id: v.user_id,
                 receiver_id: meta.talent_id,
                 amount: v.amount,
                 post_url: meta.post_url,
                 message: "Gift approved by admin"
             });
+            if (e4) throw e4;
         } else if (pType === 'unlock') {
-            await (supabase.from("photo_purchases" as any) as any).insert({
+            const { error: e5 } = await (supabase.from("photo_purchases" as any) as any).insert({
                 buyer_id: v.user_id,
                 photo_url: meta.post_url,
                 amount_paid: v.amount
             });
+            if (e5) throw e5;
         }
 
         // Mark verified
-        await (supabase.from("payment_verifications" as any) as any).update({ status: 'approved' }).eq("id", v.id);
+        const { error: e6 } = await (supabase.from("payment_verifications" as any) as any).update({ status: 'approved' }).eq("id", v.id);
+        if (e6) throw e6;
 
         // Create transaction record
-        await (supabase.from("transactions" as any) as any).insert({
+        const { error: e7 } = await (supabase.from("transactions" as any) as any).insert({
             user_id: v.user_id,
             amount: v.amount,
             currency: v.currency || 'NPR',
@@ -87,34 +93,40 @@ export const adminService = {
             payment_method: 'manual_verification',
             metadata: meta
         });
+        if (e7) throw e7;
 
         // Create notification
-        await (supabase.from("notifications" as any) as any).insert({
+        const { error: e8 } = await (supabase.from("notifications" as any) as any).insert({
             user_id: v.user_id,
             title: "Payment Approved",
             message: `Your payment for ${pType.toUpperCase()} has been verified. Access granted!`,
         });
+        if (e8) throw e8;
     },
 
     async rejectPayment(v: any) {
-        await (supabase.from("payment_verifications" as any) as any).update({ status: 'rejected' }).eq("id", v.id);
+        const { error: e1 } = await (supabase.from("payment_verifications" as any) as any).update({ status: 'rejected' }).eq("id", v.id);
+        if (e1) throw e1;
 
-        await (supabase.from("notifications" as any) as any).insert({
+        const { error: e2 } = await (supabase.from("notifications" as any) as any).insert({
             user_id: v.user_id,
-            title: "Payment Rejected",
-            message: `Your payment for ${v.payment_type?.toUpperCase()} was rejected. Please check your details.`,
-        });
-    },
+            async updateTalentBadge(userId: string, plan: string) {
+                const { error } = await (supabase.from("profiles" as any) as any).update({ plan }).eq("user_id", userId);
+                if (error) throw new Error(`Failed to update badge: ${error.message}`);
+            },
+            if(e2) throw e2;
+        },
 
-    async deleteProfile(userId: string) {
-        return await (supabase.from("profiles" as any) as any).delete().eq("user_id", userId);
-    },
+            async deleteProfile(userId: string) {
+            return await (supabase.from("profiles" as any) as any).delete().eq("user_id", userId);
+        },
 
-    async updateTalentBadge(userId: string, plan: string) {
-        await (supabase.from("profiles" as any) as any).update({ plan }).eq("user_id", userId);
-    },
+            async updateTalentBadge(userId: string, plan: string) {
+            const { error } = await (supabase.from("profiles" as any) as any).update({ plan }).eq("user_id", userId);
+            if(error) throw error;
+        },
 
-    async deleteProject(projectId: string) {
-        return await (supabase.from("projects" as any) as any).delete().eq("id", projectId);
-    }
+            async deleteProject(projectId: string) {
+            return await (supabase.from("projects" as any) as any).delete().eq("id", projectId);
+        }
 };
