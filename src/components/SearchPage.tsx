@@ -610,7 +610,7 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
             <div className="relative">
               <input
                 type="file"
-                accept="video/*"
+                accept="video/*,audio/*"
                 onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
                 className="hidden"
                 id={`video-upload-${project.id}`}
@@ -624,10 +624,10 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-normal truncate">
-                    {videoFile ? videoFile.name : "Select self-tape video..."}
+                    {videoFile ? videoFile.name : "Select self-tape..."}
                   </div>
                   <div className="text-[0.6rem] text-muted-foreground/50 uppercase tracking-wider">
-                    {videoFile ? `${(videoFile.size / 1024 / 1024).toFixed(1)} MB` : "MP4, MOV, WebM · Max 50MB"}
+                    {videoFile ? `${(videoFile.size / 1024 / 1024).toFixed(1)} MB` : "Video or Audio · Max 50MB"}
                   </div>
                 </div>
                 {videoFile && (

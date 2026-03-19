@@ -702,8 +702,8 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                           </button>
                           {app.status === 'pending' && (
                             <label className="text-[0.65rem] text-muted-foreground hover:text-white cursor-pointer underline underline-offset-4 decoration-border">
-                              Change Video
-                              <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
+                              Change Audition
+                              <input type="file" accept="video/*,audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
                             </label>
                           )}
                         </div>
@@ -712,7 +712,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                           <div className="mt-2 mb-4">
                             <label className="flex items-center gap-2 text-xs text-primary hover:underline cursor-pointer">
                               <Plus size={14} /> Add Self-Tape Audition
-                              <input type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
+                              <input type="file" accept="video/*,audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
                             </label>
                           </div>
                         )
