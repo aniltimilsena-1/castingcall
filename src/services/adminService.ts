@@ -110,23 +110,26 @@ export const adminService = {
 
         const { error: e2 } = await (supabase.from("notifications" as any) as any).insert({
             user_id: v.user_id,
-            async updateTalentBadge(userId: string, plan: string) {
-                const { error } = await (supabase.from("profiles" as any) as any).update({ plan }).eq("user_id", userId);
-                if (error) throw new Error(`Failed to update badge: ${error.message}`);
-            },
-            if(e2) throw e2;
-        },
+            title: "Payment Rejected",
+            message: `Your payment for ${v.payment_type?.toUpperCase()} was rejected. Please check your details.`,
+        });
+        if (e2) throw e2;
+    },
 
-            async deleteProfile(userId: string) {
-            return await (supabase.from("profiles" as any) as any).delete().eq("user_id", userId);
-        },
+    async deleteProfile(userId: string) {
+        const { data, error } = await (supabase.from("profiles" as any) as any).delete().eq("user_id", userId);
+        if (error) throw error;
+        return { data, error };
+    },
 
-            async updateTalentBadge(userId: string, plan: string) {
-            const { error } = await (supabase.from("profiles" as any) as any).update({ plan }).eq("user_id", userId);
-            if(error) throw error;
-        },
+    async updateTalentBadge(userId: string, plan: string) {
+        const { error } = await (supabase.from("profiles" as any) as any).update({ plan }).eq("user_id", userId);
+        if (error) throw error;
+    },
 
-            async deleteProject(projectId: string) {
-            return await (supabase.from("projects" as any) as any).delete().eq("id", projectId);
-        }
+    async deleteProject(projectId: string) {
+        const { data, error } = await (supabase.from("projects" as any) as any).delete().eq("id", projectId);
+        if (error) throw error;
+        return { data, error };
+    }
 };
