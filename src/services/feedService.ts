@@ -118,7 +118,7 @@ export const feedService = {
     async getSavedPostUrls(userId: string) {
         try {
             const { data, error } = await supabase
-                .from("saved_posts" as any)
+                .from("saved_posts")
                 .select("post_url")
                 .eq("user_id", userId);
             if (error) {
@@ -134,7 +134,7 @@ export const feedService = {
     async savePost(userId: string, postUrl: string) {
         try {
             const { error } = await supabase
-                .from("saved_posts" as any)
+                .from("saved_posts")
                 .insert({ user_id: userId, post_url: postUrl });
             if (error) throw error;
         } catch (err: any) {
@@ -146,7 +146,7 @@ export const feedService = {
     async unsavePost(userId: string, postUrl: string) {
         try {
             const { error } = await supabase
-                .from("saved_posts" as any)
+                .from("saved_posts")
                 .delete()
                 .eq("user_id", userId)
                 .eq("post_url", postUrl);

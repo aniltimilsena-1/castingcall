@@ -99,16 +99,16 @@ export const profileService = {
     },
 
     async trackProfileView(profileId: string, viewerId?: string) {
-        const { error } = await supabase.from("profile_views" as any).insert({
+        const { error } = await supabase.from("profile_views").insert({
             profile_id: profileId,
             viewer_id: viewerId || null,
-        } as any);
+        });
         if (error) console.error("Track view error:", error);
     },
 
     async getTalentProjects(talentId: string) {
         const { data, error } = await supabase
-            .from("applications" as any)
+            .from("applications")
             .select("project_id")
             .eq("applicant_id", talentId);
         if (error) throw error;
@@ -117,10 +117,9 @@ export const profileService = {
 
     async getDigitalProducts(talentId: string) {
         const { data, error } = await supabase
-            .from("digital_products" as any)
+            .from("digital_products")
             .select("*")
-            .eq("seller_id", talentId)
-            .eq("is_active", true);
+            .eq("seller_id", talentId);
         if (error) throw error;
         return data || [];
     },

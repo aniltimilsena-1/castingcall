@@ -61,15 +61,15 @@ export default function AdminPage() {
         try {
             const data = await adminService.getAllAdminData();
 
-            if (data.profiles) setProfiles(data.profiles);
-            if (data.projects) setProjects(data.projects);
+            if (data.profiles) setProfiles(data.profiles as any[]);
+            if (data.projects) setProjects(data.projects as any[]);
 
             // Merge photos from all profiles with captions
             const mergedFeed: AdminFeedItem[] = [];
             const captionsMap = new Map((data.feedItems || []).map(f => [f.photo_url, f as FeedPost]));
 
             (data.profiles || []).forEach((profile: Profile) => {
-                const photos = (profile as any).photos || [];
+                const photos = (profile as Profile & { photos: string[] }).photos || [];
                 photos.forEach((url: string) => {
                     const caption = captionsMap.get(url);
                     mergedFeed.push({
@@ -85,10 +85,10 @@ export default function AdminPage() {
             });
             setAllFeedItems(mergedFeed.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
-            if (data.applications) setApplications(data.applications);
-            if (data.schedules) setSchedules(data.schedules);
-            if (data.finances) setFinances(data.finances);
-            if (data.verifications) setVerifications(data.verifications);
+            if (data.applications) setApplications(data.applications as any[]);
+            if (data.schedules) setSchedules(data.schedules as any[]);
+            if (data.finances) setFinances(data.finances as any[]);
+            if (data.verifications) setVerifications(data.verifications as any[]);
 
         } catch (err) {
             console.error("Fetch error:", err);
@@ -128,9 +128,10 @@ export default function AdminPage() {
             if (error) throw error;
             toast.info("Project removed.");
             fetchAllData();
-        } catch (err: any) {
-            console.error("Delete project error:", err);
-            toast.error("Failed to delete project: " + (err.message || "Unknown error"));
+        } catch (err: unknown) {
+            const error = err as Error;
+            console.error("Delete project error:", error);
+            toast.error("Failed to delete project: " + (error.message || "Unknown error"));
         }
     };
 
@@ -145,9 +146,10 @@ export default function AdminPage() {
             
             toast.success('Profile removed');
             fetchAllData();
-        } catch (err: any) {
-            console.error("Delete user error:", err);
-            toast.error("Failed to delete user profile: " + (err.message || "Unknown error"));
+        } catch (err: unknown) {
+            const error = err as Error;
+            console.error("Delete user error:", error);
+            toast.error("Failed to delete user profile: " + (error.message || "Unknown error"));
         }
     };
 
@@ -269,7 +271,7 @@ export default function AdminPage() {
                                                     <DropdownMenuItem 
                                                         onClick={async () => {
                                                             const newPlan = p.plan === 'pro' ? 'free' : 'pro';
-                                                            const { error } = await supabase.from('profiles').update({ plan: newPlan } as any).eq('id', p.id);
+                                                            const { error } = await supabase.from('profiles').update({ plan: newPlan }).eq('id', p.id);
                                                             if (error) {
                                                                 toast.error("Error: " + error.message);
                                                             } else {

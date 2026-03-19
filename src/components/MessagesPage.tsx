@@ -23,6 +23,8 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import ProfileDetailDialog from "./ProfileDetailDialog";
+import { type PageName } from "./AppDrawer";
+import { type Profile } from "@/services/profileService";
 
 interface Message {
   id: string;
@@ -47,7 +49,7 @@ interface Conversation {
 }
 
 interface MessagesPageProps {
-  onNavigate?: (page: any) => void;
+  onNavigate?: (page: PageName) => void;
   initialPartnerId?: string | null;
 }
 
@@ -55,7 +57,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const { user, profile: currentUserProfile, isPremium } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
-  const [partnerProfile, setPartnerProfile] = useState<any>(null);
+  const [partnerProfile, setPartnerProfile] = useState<Profile | null>(null);
   const [thread, setThread] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -133,7 +135,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     if (!user) return;
     setSelectedPartner(partnerId);
     const { data: p } = await supabase.from("profiles").select("*").eq("user_id", partnerId).maybeSingle();
-    setPartnerProfile(p);
+    setPartnerProfile(p as Profile | null);
     const { data } = await supabase.from("messages").select("*").or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`).order("created_at", { ascending: true });
     setThread(data || []);
     await supabase.from("messages").update({ is_read: true }).eq("sender_id", partnerId).eq("receiver_id", user.id);
@@ -204,7 +206,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         table: 'messages',
         filter: `receiver_id=eq.${user.id}`
       }, (payload) => {
-        const newMessage = payload.new as any;
+        const newMessage = payload.new as Message;
         // If it's for the current thread, add it
         if (selectedPartner === newMessage.sender_id) {
           setThread(prev => [...prev, newMessage]);
@@ -219,13 +221,13 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, selectedPartner]);
+  }, [user, selectedPartner, loadConversations]);
 
   useEffect(() => {
     if (initialPartnerId) {
       loadThread(initialPartnerId);
     }
-  }, [initialPartnerId]);
+  }, [initialPartnerId, loadThread]);
 
 
 

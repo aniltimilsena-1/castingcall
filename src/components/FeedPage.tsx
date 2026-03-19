@@ -36,7 +36,7 @@ interface FeedItem {
 }
 
 interface FeedPageProps {
-    onProfileClick?: (profile: any) => void;
+    onProfileClick?: (profile: Partial<Profile> & { user_id: string }) => void;
 }
 
 export default function FeedPage({ onProfileClick }: FeedPageProps) {
@@ -71,7 +71,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
         open: boolean;
         type: 'pro' | 'fan_pass' | 'unlock' | 'product' | 'tip';
         amount: number;
-        metadata: Record<string, any>;
+        metadata: Record<string, any>; // Keeping any for metadata as it is polymorphic
         currency?: string;
         currencySymbol?: string;
     }>({ open: false, type: 'unlock', amount: 0, metadata: {} });
@@ -108,7 +108,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
 
                 // Build unified feed items
                 const items: FeedItem[] = [];
-                (profiles || []).forEach((p: any) => {
+                (profiles || []).forEach((p) => {
                     const owner = {
                         id: p.user_id,
                         name: p.name || "Unknown",
@@ -141,24 +141,24 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                     // Map likes
                     const likeMap: Record<string, { count: number; liked: boolean }> = {};
                     mediaUrls.forEach(url => {
-                        const itemLikes = (likeRows || []).filter((l: any) => l.photo_url === url);
+                        const itemLikes = (likeRows || []).filter((l) => l.photo_url === url);
                         likeMap[url] = {
                             count: itemLikes.length,
-                            liked: !!(user && itemLikes.find((l: any) => l.user_id === user.id))
+                            liked: !!(user && itemLikes.find((l) => l.user_id === user.id))
                         };
                     });
                     setLikes(likeMap);
     
                     // Map comments (need unique commenters)
-                    const uniqueCommenters = Array.from(new Set((commentRows || []).map((c: any) => c.user_id)));
+                    const uniqueCommenters = Array.from(new Set((commentRows || []).map((c) => c.user_id)));
                     const commenterProfiles = await feedService.getCommenters(uniqueCommenters);
     
                     const commentMap: Record<string, any[]> = {};
                     mediaUrls.forEach(url => {
                         commentMap[url] = (commentRows || [])
-                            .filter((c: any) => c.photo_url === url)
-                            .map((c: any) => {
-                                const p = commenterProfiles.find((pr: any) => pr.user_id === c.user_id);
+                            .filter((c) => c.photo_url === url)
+                            .map((c) => {
+                                const p = commenterProfiles.find((pr) => pr.user_id === c.user_id);
                                 return { ...c, commenter: p?.name || "Unknown", commenter_photo: p?.photo_url || null };
                             });
                     });
@@ -171,10 +171,10 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                             feedService.getSavedPostUrls(user.id).catch(() => []),
                             followService.getFollowing(user.id).catch(() => [])
                         ]);
-                        setSubscriptions(new Set(subs));
-                        setPurchasedPosts(purchased);
-                        setSavedPostUrls(new Set(saved));
-                        setFollowedUsers(new Set(follows.map((f: any) => f.user_id)));
+                        setSubscriptions(new Set(subs as string[]));
+                        setPurchasedPosts(purchased as Set<string>);
+                        setSavedPostUrls(new Set(saved as string[]));
+                        setFollowedUsers(new Set((follows as any[]).map((f) => f.user_id)));
                     }
                 } catch (socialErr) {
                     console.error("Non-critical social data load failure:", socialErr);
@@ -189,7 +189,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
             }
         };
         loadFeed();
-    }, [user, refreshKey, currentUserProfile]);
+    }, [user, refreshKey, currentUserProfile?.role]);
 
     // ─── Like handler ─────────────────────────────────────────────────────────
     const handleLike = async (mediaUrl: string) => {
@@ -525,7 +525,7 @@ interface FeedCardProps {
     onToggleComments: () => void;
     onCommentChange: (v: string) => void;
     onCommentSubmit: () => void;
-    onProfileClick?: (profile: any) => void;
+    onProfileClick?: (profile: Partial<Profile> & { user_id: string }) => void;
     onOpenPost: () => void;
     onUnlock: (type: 'unlock' | 'fan_pass') => void;
     onTip: () => void;
@@ -903,7 +903,7 @@ function FeedCard({
 interface PostModalProps {
     item: FeedItem;
     likeData: { count: number; liked: boolean };
-    commentList: { id: string; content: string; commenter: string; commenter_photo: string | null; created_at: string }[];
+    commentList: { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string }[];
     commentValue: string;
     isPostingComment: boolean;
     onClose: () => void;
@@ -911,7 +911,7 @@ interface PostModalProps {
     onCommentChange: (v: string) => void;
     onCommentSubmit: () => void;
     onDeleteComment: (commentId: string) => void;
-    onProfileClick?: (profile: any) => void;
+    onProfileClick?: (profile: Partial<Profile> & { user_id: string }) => void;
     onSavePost: () => void;
     onSharePost: () => void;
     isSavedPost: boolean;
@@ -1069,7 +1069,7 @@ function PostModal({
                         <div className="flex-1 bg-secondary/20 rounded-2xl px-3 py-2 group/comment relative">
                             <div className="flex items-center justify-between">
                                 <span className="font-normal text-xs text-foreground mr-1.5">{c.commenter}</span>
-                                {(user?.id === (c as any).user_id || currentUserProfile?.role === 'Admin') && (
+                                {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
                                     <button
                                         onClick={() => onDeleteComment(c.id)}
                                         className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"

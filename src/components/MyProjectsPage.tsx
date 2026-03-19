@@ -5,10 +5,22 @@ import { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Edit3, FolderOpen, Layout, Clock, CheckCircle2, X, ImageIcon, Search, MapPin, DollarSign, Briefcase, Users, Eye, Check, UserPlus, Video, MessageSquare } from "lucide-react";
+import { type Profile } from "@/services/profileService";
+
+interface ProjectApplication extends Tables<"applications"> {
+  projects?: {
+    title: string;
+    description: string;
+    thumbnail_url: string;
+    role_category: string;
+    status: string;
+  };
+  profiles?: Partial<Profile> & { user_id: string };
+}
 
 type Project = Tables<"projects">;
 
-export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMessageClick }: { initialOpenForm?: boolean, onProfileClick: (p: any) => void, onMessageClick: (uid: string) => void }) {
+export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMessageClick }: { initialOpenForm?: boolean, onProfileClick: (p: Partial<Profile> & { user_id: string }) => void, onMessageClick: (uid: string) => void }) {
   const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,12 +28,12 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
   const [editId, setEditId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"managed" | "applications">("managed");
-  const [myApplications, setMyApplications] = useState<any[]>([]);
+  const [myApplications, setMyApplications] = useState<ProjectApplication[]>([]);
   const [appsLoading, setAppsLoading] = useState(false);
 
   // Pipeline State
   const [viewingApplicantsFor, setViewingApplicantsFor] = useState<Project | null>(null);
-  const [applicants, setApplicants] = useState<any[]>([]);
+  const [applicants, setApplicants] = useState<ProjectApplication[]>([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
 
@@ -97,7 +109,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
     try {
       // 1. Fetch applications for this project
       const { data: appsData, error: appError } = await supabase
-        .from('applications' as any)
+        .from('applications')
         .select('*')
         .eq('project_id', project.id);
 
@@ -132,6 +144,22 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
     }
   };
 
+  const handleThumbnailUpload = async (file: File) => {
+    if (!user) return;
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `project-thumbnails/${user.id}-${Math.random()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      setFormData({ ...formData, thumbnail_url: publicUrl });
+      toast.success("Thumbnail uploaded!");
+    } catch (err: any) {
+      toast.error("Upload failed: " + err.message);
+    }
+  };
+
   const handleUpdateAudition = async (appId: string, file: File) => {
     if (!user) return;
     try {
@@ -156,8 +184,8 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
 
   const updateApplicantStatus = async (appId: string, status: string) => {
     const { error } = await supabase
-      .from('applications' as any)
-      .update({ status } as any)
+      .from('applications')
+      .update({ status })
       .eq('id', appId);
 
     if (error) {
@@ -172,6 +200,21 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
         toast.success(`Applicant marked as ${status}`);
       }
       setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status } : a));
+    }
+  };
+
+  const withdrawApplication = async (appId: string) => {
+    if (!confirm("Are you sure you want to withdraw this application?")) return;
+    const { error } = await supabase
+      .from('applications')
+      .delete()
+      .eq('id', appId);
+
+    if (error) {
+      toast.error("Withdrawal failed");
+    } else {
+      toast.success("Application withdrawn successfully");
+      fetchMyApplications();
     }
   };
 
@@ -218,9 +261,11 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this project?")) return;
     const { error } = await supabase.from("projects").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Project archived");
+    if (error) {
+      console.error("Delete error:", error);
+      toast.error(error.message);
+    } else {
+      toast.success("Project deleted successfully");
       fetchProjects();
     }
   };
@@ -338,8 +383,28 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                     <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. Major Action Movie Lead" className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Thumbnail link</label>
-                    <input value={formData.thumbnail_url} onChange={(e) => setFormData({ ...formData, thumbnail_url: e.target.value })} placeholder="https://..." className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all shadow-inner" />
+                    <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Project Thumbnail</label>
+                    <div className="relative group cursor-pointer h-44 rounded-3xl border-2 border-dashed border-border overflow-hidden bg-background/30 hover:border-primary transition-all flex items-center justify-center">
+                      {formData.thumbnail_url ? (
+                        <img src={formData.thumbnail_url} className="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Preview" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-3 text-muted-foreground group-hover:text-primary">
+                          <ImageIcon size={32} />
+                          <span className="text-[0.65rem] uppercase tracking-widest font-normal">Drop Image or Click</span>
+                        </div>
+                      )}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => e.target.files?.[0] && handleThumbnailUpload(e.target.files[0])}
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                      />
+                      {formData.thumbnail_url && (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <Plus className="text-primary w-8 h-8" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">
@@ -432,7 +497,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                       <p className="text-muted-foreground text-lg">No one has applied for this role yet.</p>
                     </div>
                   ) : (
-                    applicants.map((a: any) => (
+                    applicants.map((a: ProjectApplication) => (
                       <div key={a.id} className="group bg-secondary/10 border border-border rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary/40 transition-all">
                         <div className="w-16 h-16 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0">
                           <img src={a.profiles?.photo_url || ""} className="w-full h-full object-cover" alt="" />
@@ -550,8 +615,20 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
 
                       <div className="flex items-center justify-between pt-6 border-t border-white/5">
                         <div className="flex gap-2">
-                          <button onClick={() => startEdit(p)} className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-black rounded-xl transition-all"><Edit3 size={16} /></button>
-                          <button onClick={() => handleDelete(p.id)} className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={16} /></button>
+                          <button 
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); startEdit(p); }} 
+                            className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-black rounded-xl transition-all"
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} 
+                            className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                         <button
                           onClick={() => fetchApplicants(p)}
@@ -642,8 +719,18 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                     )}
 
                     {app.status !== 'invited' && (
-                      <div className="text-muted-foreground flex items-center gap-2 text-sm italic opacity-50">
-                        {app.status === 'pending' ? 'Application being reviewed...' : app.status === 'accepted' ? 'You were selected!' : 'Application closed'}
+                      <div className="flex flex-col md:flex-row items-center gap-4">
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm italic opacity-50">
+                          {app.status === 'pending' ? 'Application being reviewed...' : app.status === 'accepted' ? 'You were selected!' : 'Application closed'}
+                        </div>
+                        {app.status === 'pending' && (
+                          <button
+                            onClick={() => withdrawApplication(app.id)}
+                            className="text-xs text-red-500 hover:text-red-400 font-normal uppercase tracking-widest px-4 py-2 bg-red-500/5 hover:bg-red-500/10 rounded-xl transition-all border border-red-500/10"
+                          >
+                            Withdraw
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

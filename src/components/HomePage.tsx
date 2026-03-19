@@ -1,14 +1,14 @@
-import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight, UserPlus, Sparkles, UserCheck } from "lucide-react";
+import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight, UserPlus, Sparkles, UserCheck, Layout } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
-import { profileService } from "@/services/profileService";
+import { profileService, type Profile } from "@/services/profileService";
 import { adminService } from "@/services/adminService";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageName } from "./AppDrawer";
 
 interface HomePageProps {
   onCategoryClick: (role: string) => void;
-  onProfileClick: (profile: any) => void;
+  onProfileClick: (profile: Partial<Profile> & { user_id: string }) => void;
   onTermsClick: () => void;
   onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects"; openForm?: boolean }) => void;
   onlineUsers?: Set<string>;
@@ -25,7 +25,7 @@ const categories = [
 
 export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick, onNavigate, onlineUsers = new Set() }: HomePageProps) {
   const { profile: currentUserProfile } = useAuth();
-  const [featured, setFeatured] = useState<any[]>([]);
+  const [featured, setFeatured] = useState<Profile[]>([]);
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
   const [statsData, setStatsData] = useState({ talents: "0", projects: "0", visits: "0", casts: "0" });
   const heroRef = useRef(null);
@@ -363,7 +363,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   <div className="flex items-center gap-2 mb-2">
                     <h4 className={`font-display text-lg group-hover:text-primary transition-colors ${isElite ? "text-amber-500" : "text-white"}`}>{p.name}</h4>
                     {isElite && <Crown size={14} className="text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />}
-                    {(p as any).is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
+                    {p.is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
                   </div>
                   <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-amber-500/80" : "text-primary/60"}`}>{p.role}</p>
                   <p className="text-[0.7rem] text-white/40 line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
@@ -396,10 +396,22 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 onClick={() => onCategoryClick(proj.role_category || 'Actor')}
                 className="group relative h-full bg-white/[0.02] border border-white/5 rounded-[2rem] p-10 hover:bg-white/[0.04] hover:border-primary/20 transition-all cursor-pointer flex flex-col justify-between"
               >
-                <div>
-                  <div className="flex items-center gap-3 text-[0.65rem] font-bold tracking-[0.2em] text-white/30 uppercase mb-6">
-                    <MapPin size={12} className="text-primary/60" /> {proj.location || 'Remote'}
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary/50 mb-8">
+                  {proj.thumbnail_url ? (
+                    <img src={proj.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-primary/10">
+                      <Layout className="w-12 h-12" />
+                    </div>
+                  )}
+                  <div className="absolute top-4 left-4">
+                    <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full text-[0.55rem] font-bold tracking-[0.2em] text-white/50 border border-white/5">
+                      {proj.location || 'Remote'}
+                    </div>
                   </div>
+                </div>
+
+                <div>
                   <h4 className="font-display text-2xl text-white mb-4 group-hover:text-primary transition-all duration-300">{proj.title}</h4>
                   <p className="text-xs text-white/40 mb-10 font-light italic leading-relaxed">Looking for: {proj.role_category}</p>
                 </div>

@@ -20,8 +20,10 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
   const initials = loading 
     ? "" 
     : (profile?.name || user?.email || "?")
-        .split(" ")
+        .trim()
+        .split(/\s+/)
         .map((w) => w[0])
+        .filter(Boolean)
         .join("")
         .toUpperCase()
         .slice(0, 2);

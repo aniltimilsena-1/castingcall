@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { BarChart3, Eye, FolderOpen, Activity, Crown, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
@@ -30,28 +30,28 @@ export default function AnalyticsPage() {
 
   const [aiInsights, setAiInsights] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (user && profile) {
-      fetchAnalytics();
-    }
-  }, [user, profile]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
 
       // 1. Fetch Total Views & Chart Data
       const { data: views } = await supabase
-        .from("profile_views" as any)
+        .from("profile_views")
         .select("viewed_at")
-        .eq("profile_id", profile.id);
+        .eq("profile_id", profile!.id);
 
       const countsByDay: Record<string, number> = {
-        "Mon": 0, "Tue": 0, "Wed": 0, "Thu": 0, "Fri": 0, "Sat": 0, "Sun": 0
+        Mon: 0,
+        Tue: 0,
+        Wed: 0,
+        Thu: 0,
+        Fri: 0,
+        Sat: 0,
+        Sun: 0,
       };
 
-      (views as any[])?.forEach((v: any) => {
-        const day = new Date(v.viewed_at).toLocaleDateString('en-US', { weekday: 'short' });
+      (views || [])?.forEach((v) => {
+        const day = new Date(v.viewed_at).toLocaleDateString("en-US", { weekday: "short" });
         if (countsByDay[day] !== undefined) countsByDay[day]++;
       });
 
@@ -67,26 +67,25 @@ export default function AnalyticsPage() {
 
       // 3. Fetch Application Success Rate
       const { data: apps } = await supabase
-        .from("applications" as any)
+        .from("applications")
         .select("status")
-        .eq("applicant_id", user.id);
+        .eq("applicant_id", user!.id);
 
       const totalApps = apps?.length || 0;
-      const acceptedApps = (apps as any[])?.filter(a => a.status === 'accepted')?.length || 0;
+      const acceptedApps = apps?.filter((a) => a.status === "accepted")?.length || 0;
       const successRate = totalApps > 0 ? Math.round((acceptedApps / totalApps) * 100) : 0;
 
       // 4. Fetch Portfolio Interactions
       const { count: interactionsCount } = await supabase
-        .from("portfolio_interactions" as any)
-        .select("*", { count: 'exact', head: true })
-        .eq("user_id", user.id);
+        .from("portfolio_interactions")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user!.id);
 
       // 5. Activity Score (Improved calculation)
-      const score = Math.min(100, Math.floor(
-        ((views?.length || 0) * 2) +
-        ((interactionsCount || 0) * 3) +
-        ((acceptedApps || 0) * 15)
-      ));
+      const score = Math.min(
+        100,
+        Math.floor((views?.length || 0) * 2 + (interactionsCount || 0) * 3 + (acceptedApps || 0) * 15)
+      );
 
       // 6. Simmons AI Feedback (Empty for now until real AI is linked)
       setAiInsights([]);
@@ -97,14 +96,20 @@ export default function AnalyticsPage() {
         activityScore: score,
         successRate,
         portfolioInteractions: interactionsCount || 0,
-        chartData
+        chartData,
       });
     } catch (err) {
       console.error("Analytics Fetch Error:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, profile]);
+
+  useEffect(() => {
+    if (user && profile) {
+      fetchAnalytics();
+    }
+  }, [user, profile, fetchAnalytics]);
 
   const stats = [
     { label: "Profile Views", value: viewStats.totalViews.toString(), icon: Eye },

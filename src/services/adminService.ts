@@ -2,8 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const adminService = {
     async getAllAdminData() {
-        // Individual fetches with catch to prevent one failure from breaking everything
-        const fetchTable = async (table: string, query: string = "*", order: any = { column: "created_at", ascending: false }) => {
+        const fetchTable = async (table: any, query: string = "*", order: any = { column: "created_at", ascending: false }): Promise<any[]> => {
             try {
                 const { data, error } = await supabase
                     .from(table as any)
