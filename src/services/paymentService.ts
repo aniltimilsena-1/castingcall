@@ -31,25 +31,5 @@ export const paymentService = {
 
         if (error) throw error;
         return !!data;
-    },
-
-    async recordPayment(payload: {
-        user_id: string;
-        amount: number;
-        currency: string;
-        payment_method: string;
-        status: string;
-        type: string;
-        metadata: any;
-        screenshot_url?: string;
-    }) {
-        const { data, error } = await supabase
-            .from("payments" as any)
-            .insert(payload)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
     }
 };

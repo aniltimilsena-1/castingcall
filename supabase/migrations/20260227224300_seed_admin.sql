@@ -1,7 +1,7 @@
-
 -- Seed a fixed admin account
 -- Email: admin@caastingcall.me
--- Password: AdminPassword123!
+-- WARNING: DO NOT store hardcoded passwords in migrations. 
+-- This password should be set via environment variables or updated immediately.
 
 DO $$
 DECLARE
