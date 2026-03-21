@@ -81,11 +81,11 @@ export default function SettingsPage() {
           <p className="text-xs text-primary/70">Please set a new password for your account below. No current password is required.</p>
         </div>
       )}
-      <h1 className="font-display text-4xl text-primary mb-1">Settings</h1>
+      <h1 className="font-accent text-3xl text-foreground mb-1">Settings</h1>
       <p className="text-muted-foreground text-sm mb-8">Manage your account preferences</p>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6">
-        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Profile Photo</h3>
+        <h3 className="font-accent text-[0.7rem] tracking-[1.5px] uppercase text-muted-foreground mb-5">Profile Photo</h3>
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0 flex items-center justify-center font-display text-2xl text-primary">
             {profile?.photo_url ? (
@@ -145,7 +145,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6 space-y-4">
-        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Account Details</h3>
+        <h3 className="font-accent text-[0.7rem] tracking-[1.5px] uppercase text-muted-foreground mb-2">Account Details</h3>
         <div className="text-sm text-muted-foreground pb-2 border-b border-border">{user?.email}</div>
         <InputField label="DISPLAY NAME" value={name} onChange={setName} />
         <div>
@@ -165,7 +165,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
-        <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-2">Change Password</h3>
+        <h3 className="font-accent text-[0.7rem] tracking-[1.5px] uppercase text-muted-foreground mb-2">Change Password</h3>
         {!isRecovering && (
           <InputField label="CURRENT PASSWORD" type="password" value={oldPassword} onChange={setOldPassword} placeholder="Enter your old password" />
         )}
@@ -183,7 +183,7 @@ function InputField({ label, value, onChange, placeholder, type = "text" }: {
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
+      <label className="block font-accent text-[0.72rem] text-muted-foreground tracking-wider mb-1">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40" />
     </div>
   );

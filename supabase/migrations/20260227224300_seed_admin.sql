@@ -5,9 +5,14 @@
 
 DO $$
 DECLARE
-  admin_id UUID := gen_random_uuid();
+  admin_id UUID;
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@caastingcall.me') THEN
+  -- 1. Check if admin user exists in auth.users
+  SELECT id INTO admin_id FROM auth.users WHERE email = 'admin@caastingcall.me';
+
+  -- 2. If it doesn't exist, create it
+  IF admin_id IS NULL THEN
+    admin_id := gen_random_uuid();
     INSERT INTO auth.users (
       id,
       instance_id,
@@ -39,13 +44,13 @@ BEGIN
       'authenticated',
       '', '', '', ''
     );
-
-    -- The trigger handle_new_user will automatically create the profile.
-    -- However, to be extra sure the role is 'Admin', we can update it if it was created as 'Actor'
-    -- but with our updated trigger it should be 'Admin' already.
-    
-    UPDATE public.profiles 
-    SET role = 'Admin' 
-    WHERE user_id = admin_id;
   END IF;
+
+  -- 3. Ensure the profile exists and has the 'Admin' role.
+  -- The trigger 'handle_new_user' on auth.users will have created the profile with 'Actor' role.
+  -- Insert or Update profile
+  INSERT INTO public.profiles (user_id, email, name, role)
+  VALUES (admin_id, 'admin@caastingcall.me', 'System Admin', 'Admin')
+  ON CONFLICT (user_id) DO UPDATE 
+  SET role = 'Admin';
 END $$;

@@ -1,101 +1,143 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700&display=swap');
+/* ─────────────────────────────────────────────────────────────────────────────
+   FONT IMPORTS
+   Primary UI font: Inter — readability, forms, navigation, body copy
+   Accent/style font: Courier Prime — headings, labels, special sections ONLY
+───────────────────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   Color System:
+     Light → off-white onion base (#F5E6D3), primary black, lilac accent
+     Dark  → near-black base, off-white text, same lilac accent (adjusted)
+
+   Lilac accent (derived from onion skin tones): #C8A2C8 / hsl(300 27% 71%)
+───────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --radius: 0.75rem;
+    --radius: 0.625rem;
+
+    /* ── Gold (kept for backward-compat) ── */
     --gold: 46 91% 53%;
     --gold-glow: 46 91% 53% / 0.13;
+
+    /* ── Lilac accent (onion-skin inspired) ── */
+    --lilac: 300 27% 71%;          /* #C8A2C8 */
+    --lilac-soft: 300 27% 88%;     /* very pale lilac tint for bg panels */
+    --lilac-foreground: 300 20% 22%; /* dark purple-gray for text on lilac */
   }
 
+  /* ── LIGHT MODE (default) ────────────────────────────── */
+  .light, :root:not(.dark) {
+    /* Base */
+    --background: 27 55% 90%;     /* #F5E6D3  off-white onion */
+    --foreground: 0 0% 0%;        /* #000000  primary text */
+
+    /* Cards / surfaces — slightly lighter than bg */
+    --card: 27 55% 96%;
+    --card-foreground: 0 0% 0%;
+    --card-border: 27 30% 82%;
+
+    /* Popover */
+    --popover: 27 55% 97%;
+    --popover-foreground: 0 0% 0%;
+
+    /* Primary — lilac as the main brand accent in light mode */
+    --primary: 300 27% 56%;        /* medium lilac, #B07AB0 */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary surface */
+    --secondary: 27 30% 84%;
+    --secondary-foreground: 0 0% 10%;
+
+    /* Muted */
+    --muted: 27 30% 86%;
+    --muted-foreground: 0 0% 35%;  /* #595959  secondary text */
+
+    /* Accent (pop element) — lilac */
+    --accent: 300 27% 71%;         /* #C8A2C8 */
+    --accent-foreground: 300 20% 22%;
+
+    /* Destructive */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Borders & inputs */
+    --border: 27 20% 78%;
+    --input: 27 20% 78%;
+    --ring: 300 27% 56%;
+
+    /* Sidebar */
+    --sidebar-background: 27 40% 93%;
+    --sidebar-foreground: 0 0% 30%;
+    --sidebar-primary: 300 27% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 27 30% 86%;
+    --sidebar-accent-foreground: 300 27% 40%;
+    --sidebar-border: 27 20% 80%;
+    --sidebar-ring: 300 27% 56%;
+  }
+
+  /* ── DARK MODE ───────────────────────────────────────── */
   .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 94%;
+    /* Base */
+    --background: 0 0% 6%;
+    --foreground: 27 20% 92%;      /* warm off-white instead of stark white */
 
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 94%;
-    --card-border: 0 0% 12%;
+    /* Cards */
+    --card: 0 0% 9%;
+    --card-foreground: 27 20% 92%;
+    --card-border: 0 0% 14%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 94%;
+    /* Popover */
+    --popover: 0 0% 9%;
+    --popover-foreground: 27 20% 92%;
 
-    --primary: 46 91% 53%;
+    /* Primary — lilac in dark mode */
+    --primary: 300 27% 71%;        /* #C8A2C8 */
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 94%;
+    /* Secondary */
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 27 20% 92%;
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 53%;
+    /* Muted */
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 52%;
 
-    --accent: 46 91% 53%;
+    /* Accent */
+    --accent: 300 27% 71%;
     --accent-foreground: 0 0% 0%;
 
+    /* Destructive */
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 94%;
 
-    --border: 0 0% 12%;
-    --input: 0 0% 12%;
-    --ring: 46 91% 53%;
+    /* Borders & inputs */
+    --border: 0 0% 14%;
+    --input: 0 0% 14%;
+    --ring: 300 27% 71%;
 
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 60%;
-    --sidebar-primary: 46 91% 53%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 58%;
+    --sidebar-primary: 300 27% 71%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 46 91% 53%;
-    --sidebar-border: 0 0% 10%;
-    --sidebar-ring: 46 91% 53%;
-  }
-
-  .light {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --card-border: 0 0% 90%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-
-    --primary: 46 91% 53%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 94%;
-    --secondary-foreground: 0 0% 10%;
-
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 45%;
-
-    --accent: 46 91% 45%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 46 91% 53%;
-
-    --gold-glow: 46 91% 53% / 0.1;
-
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 40%;
-    --sidebar-primary: 46 91% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 94%;
-    --sidebar-accent-foreground: 46 91% 45%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 46 91% 53%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 300 27% 71%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 300 27% 71%;
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   BASE RESETS & GLOBAL TYPOGRAPHY
+───────────────────────────────────────────────────────────────────────────── */
 @layer base {
-
   *,
   *::before,
   *::after {
@@ -111,11 +153,15 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased transition-colors duration-300;
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: normal;
     height: 100%;
     overscroll-behavior-y: none;
     -webkit-tap-highlight-color: transparent;
-    /* Smooth scrolling on iOS */
     -webkit-overflow-scrolling: touch;
     /* Safe area padding for notch/home bar devices */
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -123,20 +169,56 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Smooth momentum scroll for scrollable containers */
-  [data-scroll],
-  .overflow-y-auto,
-  .overflow-x-auto,
-  .overflow-y-scroll {
-    -webkit-overflow-scrolling: touch;
+  /* ── TYPOGRAPHY HIERARCHY ──────────────────────────────
+     Headings → Courier Prime, bold
+     Subheadings (h4–h6) → Courier Prime, medium (600)
+     Body → Inter, regular (400)
+     Labels / special sections → Courier Prime, normal
+     Do NOT bold everything — structure comes from size + weight contrast.
+  ─────────────────────────────────────────────────────── */
+
+  /* h1–h3: Courier Prime bold — primary section titles */
+  h1, h2, h3 {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: normal;
   }
 
-  /* Remove tap highlight on buttons/links */
-  button,
-  a,
-  [role="button"] {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+  /* h4–h6: Courier Prime medium weight — sub-section titles */
+  h4, h5, h6 {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 400;   /* Courier Prime has no true 600; bold vs regular */
+    line-height: 1.3;
+    letter-spacing: normal;
+  }
+
+  /* Headings scale */
+  h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+  h2 { font-size: clamp(1.375rem, 3vw, 2rem); }
+  h3 { font-size: clamp(1.125rem, 2.5vw, 1.5rem); }
+  h4 { font-size: 1.125rem; }
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.875rem; }
+
+  /* Paragraphs — Inter, normal weight, generous line-height */
+  p {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  /* Labels — Courier Prime for character, not bold by default */
+  label {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 400;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* Form inputs — Inter for readability */
+  input, textarea, select, button {
+    font-family: 'Inter', sans-serif;
   }
 
   #root {
@@ -145,79 +227,154 @@
     flex-direction: column;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-normal tracking-tight;
+  /* Touch optimisations */
+  [data-scroll],
+  .overflow-y-auto,
+  .overflow-x-auto,
+  .overflow-y-scroll {
+    -webkit-overflow-scrolling: touch;
   }
 
-  h1,
-  h2,
-  h3 {
-    font-family: 'Bebas Neue', sans-serif;
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   COMPONENT UTILITIES
+───────────────────────────────────────────────────────────────────────────── */
 @layer utilities {
+
+  /* ── Font helpers ── */
+  .font-ui      { font-family: 'Inter', sans-serif; }
+  .font-accent  { font-family: 'Courier Prime', monospace; }
+
+  /* ── Accent glow (lilac) ── */
+  .lilac-glow {
+    box-shadow: 0 8px 32px hsl(var(--lilac) / 0.2);
+  }
+
+  /* ── Legacy gold glow ── */
   .gold-glow {
     box-shadow: 0 8px 32px hsl(var(--gold-glow));
   }
 
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
+  /* ── Scrollbars ── */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: hsl(var(--secondary));
     border-radius: 10px;
   }
-
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary) / 0.5);
   }
 
-  /* Safe-area inset utilities for notch/home-bar devices */
-  .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
+  /* ── Safe-area insets (notch devices) ── */
+  .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .pt-safe { padding-top: max(0px, env(safe-area-inset-top)); }
 
-  .pt-safe {
-    padding-top: max(0px, env(safe-area-inset-top));
-  }
-
-  /* iOS momentum scroll in any container */
+  /* ── iOS momentum scroll ── */
   .scrollable {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
+
+  /* ── Micro-animations ── */
+  .hover-lift {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px hsl(var(--foreground) / 0.08);
+  }
+
+  .hover-scale {
+    transition: transform 0.15s ease;
+  }
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+
+  /* ── Log / highlight text blocks (Courier Prime mono style) ── */
+  .text-log,
+  .text-highlight-block {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    background: hsl(var(--muted));
+    border-left: 3px solid hsl(var(--lilac));
+    padding: 0.75rem 1rem;
+    border-radius: 0 0.375rem 0.375rem 0;
+  }
+
+  /* ── Form / input baseline (single-column, clean) ── */
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-field label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 10px 14px;
+    background: hsl(var(--background));
+    border: 1.5px solid hsl(var(--border));
+    border-radius: var(--radius);
+    color: hsl(var(--foreground));
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    width: 100%;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+  }
+
+  .form-field input::placeholder {
+    color: hsl(var(--muted-foreground) / 0.5);
+  }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   KEYFRAMES
+───────────────────────────────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

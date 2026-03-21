@@ -199,23 +199,45 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase.channel('messages-realtime')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, (payload) => {
-        const newMessage = payload.new as Message;
-        // If it's for the current thread, add it
-        if (selectedPartner === newMessage.sender_id) {
-          setThread(prev => [...prev, newMessage]);
-          // Mark as read immediately
-          supabase.from("messages").update({ is_read: true }).eq("id", newMessage.id);
+    // Listen to ALL new messages involving this user (sent OR received)
+    const channel = supabase
+      .channel(`messages-realtime-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+          const isForMe = msg.receiver_id === user.id;
+          const isFromMe = msg.sender_id === user.id;
+
+          // Update the open thread in real time for both parties
+          if (isForMe && selectedPartner === msg.sender_id) {
+            setThread(prev => {
+              // Avoid duplicates (optimistic insert already added it for sender)
+              if (prev.some(m => m.id === msg.id)) return prev;
+              return [...prev, msg];
+            });
+            // Auto-mark as read since the user is looking at this thread
+            supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
+          }
+
+          if (isFromMe && selectedPartner === msg.receiver_id) {
+            setThread(prev => {
+              if (prev.some(m => m.id === msg.id)) return prev;
+              return [...prev, msg];
+            });
+          }
+
+          // Refresh conversation list for both sides
+          if (isForMe || isFromMe) {
+            loadConversations();
+          }
         }
-        // Always refresh conversations list
-        loadConversations();
-      })
+      )
       .subscribe();
 
     return () => {
@@ -239,10 +261,37 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       return;
     }
 
-    if (!newMessage.trim()) return;
-    const { error } = await supabase.from("messages").insert({ sender_id: user.id, receiver_id: selectedPartner, content: newMessage.trim() });
-    if (error) toast.error(error.message);
-    else { setNewMessage(""); loadThread(selectedPartner); }
+    const text = newMessage.trim();
+    if (!text) return;
+
+    // Optimistically append to thread immediately (sender sees it right away)
+    const optimistic: Message = {
+      id: `optimistic-${Date.now()}`,
+      sender_id: user.id,
+      receiver_id: selectedPartner,
+      content: text,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    };
+    setThread(prev => [...prev, optimistic]);
+    setNewMessage("");
+
+    const { error, data } = await supabase
+      .from("messages")
+      .insert({ sender_id: user.id, receiver_id: selectedPartner, content: text })
+      .select()
+      .single();
+
+    if (error) {
+      toast.error(error.message);
+      // Remove the optimistic message on failure
+      setThread(prev => prev.filter(m => m.id !== optimistic.id));
+      setNewMessage(text); // restore input
+    } else {
+      // Replace optimistic entry with real DB row (has real id)
+      setThread(prev => prev.map(m => m.id === optimistic.id ? data as Message : m));
+      loadConversations();
+    }
   };
 
   const deleteMessage = async (id: string) => {

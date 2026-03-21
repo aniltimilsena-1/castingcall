@@ -121,7 +121,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
       >
         <div className="flex flex-col items-center text-center mb-8">
           <img src="/logo.png" alt="CaastingCall Logo" className="h-20 w-auto mb-4" />
-          <h1 className="font-display text-4xl text-primary tracking-tight">CaastingCall</h1>
+          <h1 className="font-accent text-3xl text-foreground tracking-tight">CaastingCall</h1>
           <p className="text-muted-foreground text-sm mt-2 font-medium">
             {tab === "reset" ? "Recover your account password" : "Connect with top talent and industry professionals"}
           </p>
@@ -323,7 +323,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
+      <label className="block font-accent text-[0.72rem] text-muted-foreground tracking-wider mb-1">{label}</label>
       <div className="relative flex items-center">
         <input
           type={type}

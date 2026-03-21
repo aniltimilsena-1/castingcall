@@ -15,8 +15,12 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['"Bebas Neue"', 'sans-serif'],
-        body: ['"Outfit"', 'sans-serif'],
+        // Primary UI font — readability, forms, navigation, body copy
+        body: ['"Inter"', 'sans-serif'],
+        sans: ['"Inter"', 'sans-serif'],
+        // Accent / style font — headings, labels, special sections only
+        display: ['"Courier Prime"', 'monospace'],
+        accent: ['"Courier Prime"', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -25,6 +29,12 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         gold: "hsl(var(--gold))",
+        // Onion-derived lilac accent
+        lilac: {
+          DEFAULT: "hsl(var(--lilac))",
+          soft: "hsl(var(--lilac-soft))",
+          foreground: "hsl(var(--lilac-foreground))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -64,6 +74,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      spacing: {
+        // 8px grid system — use multiples of 2 (8, 16, 24, 32 …)
+        "grid": "8px",
+        "grid-2": "16px",
+        "grid-3": "24px",
+        "grid-4": "32px",
+        "grid-5": "40px",
+        "grid-6": "48px",
       },
       borderRadius: {
         lg: "var(--radius)",

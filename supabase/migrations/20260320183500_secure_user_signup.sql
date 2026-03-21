@@ -14,7 +14,7 @@ BEGIN
   );
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, extensions;
 
 -- Existing trigger 'on_auth_user_created' already exists, no need to re-create.
 -- This function will now be used for all new sign-ups.

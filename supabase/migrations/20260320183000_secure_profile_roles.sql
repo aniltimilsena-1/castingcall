@@ -11,10 +11,10 @@ BEGIN
     
     -- Check if role or plan are being changed
     IF (OLD.role IS DISTINCT FROM NEW.role OR OLD.plan IS DISTINCT FROM NEW.plan) THEN
-        -- Check if current user is an admin
-        IF NOT EXISTS (
+        -- Check if current user is an admin OR if this is a service role/migration (auth.uid() is null)
+        IF auth.uid() IS NOT NULL AND NOT EXISTS (
             SELECT 1 FROM public.profiles 
-            WHERE user_id = auth.uid() AND role = 'Admin' AND id != NEW.id -- Use id != NEW.id to avoid circularity if the user is an admin updating themselves
+            WHERE user_id = auth.uid() AND role = 'Admin'
         ) THEN
             -- Exception: Allow the INITIAL creation if NEW.role was set by handle_new_user() 
             -- but handle_new_user uses SECURITY DEFINER so it bypasses this anyway.
@@ -26,7 +26,7 @@ BEGIN
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, extensions;
 
 -- 2. Attach the trigger to the profiles table
 DROP TRIGGER IF EXISTS tr_secure_profile_updates ON public.profiles;

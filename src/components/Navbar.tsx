@@ -70,8 +70,8 @@ export default function Navbar({
   };
 
   const navItemClass = (id: PageName, currentSearchType?: string) => `
-    flex items-center gap-2 px-4 py-1.5 rounded-full text-[0.7rem] uppercase tracking-wider font-semibold transition-all
-    ${activePage === id && (!currentSearchType || searchType === currentSearchType) ? 'bg-primary text-black' : 'text-muted-foreground hover:text-primary hover:bg-primary/5'}
+    flex items-center gap-2 px-4 py-1.5 rounded-full text-[0.7rem] uppercase tracking-wider font-medium transition-all
+    ${activePage === id && (!currentSearchType || searchType === currentSearchType) ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}
   `;
 
   return (
@@ -85,7 +85,7 @@ export default function Navbar({
             className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = '<span class="font-display text-2xl text-primary tracking-tighter italic">CaastingCall</span>';
+              e.currentTarget.parentElement!.innerHTML = '<span class="font-accent text-2xl text-primary tracking-tight">CaastingCall</span>';
             }}
           />
         </button>
@@ -168,7 +168,7 @@ export default function Navbar({
 
           <button
             onClick={onAuthClick}
-            className={`relative px-4 py-1.5 rounded-full font-display font-medium text-[0.7rem] uppercase tracking-wider transition-all flex items-center gap-2 ${isPro
+            className={`relative px-4 py-1.5 rounded-full font-body font-medium text-[0.7rem] uppercase tracking-wider transition-all flex items-center gap-2 ${isPro
               ? "border-2 border-amber-500/50 text-amber-500 hover:bg-amber-500/5 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]"
               : "bg-primary text-primary-foreground hover:opacity-85 shadow-lg shadow-primary/20"
               }`}

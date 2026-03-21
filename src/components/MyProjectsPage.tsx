@@ -156,16 +156,26 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
       return;
     }
 
+    // Show instant local preview while uploading
+    const localPreview = URL.createObjectURL(file);
+    setFormData(prev => ({ ...prev, thumbnail_url: localPreview }));
+
     try {
+      toast.loading("Uploading thumbnail...");
       const fileExt = file.name.split('.').pop();
       const filePath = `project-thumbnails/${user.id}-${Math.random()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      setFormData({ ...formData, thumbnail_url: publicUrl });
+      // Replace local blob with real public URL and clean up
+      URL.revokeObjectURL(localPreview);
+      setFormData(prev => ({ ...prev, thumbnail_url: publicUrl }));
+      toast.dismiss();
       toast.success("Thumbnail uploaded!");
     } catch (err: any) {
+      // Keep the local preview so the UI doesn't blank out
+      toast.dismiss();
       toast.error("Upload failed: " + err.message);
     }
   };
@@ -431,9 +441,19 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                       <label className="text-[0.6rem] font-normal tracking-[3px] uppercase text-primary/60 ml-1">Role Category</label>
                       <select value={formData.role_category} onChange={(e) => setFormData({ ...formData, role_category: e.target.value })} className="w-full bg-background/50 border-[1.5px] border-border rounded-2xl px-5 py-4 text-foreground font-body text-sm outline-none focus:border-primary transition-all appearance-none cursor-pointer">
                         <option value="Actor">Actor</option>
+                        <option value="Director">Director</option>
                         <option value="Singer">Singer</option>
                         <option value="Dancer">Dancer</option>
+                        <option value="Choreographer">Choreographer</option>
+                        <option value="Producer">Producer</option>
+                        <option value="Casting Director">Casting Director</option>
+                        <option value="Screenwriter">Screenwriter</option>
+                        <option value="Cinematographer">Cinematographer</option>
+                        <option value="Composer">Composer</option>
+                        <option value="Stunt Performer">Stunt Performer</option>
+                        <option value="Voice Actor">Voice Actor</option>
                         <option value="Crew">Crew</option>
+                        <option value="Other">Other</option>
                       </select>
                     </div>
                     <div className="space-y-3">

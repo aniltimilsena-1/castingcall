@@ -112,7 +112,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             transition={{ duration: 0.8, delay: 0.2 }}
             className="font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.9] tracking-tighter text-white mb-6 uppercase"
           >
-            CaastingCall: <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-amber-500 italic font-normal">Casting</span> Opportunities <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-amber-500 italic font-normal">Casting</span> Opportunities <br />
             <span className="text-white/80">for Actors & Creators</span>
           </motion.h1>
 
@@ -122,8 +122,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-lg md:text-xl text-white/70 font-body max-w-2xl mx-auto mb-10 leading-relaxed font-light"
           >
-            The ultimate bridge between visionary directors and elite performers worldwide.
-            Discover your next masterpiece or landing your dream role today.
+            Where directors meet talent. Find your role or cast your vision.
           </motion.p>
 
           <motion.div
@@ -145,6 +144,25 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             >
               Post a Casting Call
             </button>
+          </motion.div>
+
+          {/* Role shortcut chips */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.85 }}
+            className="flex flex-wrap items-center justify-center gap-2 mt-8"
+          >
+            <span className="text-[0.6rem] uppercase tracking-[0.25em] text-white/25 mr-1">Browse by role:</span>
+            {["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"].map((role) => (
+              <button
+                key={role}
+                onClick={() => onCategoryClick(role)}
+                className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 hover:bg-primary/15 hover:border-primary/40 hover:text-white text-[0.65rem] uppercase tracking-wider transition-all duration-200 backdrop-blur-sm"
+              >
+                {role}
+              </button>
+            ))}
           </motion.div>
         </div>
 
