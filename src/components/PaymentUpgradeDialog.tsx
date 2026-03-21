@@ -107,15 +107,15 @@ export default function PaymentUpgradeDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-md bg-background/95 backdrop-blur-2xl border-white/5 p-0 overflow-hidden rounded-[2.5rem] shadow-2xl">
+            <DialogContent className="max-w-md bg-white border-neutral-200 p-0 overflow-hidden rounded-[2.5rem] shadow-2xl">
                 <div className="p-8">
                     <div className="flex items-center gap-4 mb-8">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                        <div className="w-12 h-12 rounded-2xl bg-black/5 flex items-center justify-center border border-black/10">
                             {getIcon()}
                         </div>
                         <div>
-                            <h2 className="text-xl font-display text-white">{getTitle()}</h2>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider">{currencySymbol}{amount} {currency} Contribution</p>
+                            <h2 className="text-xl font-display text-black">{getTitle()}</h2>
+                            <p className="text-xs text-black/40 uppercase tracking-wider">{currencySymbol}{amount} {currency} Contribution</p>
                         </div>
                     </div>
 
@@ -124,7 +124,7 @@ export default function PaymentUpgradeDialog({
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
                                 <button
                                     onClick={() => { setMethod('card'); setStep('pay'); }}
-                                    className="w-full group relative overflow-hidden bg-white text-black p-5 rounded-2xl font-normal transition-all hover:scale-[1.02] flex items-center justify-between"
+                                    className="w-full group relative overflow-hidden bg-black text-white p-5 rounded-2xl font-normal transition-all hover:scale-[1.02] flex items-center justify-between"
                                 >
                                     <div className="flex items-center gap-3">
                                         <CreditCard size={20} />
@@ -135,24 +135,24 @@ export default function PaymentUpgradeDialog({
 
                                 <button
                                     onClick={() => { setMethod('manual'); setStep('pay'); }}
-                                    className="w-full group bg-white/5 border border-white/10 text-white p-5 rounded-2xl font-normal transition-all hover:bg-white/10 flex items-center justify-between"
+                                    className="w-full group bg-black/5 border border-black/10 text-black p-5 rounded-2xl font-normal transition-all hover:bg-black/10 flex items-center justify-between"
                                 >
                                     <div className="flex items-center gap-3">
                                         <QrCode size={20} />
                                         <span>eSewa / Khalti / manual</span>
                                     </div>
-                                    <Upload size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                                    <Upload size={16} className="text-black/40 group-hover:text-primary transition-colors" />
                                 </button>
                             </motion.div>
                         )}
 
                         {step === 'pay' && method === 'card' && (
                             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-                                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 text-center space-y-4">
+                                <div className="bg-black/5 p-6 rounded-2xl border border-black/10 text-center space-y-4">
                                     <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto">
                                         <CreditCard className="text-blue-500" size={32} />
                                     </div>
-                                    <p className="text-sm text-muted-foreground">You are being redirected to Stripe for a secure global checkout.</p>
+                                    <p className="text-sm text-black/60">You are being redirected to Stripe for a secure global checkout.</p>
                                 </div>
                                 <button
                                     onClick={handleStripeSimulate}
@@ -161,22 +161,22 @@ export default function PaymentUpgradeDialog({
                                 >
                                     {uploading ? 'Processing Secure Connection...' : `Confirm & Pay $${currency === 'NPR' ? (amount / 135).toFixed(2) : amount} (USD Equivalent)`}
                                 </button>
-                                <button onClick={() => setStep('select')} className="w-full text-xs text-muted-foreground hover:text-white transition-colors">Go Back</button>
+                                <button onClick={() => setStep('select')} className="w-full text-xs text-black/40 hover:text-black transition-colors">Go Back</button>
                             </motion.div>
                         )}
 
                         {step === 'pay' && method === 'manual' && (
                             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
-                                <div className="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-6">
+                                <div className="bg-black/5 p-6 rounded-2xl border border-black/10 space-y-6">
                                     <div className="flex justify-center">
                                         {/* Placeholder QR - In reality you'd show your eSewa/Khalti QR */}
-                                        <div className="w-40 h-40 bg-white p-2 rounded-xl">
+                                        <div className="w-40 h-40 bg-white p-2 rounded-xl ring-1 ring-black/5">
                                             <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CastingHubGlobal" alt="QR Code" className="w-full h-full" />
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-xs font-normal text-white mb-1">Casting Hub Global QR</p>
-                                        <p className="text-[0.7rem] text-muted-foreground uppercase tracking-[1px]">
+                                        <p className="text-xs font-normal text-black mb-1">Casting Hub Global QR</p>
+                                        <p className="text-[0.7rem] text-black/40 uppercase tracking-[1px]">
                                             Scan and pay {currency === 'USD' ? 'Rs. ' : currencySymbol}{Math.round(currency === 'USD' ? amount * 135 : amount)}
                                             {currency === 'USD' ? ' (NPR Equivalent)' : ''}
                                         </p>
@@ -193,35 +193,35 @@ export default function PaymentUpgradeDialog({
                                     />
                                     <label
                                         htmlFor="screenshot-up"
-                                        className="w-full flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-2xl py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all"
+                                        className="w-full flex flex-col items-center justify-center border-2 border-dashed border-black/10 rounded-2xl py-8 cursor-pointer hover:border-black/30 hover:bg-black/5 transition-all"
                                     >
                                         {uploading ? (
-                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black" />
                                         ) : (
                                             <>
-                                                <Upload className="text-primary mb-2" size={24} />
-                                                <span className="text-sm font-normal text-white">Upload Screenshot</span>
-                                                <span className="text-[0.65rem] text-muted-foreground">Confirm your transfer proof</span>
+                                                <Upload className="text-black/60 mb-2" size={24} />
+                                                <span className="text-sm font-normal text-black">Upload Screenshot</span>
+                                                <span className="text-[0.65rem] text-black/40">Confirm your transfer proof</span>
                                             </>
                                         )}
                                     </label>
                                 </div>
-                                <button onClick={() => setStep('select')} className="w-full text-xs text-muted-foreground hover:text-white transition-colors">Go Back</button>
+                                <button onClick={() => setStep('select')} className="w-full text-xs text-black/40 hover:text-black transition-colors">Go Back</button>
                             </motion.div>
                         )}
 
                         {step === 'confirm' && (
                             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-8 space-y-6">
-                                <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-                                    <Check className="text-green-500" size={40} />
+                                <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto">
+                                    <Check className="text-green-600" size={40} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl text-white font-normal mb-2">Request Submitted</h3>
-                                    <p className="text-sm text-muted-foreground">Our financing team will verify the screenshot and activate your {type.replace('_', ' ')} within 1-2 hours.</p>
+                                    <h3 className="text-xl text-black font-normal mb-2">Request Submitted</h3>
+                                    <p className="text-sm text-black/60">Our financing team will verify the screenshot and activate your {type.replace('_', ' ')} within 1-2 hours.</p>
                                 </div>
                                 <button
                                     onClick={() => onOpenChange(false)}
-                                    className="w-full bg-white text-black py-4 rounded-xl font-normal transition-all"
+                                    className="w-full bg-black text-white py-4 rounded-xl font-normal transition-all"
                                 >
                                     Close & Continue
                                 </button>
@@ -230,9 +230,9 @@ export default function PaymentUpgradeDialog({
                     </AnimatePresence>
                 </div>
 
-                <div className="bg-white/5 px-8 py-4 flex items-center gap-2">
-                    <ShieldCheck size={14} className="text-green-500" />
-                    <span className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">End-to-End Encrypted Secure Checkout</span>
+                <div className="bg-black/5 px-8 py-4 flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-green-600" />
+                    <span className="text-[0.65rem] text-black/40 uppercase tracking-wider">End-to-End Encrypted Secure Checkout</span>
                 </div>
             </DialogContent>
         </Dialog>

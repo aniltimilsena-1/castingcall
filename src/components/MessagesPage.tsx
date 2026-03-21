@@ -13,18 +13,35 @@ import {
   ThumbsUp,
   Reply,
   Trash2,
-  Edit3,
-  MoreVertical,
-  X,
-  Check,
-  Crown,
-  Globe,
+  Edit2,
   Download,
-  ArrowUpRight
+  ArrowUpRight,
+  ChevronLeft,
+  MoreVertical,
+  Copy,
+  Pin,
+  Forward,
+  CornerUpLeft,
+  X,
+  UserCheck,
+  CheckCircle2,
+  Crown
 } from "lucide-react";
 import ProfileDetailDialog from "./ProfileDetailDialog";
 import { type PageName } from "./AppDrawer";
 import { type Profile } from "@/services/profileService";
+
+function ActionItem({ icon: Icon, label, onClick, color = "text-white/70" }: { icon: any, label: string, onClick: () => void, color?: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/10 transition-colors text-left group`}
+    >
+      <span className={`text-xs font-normal ${color} group-hover:text-white`}>{label}</span>
+      <Icon size={14} className={`${color} group-hover:text-white opacity-40`} />
+    </button>
+  );
+}
 
 interface Message {
   id: string;
@@ -35,8 +52,8 @@ interface Message {
   created_at: string;
   reply_to_id?: string | null;
   is_edited?: boolean;
+  is_pinned?: boolean | null;
   reactions?: Record<string, string[]>;
-  reply_content?: string;
 }
 
 interface Conversation {
@@ -63,13 +80,19 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showPartnerProfile, setShowPartnerProfile] = useState(false);
+  const [viewingProfile, setViewingProfile] = useState<Profile | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
   const [isNepal, setIsNepal] = useState<boolean | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [pendingFileType, setPendingFileType] = useState<'image' | 'video' | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [activeMenu, setActiveMenu] = useState<{ id: string, x: number, y: number } | null>(null);
+  const [forwardingMessage, setForwardingMessage] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   // Track IDs of messages we already inserted optimistically to skip the
   // realtime echo that would otherwise cause a duplicate.
@@ -143,6 +166,31 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     setThread(data || []);
     await supabase.from("messages").update({ is_read: true }).eq("sender_id", partnerId).eq("receiver_id", user.id);
   }, [user]);
+
+  const openProfile = async (id: string) => {
+    const { data, error } = await supabase.from("profiles").select("*").eq("user_id", id).single();
+    if (error) {
+      toast.error("Could not load profile");
+      return;
+    }
+    setViewingProfile(data as Profile);
+    setIsProfileOpen(true);
+  };
+
+  const onToggleSave = async (e: React.MouseEvent, profileId: string) => {
+    e.stopPropagation();
+    if (!user) return;
+    const isSaved = savedTalentIds.includes(profileId);
+    if (isSaved) {
+      await supabase.from("saved_talents").delete().eq("user_id", user.id).eq("talent_profile_id", profileId);
+      setSavedTalentIds(prev => prev.filter(id => id !== profileId));
+      toast.success("Removed from bookmarks");
+    } else {
+      await supabase.from("saved_talents").insert({ user_id: user.id, talent_profile_id: profileId });
+      setSavedTalentIds(prev => [...prev, profileId]);
+      toast.success("Added to bookmarks");
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -219,6 +267,17 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           if (selectedPartner === msg.sender_id) {
             setThread(prev => {
               if (prev.some(m => m.id === msg.id)) return prev;
+              // Check for optimistic message from this user that might match (unlikely for incoming but safe)
+              const optIndex = prev.findIndex(m => 
+                m.id.startsWith('optimistic-') && 
+                m.content === msg.content && 
+                m.sender_id === msg.sender_id
+              );
+              if (optIndex !== -1) {
+                const newThread = [...prev];
+                newThread[optIndex] = msg;
+                return newThread;
+              }
               return [...prev, msg];
             });
             // Mark as read — user is actively viewing this thread
@@ -252,6 +311,17 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           if (selectedPartner === msg.receiver_id) {
             setThread(prev => {
               if (prev.some(m => m.id === msg.id)) return prev;
+              // Reconcile optimistic: swap the client-generated row for the real one
+              const optIndex = prev.findIndex(m => 
+                m.id.startsWith('optimistic-') && 
+                m.content === msg.content && 
+                m.receiver_id === msg.receiver_id
+              );
+              if (optIndex !== -1) {
+                const newThread = [...prev];
+                newThread[optIndex] = msg;
+                return newThread;
+              }
               return [...prev, msg];
             });
           }
@@ -259,9 +329,42 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       )
       .subscribe();
 
+    // ── Channel 3: updates/deletes to ANY message relevant to this user ─
+    const updatesChannel = supabase
+      .channel(`message-updates-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+          if (selectedPartner === msg.sender_id || selectedPartner === msg.receiver_id) {
+            setThread(prev => prev.map(m => m.id === msg.id ? msg : m));
+          }
+          void loadConversations();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          setThread(prev => prev.filter(m => m.id !== payload.old.id));
+          void loadConversations();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(incomingChannel);
       supabase.removeChannel(outgoingChannel);
+      supabase.removeChannel(updatesChannel);
     };
   }, [user, selectedPartner, loadConversations]);
 
@@ -284,7 +387,34 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     const text = newMessage.trim();
     if (!text) return;
 
-    // Optimistically append to thread immediately (sender sees it right away)
+    // Handle Edit
+    if (editingMessage) {
+      const { error } = await supabase
+        .from("messages")
+        .update({ content: text, is_edited: true })
+        .eq("id", editingMessage.id);
+      
+      if (error) {
+        toast.error(error.message);
+      } else {
+        setThread(prev => prev.map(m => m.id === editingMessage.id ? { ...m, content: text, is_edited: true } : m));
+        setEditingMessage(null);
+        setNewMessage("");
+      }
+      return;
+    }
+
+    // Handle Reply
+    const payload: any = { 
+      sender_id: user.id, 
+      receiver_id: selectedPartner, 
+      content: text 
+    };
+    if (replyingTo) {
+      payload.reply_to_id = replyingTo.id;
+    }
+
+    // Optimistically append to thread
     const optimistic: Message = {
       id: `optimistic-${Date.now()}`,
       sender_id: user.id,
@@ -292,13 +422,15 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       content: text,
       is_read: false,
       created_at: new Date().toISOString(),
+      reply_to_id: replyingTo?.id,
     };
     setThread(prev => [...prev, optimistic]);
     setNewMessage("");
+    setReplyingTo(null);
 
     const { error, data } = await supabase
       .from("messages")
-      .insert({ sender_id: user.id, receiver_id: selectedPartner, content: text })
+      .insert(payload)
       .select()
       .single();
 
@@ -312,6 +444,35 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       // Swap optimistic row for the real DB row
       setThread(prev => prev.map(m => m.id === optimistic.id ? data as Message : m));
       void loadConversations();
+    }
+  };
+
+  const togglePin = async (m: Message) => {
+    const newVal = !m.is_pinned;
+    const { error } = await supabase.from("messages").update({ is_pinned: newVal } as any).eq("id", m.id);
+    if (!error) {
+      setThread(prev => prev.map(msg => msg.id === m.id ? { ...msg, is_pinned: newVal } : msg));
+      toast.success(newVal ? "Message pinned" : "Message unpinned");
+    }
+  };
+
+  const forwardMessageToTarget = async (msg: Message, targetId: string) => {
+    let content = msg.content;
+    const { error } = await supabase.from("messages").insert({
+      sender_id: user?.id,
+      receiver_id: targetId,
+      content
+    });
+    
+    if (!error) {
+      toast.success("Message forwarded");
+      setForwardingMessage(null);
+      if (targetId === selectedPartner) {
+        void loadThread(targetId);
+      }
+      void loadConversations();
+    } else {
+      toast.error("Forwarding failed");
     }
   };
 
@@ -378,15 +539,28 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         <div className="p-4 space-y-4">
           <h1 className="text-2xl text-white font-normal">Message Hub</h1>
           <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input placeholder="Search Active Chats" className="w-full bg-secondary/30 rounded-full pl-10 pr-4 py-2.5 text-sm text-white outline-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 w-4 h-4" />
+            <input 
+              placeholder="Search Active Chats" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-secondary/30 rounded-full pl-10 pr-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30" 
+            />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar">
-          {conversations.map((c) => (
+          {conversations
+            .filter(c => c.partnerName.toLowerCase().includes(searchTerm.toLowerCase()) || c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()))
+            .map((c) => (
             <button key={c.partnerId} onClick={() => loadThread(c.partnerId)} className={`w-full px-3 py-3 flex items-center gap-3 hover:bg-white/5 transition-all ${selectedPartner === c.partnerId ? "bg-white/5" : ""}`}>
-              <div className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center relative">
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openProfile(c.partnerId);
+                }}
+                className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center relative hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+              >
                 {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
                 {onlineUsers.has(c.partnerId) && (
                   <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1c] rounded-full" />
@@ -394,7 +568,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <div className="text-[15px] text-white truncate">{c.partnerName}</div>
-                <div className="text-[13px] text-muted-foreground truncate">{c.lastMessage}</div>
+                <div className="text-[13px] text-white/40 truncate">{c.lastMessage}</div>
               </div>
               {c.unread > 0 && <div className="w-3 h-3 bg-primary rounded-full mr-2 shadow-[0_0_10px_rgba(251,191,36,0.5)]" />}
             </button>
@@ -408,7 +582,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 <Crown className="text-primary w-10 h-10" />
                 <div className="flex-1">
                   <p className="text-white text-sm mb-0.5">Upgrade for {isNepal ? "NPR 499" : "$4.99"}</p>
-                  <p className="text-[0.65rem] text-muted-foreground uppercase">{isNepal ? "Unlock local & global limits" : "Go Global Pro"}</p>
+                  <p className="text-[0.65rem] text-white/40 uppercase tracking-widest leading-normal">{isNepal ? "Unlock local & global limits" : "Go Global Pro"}</p>
                 </div>
               </div>
               <button onClick={() => onNavigate?.("premium")} className="w-full bg-primary text-black py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px]">
@@ -422,15 +596,23 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       <div className={`flex-1 flex flex-col bg-[#1c1c1c] border border-border/20 rounded-3xl overflow-hidden shadow-xl ${!selectedPartner ? "hidden md:flex items-center justify-center" : "flex"}`}>
         {!selectedPartner ? (
           <div className="text-center p-8 space-y-4">
-            <MessageSquare size={64} className="text-primary/10 mx-auto" />
-            <p className="text-muted-foreground text-sm uppercase tracking-widest font-display">Cast your message worldwide</p>
+            <MessageSquare size={64} className="text-white/10 mx-auto" />
+            <p className="text-white/30 text-sm uppercase tracking-[0.3em] font-display">Cast your message worldwide</p>
           </div>
         ) : (
           <>
             <div className="px-6 py-4 flex items-center justify-between border-b border-white/5">
-              <div className="flex items-center gap-4">
-                <button className="md:hidden text-muted-foreground" onClick={() => setSelectedPartner(null)}>←</button>
-                <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-white/10 relative">
+              <div className="flex items-center gap-3">
+                <button 
+                  className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-white transition-colors" 
+                  onClick={() => setSelectedPartner(null)}
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <div 
+                  onClick={() => openProfile(selectedPartner!)}
+                  className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-white/10 relative cursor-pointer hover:border-primary/50 transition-colors"
+                >
                   {partnerProfile?.photo_url ? <img src={partnerProfile.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{partnerProfile?.name?.[0]}</div>}
                   {onlineUsers.has(selectedPartner) && (
                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-[#1c1c1c] rounded-full" />
@@ -442,10 +624,10 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                     {onlineUsers.has(selectedPartner) ? (
                       <span className="text-[0.6rem] bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded-md uppercase tracking-wider font-bold">Online</span>
                     ) : (
-                      <span className="text-[0.6rem] bg-white/5 text-muted-foreground px-1.5 py-0.5 rounded-md uppercase tracking-wider">Offline</span>
+                      <span className="text-[0.6rem] bg-white/5 text-white/40 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Offline</span>
                     )}
                   </div>
-                  <div className="text-[10px] text-primary/60 uppercase tracking-widest">Global Talent</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-[0.2em]">Global Talent</div>
                 </div>
               </div>
             </div>
@@ -453,27 +635,39 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
               ref={scrollRef}
               className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar flex flex-col"
             >
-              {thread.map((m) => {
-                const isMine = m.sender_id === user?.id;
-                return (
-                  <div key={m.id} className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"} group relative`}>
-                    {!isMine && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <button onClick={() => {
-                          if (m.content.includes('http')) {
-                            const url = m.content.split(':').slice(1).join(':');
-                            window.open(url, '_blank');
-                          }
-                        }} className="p-1 px-2 text-[10px] text-muted-foreground/40 hover:text-white uppercase transition-colors">View Source</button>
-                      </div>
-                    )}
-                    {isMine && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <button className="p-1 px-2 text-[10px] text-muted-foreground/40 hover:text-white uppercase transition-colors" onClick={() => deleteMessage(m.id)}>Delete</button>
-                      </div>
-                    )}
-                    <div className={`max-w-[80%] rounded-2xl overflow-hidden ${isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg"}`}>
-                      {m.content.startsWith('[IMAGE]:') ? (
+                {thread.map((m) => {
+                  const isMine = m.sender_id === user?.id;
+                  const isMenuActive = activeMenu?.id === m.id;
+
+                  return (
+                    <div 
+                      key={m.id} 
+                      className={`flex flex-col gap-1 ${isMine ? "items-end" : "items-start"} group relative`}
+                    >
+                      {/* Message Thread Item Container */}
+                      <div className="relative group/bubble max-w-[85%]">
+                        {/* Reply Preview */}
+                        {m.reply_to_id && (() => {
+                          const parent = thread.find(msg => msg.id === m.reply_to_id);
+                          const parentContent = parent?.content?.startsWith('[IMAGE]:') ? 'Photo' : parent?.content || 'Original message';
+                          return (
+                            <div className={`mb-1 px-3 py-2 rounded-xl text-[11px] bg-white/5 border border-white/10 ${isMine ? "mr-1 text-right" : "ml-1 text-left"} text-white/40 italic flex flex-col gap-0.5 max-w-[200px] truncate`}>
+                              <span className="font-bold opacity-60 uppercase text-[9px] tracking-widest">{isMine ? "Replying..." : "Replied..."}</span>
+                              <span className="truncate">{parentContent}</span>
+                            </div>
+                          );
+                        })()}
+
+                        <div 
+                          onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setActiveMenu({ id: m.id, x: e.clientX, y: e.clientY });
+                          }}
+                          className={`rounded-2xl overflow-hidden cursor-pointer transition-all active:scale-[0.98] relative ${
+                            isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg"
+                          }`}
+                        >
+                          {m.content.startsWith('[IMAGE]:') ? (
                         <div className="relative group/img bg-white/5 min-w-[200px] min-h-[150px] flex items-center justify-center">
                           <img
                             key={`${m.id}-img`}
@@ -538,18 +732,90 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                       ) : (
                         <div className="px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">{m.content}</div>
                       )}
+                        </div>
+
+                        {/* Edited Indicator */}
+                        {m.is_edited && (
+                          <div className={`text-[10px] text-white/20 mt-1 ${isMine ? "text-right mr-1" : "text-left ml-1"}`}>
+                            (edited)
+                          </div>
+                        )}
+
+                        {/* Popup Action Menu */}
+                        {isMenuActive && (
+                          <>
+                            <div className="fixed inset-0 z-[100]" onClick={(e) => { e.stopPropagation(); setActiveMenu(null); }} />
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              className="fixed z-[110] bg-[#2a2a2a]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-1 shadow-2xl min-w-[160px] overflow-hidden flex flex-col pointer-events-auto"
+                              style={{ 
+                                left: Math.min(activeMenu!.x, window.innerWidth - 180), 
+                                top: Math.min(activeMenu!.y, window.innerHeight - 250),
+                                transformOrigin: 'top center'
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ActionItem icon={CornerUpLeft} label="Reply" onClick={() => { setReplyingTo(m); setActiveMenu(null); }} />
+                              {isMine && !m.content.startsWith('[') && <ActionItem icon={Edit2} label="Edit" onClick={() => { setEditingMessage(m); setNewMessage(m.content); setActiveMenu(null); }} />}
+                              <ActionItem icon={Forward} label="Forward" onClick={() => { setForwardingMessage(m); setActiveMenu(null); }} />
+                              <ActionItem icon={Copy} label="Copy" onClick={() => { navigator.clipboard.writeText(m.content); toast.success("Copied to clipboard"); setActiveMenu(null); }} />
+                              <ActionItem icon={Pin} label={m.is_pinned ? "Unpin" : "Pin"} onClick={() => { togglePin(m); setActiveMenu(null); }} />
+                              {isMine && <ActionItem icon={Trash2} label="Delete" color="text-red-400" onClick={() => { deleteMessage(m.id); setActiveMenu(null); }} />}
+                            </motion.div>
+                          </>
+                        )}
+                        
+                        {/* Pinned Marker */}
+                        {m.is_pinned && (
+                          <div className={`absolute -top-2 ${isMine ? "-right-1" : "-left-1"} bg-primary/20 p-1 rounded-full border border-primary/30 z-10`}>
+                            <Pin size={10} className="text-primary fill-primary/50" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-[9px] text-white/20 uppercase tracking-[0.2em] px-1">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                     </div>
-                    <div className="text-[9px] text-muted-foreground/40 uppercase tracking-widest px-2">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="p-4 space-y-3">
-              <AnimatePresence>
-                {pendingPreviewUrl && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                  );
+                })}
+              </div>
+
+              {/* Input Area Enhancements (Reply/Edit Previews) */}
+              <div className="px-4">
+                {(replyingTo || editingMessage) && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center justify-between bg-white/5 border border-white/10 rounded-t-2xl px-4 py-3 -mb-3 relative z-[20] backdrop-blur-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/20 rounded-lg">
+                        {replyingTo ? <Reply className="text-primary w-4 h-4" /> : <Edit2 className="text-primary w-4 h-4" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] text-primary uppercase font-bold tracking-[2px]">
+                          {replyingTo ? "Replying to message" : "Editing message"}
+                        </div>
+                        <div className="text-xs text-white/50 truncate max-w-[200px]">
+                          {replyingTo ? replyingTo.content : editingMessage?.content}
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => { setReplyingTo(null); setEditingMessage(null); if (editingMessage) setNewMessage(""); }}
+                      className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
+                    >
+                      <X size={16} className="text-white/40" />
+                    </button>
+                  </motion.div>
+                )}
+              </div>
+
+              <div className="p-4 pt-1 space-y-3">
+                <AnimatePresence>
+                  {pendingPreviewUrl && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     className="relative w-32 h-32 rounded-2xl overflow-hidden border border-primary/30 shadow-2xl shadow-primary/10 mb-2"
                   >
@@ -609,6 +875,57 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           </>
         )}
       </div>
+
+      <ProfileDetailDialog
+        open={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
+        profile={viewingProfile}
+        user={user}
+        currentUserProfile={currentUserProfile}
+        isSaved={viewingProfile ? savedTalentIds.includes(viewingProfile.id) : false}
+        onToggleSave={onToggleSave}
+      />
+
+      {/* Forwarding Modal */}
+      <AnimatePresence>
+        {forwardingMessage && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-sm bg-[#1c1c1c] border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[70vh]"
+            >
+              <div className="p-5 border-b border-white/5 flex items-center justify-between">
+                <h3 className="text-white font-medium">Forward to...</h3>
+                <button onClick={() => setForwardingMessage(null)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/40"><X size={18} /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto no-scrollbar p-3 space-y-1">
+                {conversations.map(c => (
+                  <button 
+                    key={c.partnerId}
+                    onClick={() => forwardMessageToTarget(forwardingMessage, c.partnerId)}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-white/5 rounded-2xl transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-white/10">
+                      {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary text-sm uppercase">{c.partnerName[0]}</div>}
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <div className="text-white text-sm group-hover:text-primary transition-colors truncate">{c.partnerName}</div>
+                      <div className="text-[10px] text-white/40 uppercase tracking-widest">Global Talent</div>
+                    </div>
+                    <Forward size={14} className="text-white/20 group-hover:text-primary transition-colors" />
+                  </button>
+                ))}
+              </div>
+              <div className="p-4 bg-white/5 mx-4 mb-4 rounded-2xl border border-white/10">
+                <span className="text-[10px] text-primary uppercase font-bold tracking-[2px] block mb-1">Message Preview</span>
+                <p className="text-xs text-white/40 italic line-clamp-2">{forwardingMessage.content}</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

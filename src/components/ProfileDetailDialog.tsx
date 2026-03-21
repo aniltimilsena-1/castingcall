@@ -290,9 +290,9 @@ export default function ProfileDetailDialog({
     return (
         <>
             <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setShowFullProfile(false); }}>
-                <DialogContent className="max-w-4xl w-full bg-background p-0 border-none shadow-2xl rounded-3xl flex flex-col" style={{ maxHeight: '95svh', height: 'auto' }}>
+                <DialogContent className="max-w-4xl w-full bg-background p-0 border-none shadow-2xl rounded-3xl flex flex-col overflow-hidden" style={{ maxHeight: '92svh' }}>
                     <div
-                        className="overflow-y-auto overscroll-contain"
+                        className="flex-1 overflow-y-auto overscroll-contain no-scrollbar"
                         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
                     >
                         <div className="p-5 md:p-8">
@@ -311,10 +311,7 @@ export default function ProfileDetailDialog({
                                                     <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-[3px] border-secondary rounded-full z-20 shadow-glow shadow-green-500/50" title="Online" />
                                                 )}
                                             </div>
-                                            <div className="font-display text-lg text-foreground uppercase tracking-wider flex items-center gap-2">
-                                                {profile?.name}
-                                                {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
-                                            </div>
+
                                         </div>
                                         <div className="flex-1 text-center md:text-left pt-4">
                                             <h2 className="font-display text-4xl text-foreground mb-2 flex items-center gap-3">
@@ -352,7 +349,7 @@ export default function ProfileDetailDialog({
                                                     </Badge>
                                                 ))}
                                                 {(profile as any).trending_score > 80 && (
-                                                    <Badge className="bg-orange-500 text-primary-foreground border-none font-normal tracking-widest text-[0.6rem]"><TrendingUp size={10} className="mr-1" /> Trending</Badge>
+                                                    <Badge className="bg-orange-500 text-white border-none font-normal tracking-widest text-[0.6rem]"><TrendingUp size={10} className="mr-1" /> Trending</Badge>
                                                 )}
                                             </div>
 
@@ -407,7 +404,7 @@ export default function ProfileDetailDialog({
                                                     {user?.id !== profile.user_id && (
                                                         <button
                                                             onClick={handleSubscribe}
-                                                            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-primary-foreground hover:opacity-90 shadow-lg shadow-amber-500/20 shadow-glow'}`}
+                                                            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-amber-950 hover:bg-amber-400 font-bold shadow-lg shadow-amber-500/20'}`}
                                                         >
                                                             {isSubscribed ? <Check size={18} /> : <Crown size={18} />}
                                                             {isSubscribed ? "Active Fan Pass" : "Get Fan Pass"}
@@ -510,7 +507,7 @@ export default function ProfileDetailDialog({
                                                     <div className="flex justify-end gap-3">
                                                         <button
                                                             onClick={() => setIsMessaging(false)}
-                                                            className="px-5 py-2 text-xs font-normal text-muted-foreground hover:text-white transition-colors"
+                                                            className="px-5 py-2 text-xs font-normal text-white/40 hover:text-white transition-colors"
                                                         >
                                                             Cancel
                                                         </button>
@@ -556,7 +553,7 @@ export default function ProfileDetailDialog({
                                         <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-secondary/30 border border-primary/20 rounded-3xl p-8 space-y-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="text-[0.7rem] font-normal text-primary tracking-[3px] uppercase">New Message to {profile.name}</div>
-                                                <button onClick={() => setIsMessaging(false)} className="text-muted-foreground hover:text-primary transition-colors">
+                                                <button onClick={() => setIsMessaging(false)} className="text-white/40 hover:text-primary transition-colors">
                                                     <X size={20} />
                                                 </button>
                                             </div>
@@ -567,7 +564,7 @@ export default function ProfileDetailDialog({
                                                 className="w-full bg-background border border-border rounded-xl px-6 py-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all resize-none h-40"
                                             />
                                             <div className="flex justify-end items-center gap-6">
-                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-normal text-muted-foreground hover:text-white transition-colors">Cancel</button>
+                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-normal text-white/40 hover:text-white transition-colors">Cancel</button>
                                                 <button
                                                     onClick={handleSendMessage}
                                                     disabled={sending || !message.trim()}
@@ -592,7 +589,7 @@ export default function ProfileDetailDialog({
                                                         </div>
                                                     )}
                                                 </div>
-                                                <h2 className="font-display text-2xl text-foreground">{profile?.name}</h2>
+                                                {/* Redundant name removed */}
                                                 
                                                 {/* Full Profile View Follow Stats & Button */}
                                                 <div className="flex items-center gap-6 mt-2">

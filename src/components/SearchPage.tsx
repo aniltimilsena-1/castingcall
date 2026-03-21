@@ -107,8 +107,14 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
   useEffect(() => {
      if (user?.id) {
        const fetchSaved = async () => {
-         const { data } = await supabase.from("saved_talents").select("talent_profile_id").eq("user_id", user.id);
-         setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
+         try {
+           const { data, error } = await supabase.from("saved_talents").select("talent_profile_id").eq("user_id", user.id);
+           if (error) throw error;
+           setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
+         } catch (err) {
+           console.error("Error fetching saved talents:", err);
+           setSavedTalentIds([]);
+         }
        };
        fetchSaved();
      }

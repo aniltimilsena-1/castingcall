@@ -100,7 +100,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             className="mb-8 flex justify-center"
           >
             <div className="p-[1.5px] rounded-full bg-gradient-to-tr from-primary/50 via-amber-500/50 to-primary/50">
-              <div className="bg-secondary rounded-full p-2 px-6 backdrop-blur-xl border border-border shadow-2xl">
+              <div className="bg-black/40 rounded-full p-2 px-6 backdrop-blur-xl border border-white/10 shadow-2xl">
                 <span className="text-[0.65rem] font-medium uppercase tracking-[0.3em] text-amber-500">Premium Talent Network</span>
               </div>
             </div>
@@ -140,7 +140,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             </button>
             <button
               onClick={() => onCategoryClick("post")}
-              className="px-10 py-4 bg-secondary hover:bg-secondary/80 text-foreground border border-border backdrop-blur-md rounded-full font-display text-sm tracking-widest uppercase transition-all hover:border-primary/30"
+              className="px-10 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/20 backdrop-blur-md rounded-full font-display text-sm tracking-widest uppercase transition-all hover:border-primary/50 shadow-xl"
             >
               Post a Casting Call
             </button>
@@ -153,12 +153,12 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             transition={{ duration: 0.7, delay: 0.85 }}
             className="flex flex-wrap items-center justify-center gap-2 mt-8"
           >
-            <span className="text-[0.6rem] uppercase tracking-[0.25em] text-muted-foreground mr-1">Browse by role:</span>
+            <span className="text-[0.6rem] uppercase tracking-[0.25em] text-white/40 mr-1">Browse by role:</span>
             {["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"].map((role) => (
               <button
                 key={role}
                 onClick={() => onCategoryClick(role)}
-                className="px-4 py-1.5 rounded-full bg-secondary/30 border border-border text-foreground/50 hover:bg-primary/15 hover:border-primary/40 hover:text-foreground text-[0.65rem] uppercase tracking-wider transition-all duration-200 backdrop-blur-sm"
+                className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/40 hover:bg-primary/15 hover:border-primary/40 hover:text-white text-[0.65rem] uppercase tracking-wider transition-all duration-200 backdrop-blur-sm"
               >
                 {role}
               </button>
@@ -201,7 +201,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── CATEGORIES (GLASSMORPHISM) ── */}
-      <section className="py-32 px-6 max-w-7xl mx-auto relative z-30">
+      <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
         <div className="text-center mb-20 space-y-4">
           <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Select Your Pillar</h2>
           <h3 className="text-4xl md:text-5xl font-display text-primary italic">Elite Talent Disciplines</h3>
@@ -320,7 +320,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── FEATURED TALENTS ── */}
       {featured.length > 0 && (
-        <section className="py-32 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[4rem] border border-border relative z-30">
+        <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[3rem] md:rounded-[4rem] border border-border relative z-30">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20 px-4">
             <div className="space-y-4">
               <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-amber-500 font-bold">Wall of Excellence</h2>
@@ -374,7 +374,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                     )}
                   </div>
                   {onlineUsers.has(p.user_id) && (
-                    <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-border rounded-full z-10 shadow-glow shadow-green-500/50" />
+                    <div className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 bg-green-500 border-2 border-border rounded-full z-10 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
                   )}
                   </div>
 
@@ -397,7 +397,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── CASTING CALLS ── */}
       {recentProjects.length > 0 && (
-        <section className="py-32 px-6 max-w-7xl mx-auto relative z-30">
+        <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
           <div className="text-center mb-20 space-y-4">
             <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Open Opportunities</h2>
             <h3 className="text-4xl md:text-5xl font-display text-primary">Live Casting Calls</h3>
@@ -450,7 +450,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       )}
 
       {/* ── MISSION & VISION ── */}
-      <section className="py-32 px-6 max-w-7xl mx-auto relative z-30">
+      <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
           <div className="space-y-8">
             <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold italic">Our Soul</h2>
