@@ -68,10 +68,17 @@ const Index = () => {
         const state = channel.presenceState();
         const onlineIds = new Set<string>();
         Object.keys(state).forEach(key => onlineIds.add(key));
-        setOnlineUsers(onlineIds);
+        
+        setOnlineUsers(prev => {
+          if (prev.size === onlineIds.size && [...onlineIds].every(id => prev.has(id))) {
+            return prev;
+          }
+          return onlineIds;
+        });
       })
       .on('presence', { event: 'join' }, ({ key }) => {
         setOnlineUsers(prev => {
+          if (prev.has(key)) return prev;
           const next = new Set(prev);
           next.add(key);
           return next;
@@ -79,6 +86,7 @@ const Index = () => {
       })
       .on('presence', { event: 'leave' }, ({ key }) => {
         setOnlineUsers(prev => {
+          if (!prev.has(key)) return prev;
           const next = new Set(prev);
           next.delete(key);
           return next;
@@ -169,7 +177,7 @@ const Index = () => {
 
   // Sync state with URL on load and path changes
   useEffect(() => {
-    if (loading) return; // Wait for auth to settle
+    if (loading) return; 
 
     const path = location.pathname;
     const { page: pageParam } = (params as any);
@@ -183,12 +191,6 @@ const Index = () => {
       const profileId = id || path.split('/').pop();
       if (profileId && user && profileId === user.id) {
         setPage("profile");
-      } else if (profileId) {
-        // Third-party profile view - Index stays on whatever it was or home
-        // The dialog effect covers the modal.
-      } else if (user) {
-        // Just /profile with no ID, sync to /profile/my-id
-        routerNavigate(`/profile/${user.id}`, { replace: true });
       }
     } else {
       const p = (pageParam || path.substring(1).split('/')[0]) as PageName;
@@ -201,12 +203,15 @@ const Index = () => {
         }
       }
     }
-  }, [location.pathname, params, user, loading, id, routerNavigate]);
+    // Stabilized dependencies ensure this doesn't loop when user object refreshes in background.
+  }, [location.pathname, user?.id, loading, id, routerNavigate]);
 
   // Handle viewing specific profiles via URL
   useEffect(() => {
+    // Only fetch if we have an ID from URL and it's not the current user's profile
+    // and we haven't already loaded this specific profile into the dialog.
     if (id && (!user || id !== user.id)) {
-      if (selectedProfileForDialog?.id === id) return; // Already loaded via handleProfileClick
+      if (selectedProfileForDialog?.user_id === id || selectedProfileForDialog?.id === id) return;
 
       const fetchProfile = async () => {
         try {
@@ -225,7 +230,7 @@ const Index = () => {
       };
       fetchProfile();
     }
-  }, [id, user, selectedProfileForDialog]);
+  }, [id, user?.id, routerNavigate]);
 
   const [searchInitialType, setSearchInitialType] = useState<"talents" | "projects">("talents");
 
@@ -262,7 +267,15 @@ const Index = () => {
     }
   };
 
-  if (loading) {
+  // Only show the hard splash-screen on the very first boot.
+  // After initialized becomes true, if loading flips back to true (e.g. background refresh),
+  // we stay on the current page for a smoother experience.
+  const [initialInitComplete, setInitialInitComplete] = useState(false);
+  useEffect(() => {
+    if (!loading) setInitialInitComplete(true);
+  }, [loading]);
+
+  if (loading && !initialInitComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="font-display text-4xl text-primary animate-pulse">CaastingCall</div>
@@ -311,9 +324,9 @@ const Index = () => {
             ? <AdminPage /> 
             : <div className="min-h-screen flex items-center justify-center text-muted-foreground bg-background">
                 <div className="text-center p-8 bg-card border border-border rounded-3xl max-w-sm">
-                  <h2 className="text-xl font-display mb-2 text-white">Unauthorized</h2>
+                  <h2 className="text-xl font-display mb-2 text-foreground">Unauthorized</h2>
                   <p className="text-sm mb-6">You don't have permission to access the Command Center.</p>
-                  <button onClick={() => navigate('home')} className="bg-primary text-black px-6 py-2 rounded-xl text-sm">Return Home</button>
+                  <button onClick={() => navigate('home')} className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-bold uppercase tracking-widest">Return Home</button>
                 </div>
               </div>
         )}

@@ -63,6 +63,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
 
   useEffect(() => {
     const search = async () => {
+      // Avoid flickering if we're already loading the exact same query
       setLoading(true);
       try {
         if (looksLikeQuery || visualSearchMode) {
@@ -70,15 +71,10 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         }
 
         if (searchType === "talents") {
-          // Check for auto-switch to talents if query is a profile link
           const trimmedQuery = query?.trim() || "";
-          if (trimmedQuery.match(/\/profile\/|([0-9a-f]{8}-)/i) && searchType !== 'talents') {
-            setSearchType('talents');
-            return;
-          }
-
+          
           const data = await profileService.searchProfiles({
-            query,
+            query: trimmedQuery,
             role,
             isTrending,
             isAdmin: currentUserProfile?.role === 'Admin',
@@ -89,7 +85,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
           });
           setResults(data as Profile[]);
         } else {
-          // projects search still inline for now, or could move to projectService
           let q = supabase.from("projects").select("*").eq("status", "active");
           if (query) {
             q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%,requirements.ilike.%${query}%`);
@@ -106,15 +101,20 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       }
     };
     search();
+  }, [query, role, searchType, selectedMoods, selectedStyles, selectedTraits, isTrending, looksLikeQuery, visualSearchMode, currentUserProfile?.role]);
 
-    if (user) {
-      const fetchSaved = async () => {
-        const { data } = await supabase.from("saved_talents").select("talent_profile_id").eq("user_id", user.id);
-        setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
-      };
-      fetchSaved();
-    }
+  // Separate effect for side-data to avoid blocking the main search
+  useEffect(() => {
+     if (user?.id) {
+       const fetchSaved = async () => {
+         const { data } = await supabase.from("saved_talents").select("talent_profile_id").eq("user_id", user.id);
+         setSavedTalentIds(data?.map(s => s.talent_profile_id) || []);
+       };
+       fetchSaved();
+     }
+  }, [user?.id]);
 
+  useEffect(() => {
     const fetchTrending = async () => {
       try {
         const data = await profileService.searchProfiles({
@@ -128,7 +128,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       }
     };
     fetchTrending();
-  }, [query, role, user, searchType, selectedMoods, selectedStyles, selectedTraits, isTrending, looksLikeQuery, visualSearchMode, currentUserProfile?.role, currentUserProfile?.id]);
+  }, [role, currentUserProfile?.role]);
 
   const toggleSave = async (e: React.MouseEvent, profileId: string) => {
     e.stopPropagation();
@@ -168,16 +168,16 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         >
           ← Back
         </button>
-        <div className="flex bg-secondary/30 backdrop-blur-xl p-1.5 rounded-2xl border border-white/5 shadow-2xl self-center md:self-auto">
+        <div className="flex bg-secondary/80 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-2xl self-center md:self-auto">
           <button
             onClick={() => { setSearchType("talents"); onTypeChange?.("talents"); }}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-black shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-white"}`}
+            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-foreground"}`}
           >
             Talents
           </button>
           <button
             onClick={() => { setSearchType("projects"); onTypeChange?.("projects"); }}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-black shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-white"}`}
+            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-foreground"}`}
           >
             Casting Calls
           </button>
@@ -185,7 +185,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       </div>
 
       {searchType === 'talents' && (
-        <div className="mb-12 space-y-8 p-8 rounded-[2.5rem] bg-gradient-to-br from-card to-secondary/20 border border-white/5 shadow-2xl overflow-hidden relative group">
+        <div className="mb-12 space-y-8 p-8 rounded-[2.5rem] bg-gradient-to-br from-card to-secondary/20 border border-border shadow-2xl overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
             <Sparkles size={120} className="text-primary" />
           </div>
@@ -193,7 +193,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
           <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
             <div className="flex items-center gap-6">
               <h3 
-                className="font-display text-2xl text-white flex items-center gap-3 cursor-pointer hover:text-primary/80 transition-all active:scale-95"
+                className="font-display text-2xl text-primary flex items-center gap-3 cursor-pointer hover:text-primary/80 transition-all active:scale-95"
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 group-hover:border-primary/40 transition-all">
@@ -201,7 +201,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                 </div>
                 Smart Filters
               </h3>
-              <div className="flex items-center gap-3 bg-secondary/50 px-4 py-2 rounded-full border border-white/5">
+              <div className="flex items-center gap-3 bg-secondary/50 px-4 py-2 rounded-full border border-border">
                 <TrendingUp size={16} className={isTrending ? "text-primary" : "text-muted-foreground"} />
                 <span className="text-[0.65rem] font-normal uppercase tracking-widest text-muted-foreground">Trending</span>
                 <Switch
@@ -220,12 +220,12 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   placeholder="Looks like..."
                   value={looksLikeQuery}
                   onChange={(e) => setLooksLikeQuery(e.target.value)}
-                  className="bg-secondary/50 border border-white/5 rounded-full pl-12 pr-6 py-2.5 text-sm outline-none focus:border-primary/50 transition-all w-48 md:w-64"
+                  className="bg-secondary/50 border border-border rounded-full pl-12 pr-6 py-2.5 text-sm outline-none focus:border-primary/50 transition-all w-48 md:w-64 text-foreground"
                 />
               </div>
               <button
                 onClick={() => setVisualSearchMode(!visualSearchMode)}
-                className={`p-2.5 rounded-full border border-white/5 transition-all ${visualSearchMode ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'bg-secondary/50 text-muted-foreground hover:text-white'}`}
+                className={`p-2.5 rounded-full border border-border transition-all ${visualSearchMode ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'bg-secondary/50 text-muted-foreground hover:text-foreground'}`}
                 title="AI Visual Search"
               >
                 <Sparkles size={20} />
@@ -329,7 +329,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       {searchType === 'talents' && !query && selectedMoods.length === 0 && (
         <div className="mb-16">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="font-display text-2xl text-white flex items-center gap-3">
+            <h3 className="font-display text-2xl text-foreground flex items-center gap-3">
               <TrendingUp className="text-orange-500" size={24} />
               Trending {role || "Talent"}
             </h3>
@@ -359,7 +359,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                     <div className="text-primary text-[0.6rem] uppercase tracking-widest">{p.role}</div>
                   </div>
                   {p.trending_score && (
-                    <div className="absolute top-4 right-4 bg-orange-500 text-white text-[0.55rem] font-normal px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+                    <div className="absolute top-4 right-4 bg-orange-500 text-primary-foreground text-[0.55rem] font-normal px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
                       <TrendingUp size={10} /> {Math.round(p.trending_score)}
                     </div>
                   )}
@@ -374,7 +374,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         {searchType === 'talents' ? (
           <>
             {title}
-            {isTrending && <Badge className="bg-orange-500 text-white border-none px-4 py-1.5 text-xs font-normal tracking-widest animate-pulse">🔥 TRENDING</Badge>}
+            {isTrending && <Badge className="bg-orange-500 text-primary-foreground border-none px-4 py-1.5 text-xs font-normal tracking-widest animate-pulse">🔥 TRENDING</Badge>}
           </>
         ) : `Open Casting Calls`}
       </h2>
@@ -396,7 +396,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="group relative flex flex-col md:flex-row md:items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-4 md:px-6 py-4 md:py-5 hover:border-primary/50 hover:shadow-[0_20px_50px_-15px_rgba(251,191,36,0.15)] transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1"
+                className="group relative flex flex-col md:flex-row md:items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-4 md:px-6 py-4 md:py-5 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5"
               >
                 <div className="flex flex-col items-center gap-3 flex-shrink-0 relative">
                   <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
@@ -406,7 +406,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                       (p.name || "U")[0].toUpperCase()
                     )}
                     {onlineUsers.has(p.user_id) && (
-                      <div className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 shadow-glow shadow-green-500/50" title="Online" />
+                      <div className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-border rounded-full z-10 shadow-glow shadow-green-500/50" title="Online" />
                     )}
                   </div>
                   {(p.plan === "pro" || p.role === "Admin") && (
@@ -434,7 +434,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {p.mood_tags?.slice(0, 2).map((m: string) => (
-                      <span key={m} className="text-[0.6rem] bg-secondary/40 text-muted-foreground px-2 py-0.5 rounded-md border border-white/5 uppercase tracking-tighter">{m}</span>
+                      <span key={m} className="text-[0.6rem] bg-secondary/40 text-muted-foreground px-2 py-0.5 rounded-md border border-border uppercase tracking-tighter">{m}</span>
                     ))}
                     {p.style_tags?.slice(0, 2).map((s: string) => (
                       <span key={s} className="text-[0.6rem] bg-primary/10 text-primary px-2 py-0.5 rounded-md border border-primary/20 uppercase tracking-tighter">{s}</span>
@@ -543,7 +543,7 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
         }
         setUploadingVideo(true);
         const fileExt = videoFile.name.split('.').pop();
-        const filePath = `auditions/${user.id}/${project.id}-${Math.random()}.${fileExt}`;
+        const filePath = `${user.id}/auditions/${project.id}-${Math.random()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, videoFile);
         if (uploadError) throw uploadError;
         const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
@@ -571,7 +571,7 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.98, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      className="bg-card border-[1.5px] border-card-border rounded-[3rem] overflow-hidden group hover:border-primary/50 transition-all shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2"
+      className="bg-card border-[1.5px] border-card-border rounded-[3rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2"
     >
       <div className="aspect-[16/10] bg-secondary relative overflow-hidden">
         {project.thumbnail_url ? (
@@ -582,18 +582,18 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
           </div>
         )}
         <div className="absolute top-6 left-6 flex gap-2">
-          <div className="bg-primary/90 backdrop-blur-md text-black px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-white/10">
+          <div className="bg-primary/90 backdrop-blur-md text-primary-foreground px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-border">
             {project.role_category || 'Talent'} Call
           </div>
           {applied && (
-            <div className="bg-green-500/90 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-white/10 animate-in fade-in zoom-in duration-300">
+            <div className="bg-green-500/90 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-border animate-in fade-in zoom-in duration-300">
               Applied
             </div>
           )}
         </div>
       </div>
       <div className="p-10">
-        <h4 className="font-display text-3xl text-white mb-4 group-hover:text-primary transition-colors leading-tight">{project.title}</h4>
+        <h4 className="font-display text-3xl text-foreground mb-4 group-hover:text-primary transition-colors leading-tight">{project.title}</h4>
         <div className="flex flex-wrap items-center gap-6 text-[0.65rem] text-muted-foreground mb-8 font-normal uppercase tracking-[2px]">
           <span className="flex items-center gap-2.5"><MapPin size={16} className="text-primary" /> {project.location || 'Remote'}</span>
           <span className="flex items-center gap-2.5"><DollarSign size={16} className="text-primary" /> {project.salary_range || 'Competitive'}</span>
@@ -839,7 +839,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <div className="text-sm font-normal text-white">{c.profiles?.name}</div>
+          <div className="text-sm font-normal text-foreground">{c.profiles?.name}</div>
           <div className="text-[0.65rem] text-muted-foreground">{new Date(c.created_at).toLocaleDateString()}</div>
         </div>
 
@@ -911,7 +911,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
               {owner?.photo_url ? <img src={owner.photo_url} className="w-full h-full object-cover" alt="" /> : (owner?.name?.[0] || '?')}
             </div>
             <div className="flex-1 min-w-0 text-left">
-              <div className="font-normal text-lg text-white leading-none mb-1">{owner?.name || "Member"}</div>
+              <div className="font-normal text-lg text-foreground leading-none mb-1">{owner?.name || "Member"}</div>
               <div className="text-xs text-primary font-body uppercase tracking-wider">{owner?.role || "Talent"}</div>
             </div>
             <div className="flex items-center gap-2">

@@ -308,16 +308,16 @@ export default function ProfileDetailDialog({
                                                     (profile?.name || "U")[0].toUpperCase()
                                                 )}
                                                 {isOnline && (
-                                                    <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-[3px] border-[#1c1c1c] rounded-full z-20 shadow-glow shadow-green-500/50" title="Online" />
+                                                    <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-[3px] border-secondary rounded-full z-20 shadow-glow shadow-green-500/50" title="Online" />
                                                 )}
                                             </div>
-                                            <div className="font-display text-lg text-white uppercase tracking-wider flex items-center gap-2">
+                                            <div className="font-display text-lg text-foreground uppercase tracking-wider flex items-center gap-2">
                                                 {profile?.name}
                                                 {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
                                             </div>
                                         </div>
                                         <div className="flex-1 text-center md:text-left pt-4">
-                                            <h2 className="font-display text-4xl text-white mb-2 flex items-center gap-3">
+                                            <h2 className="font-display text-4xl text-foreground mb-2 flex items-center gap-3">
                                                 {profile?.name || "Unknown"}
                                                 {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={24} className="text-amber-500 fill-amber-500/10" />}
                                                 {(profile as any).is_verified && <CheckCircle2 size={20} className="text-blue-500 fill-blue-500/10" />}
@@ -352,19 +352,19 @@ export default function ProfileDetailDialog({
                                                     </Badge>
                                                 ))}
                                                 {(profile as any).trending_score > 80 && (
-                                                    <Badge className="bg-orange-500 text-white border-none font-normal tracking-widest text-[0.6rem]"><TrendingUp size={10} className="mr-1" /> Trending</Badge>
+                                                    <Badge className="bg-orange-500 text-primary-foreground border-none font-normal tracking-widest text-[0.6rem]"><TrendingUp size={10} className="mr-1" /> Trending</Badge>
                                                 )}
                                             </div>
 
                                             {/* ── Follow counts ── */}
                                             <div className="flex items-center gap-6 mb-6">
                                                 <button onClick={() => openFollowModal("followers")} className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity">
-                                                    <span className="text-xl font-display text-white">{followCounts.followers.toLocaleString()}</span>
+                                                    <span className="text-xl font-display text-foreground">{followCounts.followers.toLocaleString()}</span>
                                                     <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
                                                 </button>
-                                                <div className="w-px h-8 bg-white/10" />
+                                                <div className="w-px h-8 bg-border" />
                                                 <button onClick={() => openFollowModal("following")} className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity">
-                                                    <span className="text-xl font-display text-white">{followCounts.following.toLocaleString()}</span>
+                                                    <span className="text-xl font-display text-foreground">{followCounts.following.toLocaleString()}</span>
                                                     <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Following</span>
                                                 </button>
                                             </div>
@@ -384,7 +384,7 @@ export default function ProfileDetailDialog({
                                                         className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border shadow-lg ${
                                                             isFollowingProfile
                                                                 ? 'bg-primary/10 border-primary text-primary hover:bg-red-500/10 hover:border-red-500 hover:text-red-400'
-                                                                : 'bg-primary border-primary text-black hover:opacity-90 shadow-primary/20'
+                                                                : 'bg-primary border-primary text-primary-foreground hover:opacity-90 shadow-primary/20'
                                                         } disabled:opacity-50`}
                                                     >
                                                         {isFollowingProfile ? <UserCheck size={18} /> : <Users size={18} />}
@@ -397,7 +397,7 @@ export default function ProfileDetailDialog({
                                                             if (onDirectMessage) onDirectMessage();
                                                             else setIsMessaging(!isMessaging);
                                                         }}
-                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-white hover:border-primary shadow-lg shadow-black/20'}`}
+                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-foreground hover:border-primary shadow-lg shadow-black/20'}`}
                                                     >
                                                         <MessageCircle size={18} />
                                                         {onDirectMessage ? "Message Hub" : (isMessaging ? "Cancel Message" : "Send Quick Message")}
@@ -407,7 +407,7 @@ export default function ProfileDetailDialog({
                                                     {user?.id !== profile.user_id && (
                                                         <button
                                                             onClick={handleSubscribe}
-                                                            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-white hover:opacity-90 shadow-lg shadow-amber-500/20 shadow-glow'}`}
+                                                            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-primary-foreground hover:opacity-90 shadow-lg shadow-amber-500/20 shadow-glow'}`}
                                                         >
                                                             {isSubscribed ? <Check size={18} /> : <Crown size={18} />}
                                                             {isSubscribed ? "Active Fan Pass" : "Get Fan Pass"}
@@ -416,7 +416,7 @@ export default function ProfileDetailDialog({
 
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <button className="flex items-center justify-center w-12 h-12 rounded-xl bg-secondary border border-border text-white hover:border-primary transition-all outline-none">
+                                                            <button className="flex items-center justify-center w-12 h-12 rounded-xl bg-secondary border border-border text-foreground hover:border-primary transition-all outline-none">
                                                                 <MoreVertical size={20} />
                                                             </button>
                                                         </DropdownMenuTrigger>
@@ -533,7 +533,7 @@ export default function ProfileDetailDialog({
                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
                                     <div className="flex items-center justify-between border-b border-border pb-6">
                                         <div className="flex items-center gap-4">
-                                            <h2 className="font-display text-3xl text-white flex items-center gap-3">
+                                            <h2 className="font-display text-3xl text-foreground flex items-center gap-3">
                                                 {profile?.name}
                                                 {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={20} className="text-amber-500 fill-amber-500/10" />}
                                             </h2>
@@ -592,17 +592,17 @@ export default function ProfileDetailDialog({
                                                         </div>
                                                     )}
                                                 </div>
-                                                <h2 className="font-display text-2xl text-white">{profile?.name}</h2>
+                                                <h2 className="font-display text-2xl text-foreground">{profile?.name}</h2>
                                                 
                                                 {/* Full Profile View Follow Stats & Button */}
                                                 <div className="flex items-center gap-6 mt-2">
                                                     <button onClick={() => openFollowModal("followers")} className="flex flex-col items-center hover:opacity-70 transition-opacity">
-                                                        <span className="text-xl font-display text-white">{followCounts.followers.toLocaleString()}</span>
+                                                        <span className="text-xl font-display text-foreground">{followCounts.followers.toLocaleString()}</span>
                                                         <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
                                                     </button>
-                                                    <div className="w-px h-8 bg-white/10" />
+                                                    <div className="w-px h-8 bg-border" />
                                                     <button onClick={() => openFollowModal("following")} className="flex flex-col items-center hover:opacity-70 transition-opacity">
-                                                        <span className="text-xl font-display text-white">{followCounts.following.toLocaleString()}</span>
+                                                        <span className="text-xl font-display text-foreground">{followCounts.following.toLocaleString()}</span>
                                                         <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Following</span>
                                                     </button>
                                                 </div>
@@ -614,7 +614,7 @@ export default function ProfileDetailDialog({
                                                         className={`mt-2 w-full max-w-[200px] flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border shadow-lg ${
                                                             isFollowingProfile
                                                                 ? 'bg-primary/10 border-primary text-primary hover:bg-red-500/10 hover:border-red-500 hover:text-red-400'
-                                                                : 'bg-primary border-primary text-black hover:opacity-90 shadow-primary/20'
+                                                                : 'bg-primary border-primary text-primary-foreground hover:opacity-90 shadow-primary/20'
                                                         } disabled:opacity-50`}
                                                     >
                                                         {isFollowingProfile ? <UserCheck size={18} /> : <Users size={18} />}

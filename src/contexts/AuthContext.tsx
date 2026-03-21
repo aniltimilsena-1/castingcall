@@ -103,8 +103,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted) return;
 
       const newUser = currentSession?.user ?? null;
-      setSession(currentSession);
-      setUser(newUser);
+      
+      // ONLY update if the session or user ID actually changed to prevent flickering
+      setSession(prev => (prev?.access_token === currentSession?.access_token ? prev : currentSession));
+      setUser(prev => (prev?.id === newUser?.id ? prev : newUser));
 
       if (event === "PASSWORD_RECOVERY") {
         setIsRecovering(true);
@@ -116,10 +118,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
       } else if (newUser) {
         if (event === "USER_UPDATED") {
-          setIsRecovering(false); // Password update finished
+          setIsRecovering(false); 
         }
+        // Only fetch profile if we don't have it or it's a different user
         if (initialized.current) {
-          await fetchProfile(newUser.id);
+          fetchProfile(newUser.id);
           setLoading(false);
         }
       }

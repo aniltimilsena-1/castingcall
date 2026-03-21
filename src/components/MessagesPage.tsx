@@ -71,6 +71,9 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [pendingFileType, setPendingFileType] = useState<'image' | 'video' | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Track IDs of messages we already inserted optimistically to skip the
+  // realtime echo that would otherwise cause a duplicate.
+  const sentMessageIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -199,49 +202,66 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   useEffect(() => {
     if (!user) return;
 
-    // Listen to ALL new messages involving this user (sent OR received)
-    const channel = supabase
-      .channel(`messages-realtime-${user.id}`)
+    // ── Channel 1: messages arriving FOR this user (receiver) ────────────
+    // Filtered server-side — only this user's incoming rows are streamed.
+    const incomingChannel = supabase
+      .channel(`messages-incoming-${user.id}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
+          filter: `receiver_id=eq.${user.id}`,
         },
         (payload) => {
           const msg = payload.new as Message;
-          const isForMe = msg.receiver_id === user.id;
-          const isFromMe = msg.sender_id === user.id;
-
-          // Update the open thread in real time for both parties
-          if (isForMe && selectedPartner === msg.sender_id) {
-            setThread(prev => {
-              // Avoid duplicates (optimistic insert already added it for sender)
-              if (prev.some(m => m.id === msg.id)) return prev;
-              return [...prev, msg];
-            });
-            // Auto-mark as read since the user is looking at this thread
-            supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
-          }
-
-          if (isFromMe && selectedPartner === msg.receiver_id) {
+          if (selectedPartner === msg.sender_id) {
             setThread(prev => {
               if (prev.some(m => m.id === msg.id)) return prev;
               return [...prev, msg];
             });
+            // Mark as read — user is actively viewing this thread
+            void supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
           }
+          void loadConversations();
+        }
+      )
+      .subscribe();
 
-          // Refresh conversation list for both sides
-          if (isForMe || isFromMe) {
-            loadConversations();
+    // ── Channel 2: messages SENT by this user (sender confirmation) ───────
+    // Lets us replace the optimistic row with the real DB row reliably.
+    const outgoingChannel = supabase
+      .channel(`messages-outgoing-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `sender_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+          // Skip: we already handled this via optimistic insert + .select().single()
+          // Only act if somehow we don't have it yet (e.g. sent from another tab)
+          if (sentMessageIds.current.has(msg.id)) {
+            sentMessageIds.current.delete(msg.id);
+            return;
+          }
+          if (selectedPartner === msg.receiver_id) {
+            setThread(prev => {
+              if (prev.some(m => m.id === msg.id)) return prev;
+              return [...prev, msg];
+            });
           }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(incomingChannel);
+      supabase.removeChannel(outgoingChannel);
     };
   }, [user, selectedPartner, loadConversations]);
 
@@ -284,13 +304,14 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
 
     if (error) {
       toast.error(error.message);
-      // Remove the optimistic message on failure
       setThread(prev => prev.filter(m => m.id !== optimistic.id));
-      setNewMessage(text); // restore input
+      setNewMessage(text);
     } else {
-      // Replace optimistic entry with real DB row (has real id)
+      // Register the real ID so the outgoing realtime echo is skipped
+      sentMessageIds.current.add((data as Message).id);
+      // Swap optimistic row for the real DB row
       setThread(prev => prev.map(m => m.id === optimistic.id ? data as Message : m));
-      loadConversations();
+      void loadConversations();
     }
   };
 

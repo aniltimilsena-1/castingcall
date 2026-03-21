@@ -40,7 +40,7 @@
     /* Cards / surfaces — slightly lighter than bg */
     --card: 27 55% 96%;
     --card-foreground: 0 0% 0%;
-    --card-border: 27 30% 82%;
+    --card-border: 0 0% 0% / 0.15; /* Substantial black outline for definition */
 
     /* Popover */
     --popover: 27 55% 97%;
@@ -52,11 +52,11 @@
 
     /* Secondary surface */
     --secondary: 27 30% 84%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary-foreground: 0 0% 0%;
 
     /* Muted */
     --muted: 27 30% 86%;
-    --muted-foreground: 0 0% 35%;  /* #595959  secondary text */
+    --muted-foreground: 0 0% 0%;  /* Forced to black for high contrast */
 
     /* Accent (pop element) — lilac */
     --accent: 300 27% 71%;         /* #C8A2C8 */
@@ -67,8 +67,8 @@
     --destructive-foreground: 0 0% 98%;
 
     /* Borders & inputs */
-    --border: 27 20% 78%;
-    --input: 27 20% 78%;
+    --border: 0 0% 0% / 0.2; /* Darker black outlines for visibility */
+    --input: 0 0% 0% / 0.2;
     --ring: 300 27% 56%;
 
     /* Sidebar */

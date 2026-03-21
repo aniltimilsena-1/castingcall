@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
         <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-amber-500/20">
           <Crown className="w-10 h-10 text-amber-500" />
         </div>
-        <h2 className="font-display text-4xl text-white mb-4 italic">Advanced Analytics</h2>
+        <h2 className="font-display text-4xl text-primary mb-4 italic">Advanced Analytics</h2>
         <p className="text-muted-foreground text-lg mb-10 max-w-md mx-auto leading-relaxed">
           See who's viewing your profile, track your project reach, and get insights to grow your career.
         </p>
@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
               <s.icon className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <div className="font-display text-2xl text-foreground">{s.value}</div>
+              <div className="font-display text-2xl text-primary">{s.value}</div>
               <div className="text-xs text-muted-foreground">{s.label}</div>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function AnalyticsPage() {
               <YAxis tick={{ fill: "hsl(0 0% 53%)", fontSize: 10 }} axisLine={false} tickLine={false} hide />
               <Tooltip
                 cursor={{ fill: 'hsl(var(--primary) / 0.05)' }}
-                contentStyle={{ background: "hsl(0 0% 7%)", border: "1px solid hsl(0 0% 12%)", borderRadius: 12, color: "hsl(0 0% 94%)", fontSize: 12 }}
+                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, color: "hsl(var(--foreground))", fontSize: 12 }}
               />
               <Bar dataKey="views" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={20} />
             </BarChart>
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
               <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={364.4} strokeDashoffset={364.4 - (364.4 * viewStats.successRate) / 100} className="text-primary transition-all duration-1000 ease-out" />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-display text-white">{viewStats.successRate}%</span>
+              <span className="text-3xl font-display text-foreground">{viewStats.successRate}%</span>
             </div>
           </div>
           <h3 className="text-sm font-normal mb-1">Casting Success Rate</h3>
@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Sparkles className="text-primary" size={20} />
-          <h2 className="font-display text-xl text-white italic">AI Talent Growth Feedback</h2>
+          <h2 className="font-display text-xl text-primary italic">AI Talent Growth Feedback</h2>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           {aiInsights.map((insight, idx) => (
@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
                 </div>
                 <Badge className="bg-primary/5 text-primary border-primary/20 text-[0.55rem] font-normal">{insight.impact}</Badge>
               </div>
-              <h4 className="text-sm font-normal text-white mb-2">{insight.title}</h4>
+              <h4 className="text-sm font-normal text-foreground mb-2">{insight.title}</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">{insight.desc}</p>
             </div>
           ))}
@@ -242,7 +242,7 @@ function StatsCard({ label, value, icon: Icon, desc }: { label: string; value: s
         <Icon size={16} />
         <span className="text-[0.65rem] font-normal uppercase tracking-widest">{label}</span>
       </div>
-      <div className="text-3xl font-display text-white mb-1">{value}</div>
+      <div className="text-3xl font-display text-primary mb-1">{value}</div>
       <div className="text-[0.6rem] text-muted-foreground italic font-normal tracking-wide">{desc}</div>
     </div>
   );

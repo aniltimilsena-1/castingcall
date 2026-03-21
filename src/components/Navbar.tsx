@@ -75,7 +75,7 @@ export default function Navbar({
   `;
 
   return (
-    <nav className="sticky top-0 bg-background/60 backdrop-blur-xl z-50 border-b border-white/5">
+    <nav className="sticky top-0 bg-background/60 backdrop-blur-xl z-50 border-b border-border/10">
       <div className="flex items-center justify-between px-4 md:px-8 h-16 max-w-[1800px] mx-auto">
         {/* Logo */}
         <button onClick={onLogoClick} className="flex items-center group flex-shrink-0">

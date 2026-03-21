@@ -163,7 +163,8 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
     try {
       toast.loading("Uploading thumbnail...");
       const fileExt = file.name.split('.').pop();
-      const filePath = `project-thumbnails/${user.id}-${Math.random()}.${fileExt}`;
+      // MUST start with user.id to pass RLS (first folder in array)
+      const filePath = `${user.id}/${Math.random()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
       if (uploadError) throw uploadError;
 
@@ -195,7 +196,8 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
     try {
       toast.loading("Uploading new self-tape...");
       const fileExt = file.name.split('.').pop();
-      const filePath = `auditions/${user.id}/${appId}-${Math.random()}.${fileExt}`;
+      // Ensure user.id is the first folder segment
+      const filePath = `${user.id}/auditions/${appId}-${Math.random()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
       if (uploadError) throw uploadError;
 
@@ -360,14 +362,14 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
         <div className="flex gap-4 mb-10 border-b border-border pb-px">
           <button
             onClick={() => setActiveTab("managed")}
-            className={`px-6 py-4 text-xs font-normal uppercase tracking-widest transition-all relative ${activeTab === "managed" ? "text-primary" : "text-muted-foreground hover:text-white"}`}
+            className={`px-6 py-4 text-xs font-normal uppercase tracking-widest transition-all relative ${activeTab === "managed" ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
           >
             My Recruitment
             {activeTab === "managed" && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
           </button>
           <button
             onClick={() => setActiveTab("applications")}
-            className={`px-6 py-4 text-xs font-normal uppercase tracking-widest transition-all relative ${activeTab === "applications" ? "text-primary" : "text-muted-foreground hover:text-white"}`}
+            className={`px-6 py-4 text-xs font-normal uppercase tracking-widest transition-all relative ${activeTab === "applications" ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
           >
             My Job Applications
             {activeTab === "applications" && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
@@ -397,7 +399,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
             >
               {/* Form content remains same as before but refined */}
               <div className="flex items-center justify-between mb-10">
-                <h3 className="font-display text-3xl text-white flex items-center gap-4">
+                <h3 className="font-display text-3xl text-primary flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
                     <Layout className="text-primary w-6 h-6" />
                   </div>

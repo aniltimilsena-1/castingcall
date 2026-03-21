@@ -265,7 +265,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
              <User size={32} />
            </div>
-           <h2 className="text-xl font-display text-white">Profile Not Found</h2>
+           <h2 className="text-xl font-display text-foreground">Profile Not Found</h2>
            <p className="text-sm text-muted-foreground max-w-xs">We couldn't retrieve your profile data. Try refreshing or updating your info.</p>
            <button 
              onClick={() => setIsEditing(true)}
@@ -377,15 +377,15 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 onClick={() => openFollowModal("followers")}
                 className="flex flex-col items-start hover:opacity-70 transition-opacity"
               >
-                <span className="text-xl font-display text-white leading-tight">{followCounts.followers.toLocaleString()}</span>
+                <span className="text-xl font-display text-foreground leading-tight">{followCounts.followers.toLocaleString()}</span>
                 <span className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">Followers</span>
               </button>
-              <div className="w-px h-8 bg-white/10" />
+              <div className="w-px h-8 bg-border" />
               <button
                 onClick={() => openFollowModal("following")}
                 className="flex flex-col items-start hover:opacity-70 transition-opacity"
               >
-                <span className="text-xl font-display text-white leading-tight">{followCounts.following.toLocaleString()}</span>
+                <span className="text-xl font-display text-foreground leading-tight">{followCounts.following.toLocaleString()}</span>
                 <span className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">Following</span>
               </button>
             </div>
@@ -421,29 +421,29 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           </h3>
           <div className="space-y-4">
             {moodTags.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Moods:</span>
-                {(moodTags || []).map(t => <Badge key={t} variant="secondary" className="bg-secondary/40 text-white font-normal text-[0.65rem]">{t}</Badge>)}
-              </div>
-            )}
-            {styleTags.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Style:</span>
-                {(styleTags || []).map(t => <Badge key={t} variant="secondary" className="bg-primary/20 text-primary border-primary/20 font-normal text-[0.65rem]">{t}</Badge>)}
-              </div>
-            )}
-            {personalityTraits.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Traits:</span>
-                {(personalityTraits || []).map(t => <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal text-[0.65rem]">{t}</Badge>)}
-              </div>
-            )}
-            {looksLike.length > 0 && (
-              <div className="flex flex-wrap gap-2 items-center">
-                <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Looks Like:</span>
-                {(looksLike || []).map(t => <Badge key={t} variant="outline" className="border-white/10 text-muted-foreground font-normal text-[0.65rem]">{t}</Badge>)}
-              </div>
-            )}
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Moods:</span>
+                  {(moodTags || []).map(t => <Badge key={t} variant="secondary" className="bg-secondary/40 text-foreground font-normal text-[0.65rem]">{t}</Badge>)}
+                </div>
+              )}
+              {styleTags.length > 0 && (
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Style:</span>
+                  {(styleTags || []).map(t => <Badge key={t} variant="secondary" className="bg-primary/20 text-primary border-primary/20 font-normal text-[0.65rem]">{t}</Badge>)}
+                </div>
+              )}
+              {personalityTraits.length > 0 && (
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Traits:</span>
+                  {(personalityTraits || []).map(t => <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal text-[0.65rem]">{t}</Badge>)}
+                </div>
+              )}
+              {looksLike.length > 0 && (
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Looks Like:</span>
+                  {(looksLike || []).map(t => <Badge key={t} variant="outline" className="border-border text-foreground font-normal text-[0.65rem]">{t}</Badge>)}
+                </div>
+              )}
           </div>
         </div>
 
@@ -550,14 +550,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
                     <div className="flex items-center gap-2">
                       <Users size={18} className="text-primary" />
-                      <h3 className="font-display text-lg text-white capitalize">{followModal}</h3>
+                      <h3 className="font-display text-lg text-primary capitalize">{followModal}</h3>
                       <span className="text-sm text-muted-foreground">
                         ({followModal === "followers" ? followCounts.followers : followCounts.following})
                       </span>
                     </div>
                     <div
                       onClick={(e) => { e.stopPropagation(); setFollowModal(null); }}
-                      className="text-muted-foreground hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5 cursor-pointer pointer-events-auto"
+                      className="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-secondary/20 cursor-pointer pointer-events-auto"
                     >
                       <X size={20} />
                     </div>
@@ -577,7 +577,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                       </div>
                     ) : (
                       followList.map((fp) => (
-                        <div key={fp.user_id} className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-white/5 transition-colors">
+                        <div key={fp.user_id} className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-secondary/20 transition-colors">
                           <div className="w-11 h-11 rounded-full bg-secondary border border-border flex-shrink-0 overflow-hidden flex items-center justify-center font-display text-xl text-primary">
                             {fp.photo_url
                               ? <img src={fp.photo_url} alt={fp.name} className="w-full h-full object-cover" />
@@ -586,7 +586,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-normal text-white truncate">{fp.name}</span>
+                              <span className="text-sm font-normal text-foreground truncate">{fp.name}</span>
                               {fp.plan === "pro" && <Crown size={12} className="text-amber-500 flex-shrink-0" />}
                             </div>
                             <span className="text-[0.6rem] uppercase tracking-[0.15em] text-primary/60">{fp.role}</span>
