@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { CreditCard, QrCode, Upload, Check, X, ShieldCheck, Zap, Crown, ShoppingBag, Gift } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface PaymentUpgradeDialogProps {
     open: boolean;
@@ -169,9 +170,15 @@ export default function PaymentUpgradeDialog({
                             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
                                 <div className="bg-black/5 p-6 rounded-2xl border border-black/10 space-y-6">
                                     <div className="flex justify-center">
-                                        {/* Placeholder QR - In reality you'd show your eSewa/Khalti QR */}
-                                        <div className="w-40 h-40 bg-white p-2 rounded-xl ring-1 ring-black/5">
-                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CastingHubGlobal" alt="QR Code" className="w-full h-full" />
+                                        {/* Client-side generated QR for privacy and reliability */}
+                                        <div className="w-40 h-40 bg-white p-2 rounded-xl ring-1 ring-black/5 flex items-center justify-center">
+                                            <QRCodeSVG 
+                                                value="CastingHubGlobal" 
+                                                size={144}
+                                                level="M"
+                                                includeMargin={false}
+                                                aria-label="Casting Hub Global QR Code"
+                                            />
                                         </div>
                                     </div>
                                     <div className="text-center">

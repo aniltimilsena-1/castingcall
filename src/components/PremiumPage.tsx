@@ -77,7 +77,7 @@ export default function PremiumPage() {
                     Casting Hub {isNepal ? "Nepal" : "Global"} Elite
                 </motion.div>
                 <h1 className="text-5xl md:text-8xl text-primary font-display italic mb-6 leading-[1.1]">Elevate Your <span className="text-black not-italic">Career</span></h1>
-                <p className="text-black/60 text-lg md:text-xl max-w-2xl mx-auto uppercase tracking-tighter">Get discovered by top casting directors {isNepal ? "in Nepal & Worldwide" : "Worldwide"}.</p>
+                <p className="text-black/70 text-lg md:text-xl max-w-2xl mx-auto uppercase tracking-tighter">Get discovered by top casting directors {isNepal ? "in Nepal & Worldwide" : "Worldwide"}.</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 mb-20">
@@ -95,10 +95,10 @@ export default function PremiumPage() {
                         <h3 className="text-[0.65rem] text-primary/60 mb-6 uppercase tracking-[4px]">{plan.name} PLAN</h3>
                         <div className="flex items-baseline gap-2 mb-10">
                             <span className="text-6xl font-display text-black italic">{isNepal ? "NPR " : "$"}{plan.price}</span>
-                            <span className="text-xs text-black/40">/ PERMANENT ACCESS</span>
+                            <span className="text-xs text-black/75">/ PERMANENT ACCESS</span>
                         </div>
                         <ul className="space-y-5 mb-12 flex-1">
-                            {plan.features.map(f => <li key={f} className="flex items-center gap-4 text-sm text-black/80 font-normal"><Check size={16} className="text-primary" /> {f}</li>)}
+                            {plan.features.map(f => <li key={f} className="flex items-center gap-4 text-sm text-black font-normal"><Check size={16} className="text-primary" /> {f}</li>)}
                         </ul>
                         <button
                             disabled={plan.current}
@@ -111,11 +111,11 @@ export default function PremiumPage() {
                 ))}
             </div>
 
-            <div className="bg-card/20 border border-black/5 rounded-[3rem] p-16 text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
+            <div className="bg-card/60 backdrop-blur-3xl border border-black/10 rounded-[3rem] p-16 text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-10" />
                 <Wallet className="text-primary w-8 h-8 mx-auto mb-8" />
                 <h3 className="text-4xl text-black font-display italic mb-4">The Smart Move for Your Talent</h3>
-                <p className="text-black/40 text-sm uppercase tracking-widest mb-10">Trusted by over {talentsCount} talents globally across the network.</p>
+                <p className="text-black/70 text-sm uppercase tracking-widest mb-10">Trusted by over {talentsCount} talents globally across the network.</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     <Benefit icon={<Crown size={20} />} label="Premium Badge" />
                     <Benefit icon={<Sparkles size={20} />} label="Priority Listing" />
@@ -144,8 +144,8 @@ export default function PremiumPage() {
 function Benefit({ icon, label }: any) {
     return (
         <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-black/5 flex items-center justify-center text-primary">{icon}</div>
-            <span className="text-[0.55rem] uppercase tracking-widest text-black/40">{label}</span>
+            <div className="w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center text-primary">{icon}</div>
+            <span className="text-[0.55rem] uppercase tracking-widest text-black/70">{label}</span>
         </div>
     );
 }

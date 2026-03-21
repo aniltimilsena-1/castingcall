@@ -507,7 +507,7 @@ export default function ProfileDetailDialog({
                                                     <div className="flex justify-end gap-3">
                                                         <button
                                                             onClick={() => setIsMessaging(false)}
-                                                            className="px-5 py-2 text-xs font-normal text-white/40 hover:text-white transition-colors"
+                                                            className="px-5 py-2 text-xs font-normal text-white/60 hover:text-white transition-colors"
                                                         >
                                                             Cancel
                                                         </button>
@@ -553,7 +553,7 @@ export default function ProfileDetailDialog({
                                         <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-secondary/30 border border-primary/20 rounded-3xl p-8 space-y-6">
                                             <div className="flex items-center justify-between">
                                                 <div className="text-[0.7rem] font-normal text-primary tracking-[3px] uppercase">New Message to {profile.name}</div>
-                                                <button onClick={() => setIsMessaging(false)} className="text-white/40 hover:text-primary transition-colors">
+                                                <button onClick={() => setIsMessaging(false)} className="text-white/60 hover:text-primary transition-colors">
                                                     <X size={20} />
                                                 </button>
                                             </div>
@@ -564,7 +564,7 @@ export default function ProfileDetailDialog({
                                                 className="w-full bg-background border border-border rounded-xl px-6 py-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all resize-none h-40"
                                             />
                                             <div className="flex justify-end items-center gap-6">
-                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-normal text-white/40 hover:text-white transition-colors">Cancel</button>
+                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-normal text-white/60 hover:text-white transition-colors">Cancel</button>
                                                 <button
                                                     onClick={handleSendMessage}
                                                     disabled={sending || !message.trim()}

@@ -181,14 +181,28 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     e.stopPropagation();
     if (!user) return;
     const isSaved = savedTalentIds.includes(profileId);
-    if (isSaved) {
-      await supabase.from("saved_talents").delete().eq("user_id", user.id).eq("talent_profile_id", profileId);
-      setSavedTalentIds(prev => prev.filter(id => id !== profileId));
-      toast.success("Removed from bookmarks");
-    } else {
-      await supabase.from("saved_talents").insert({ user_id: user.id, talent_profile_id: profileId });
-      setSavedTalentIds(prev => [...prev, profileId]);
-      toast.success("Added to bookmarks");
+    
+    try {
+      if (isSaved) {
+        const { error } = await supabase.from("saved_talents").delete().eq("user_id", user.id).eq("talent_profile_id", profileId);
+        if (error) {
+          toast.error(`Could not unsave: ${error.message}`);
+          return;
+        }
+        setSavedTalentIds(prev => prev.filter(id => id !== profileId));
+        toast.success("Removed from bookmarks");
+      } else {
+        const { error } = await supabase.from("saved_talents").insert({ user_id: user.id, talent_profile_id: profileId });
+        if (error) {
+          toast.error(`Could not save: ${error.message}`);
+          return;
+        }
+        setSavedTalentIds(prev => [...prev, profileId]);
+        toast.success("Added to bookmarks");
+      }
+    } catch (err: any) {
+      console.error("Save error:", err);
+      toast.error("An unexpected error occurred while saving.");
     }
   };
 
@@ -330,6 +344,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       .subscribe();
 
     // ── Channel 3: updates/deletes to ANY message relevant to this user ─
+    // ── Channel 3: updates/deletes specifically FOR this user ───────────
     const updatesChannel = supabase
       .channel(`message-updates-${user.id}`)
       .on(
@@ -338,6 +353,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           event: 'UPDATE',
           schema: 'public',
           table: 'messages',
+          filter: `or(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
         },
         (payload) => {
           const msg = payload.new as Message;
@@ -353,6 +369,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           event: 'DELETE',
           schema: 'public',
           table: 'messages',
+          filter: `or(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
         },
         (payload) => {
           setThread(prev => prev.filter(m => m.id !== payload.old.id));
@@ -449,17 +466,27 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
 
   const togglePin = async (m: Message) => {
     const newVal = !m.is_pinned;
-    const { error } = await supabase.from("messages").update({ is_pinned: newVal } as any).eq("id", m.id);
-    if (!error) {
+    // Cast to any for the update object to satisfy Supabase's generated types while using custom is_pinned column
+    const { error } = await supabase
+      .from("messages")
+      .update({ is_pinned: newVal } as any)
+      .eq("id", m.id);
+
+    if (error) {
+      console.error("Pin error:", error);
+      toast.error(`Failed to ${newVal ? 'pin' : 'unpin'} message: ${error.message}`);
+    } else {
       setThread(prev => prev.map(msg => msg.id === m.id ? { ...msg, is_pinned: newVal } : msg));
       toast.success(newVal ? "Message pinned" : "Message unpinned");
     }
   };
 
   const forwardMessageToTarget = async (msg: Message, targetId: string) => {
+    if (!user || !targetId) return;
+    
     let content = msg.content;
     const { error } = await supabase.from("messages").insert({
-      sender_id: user?.id,
+      sender_id: user.id,
       receiver_id: targetId,
       content
     });
@@ -472,7 +499,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       }
       void loadConversations();
     } else {
-      toast.error("Forwarding failed");
+      toast.error(`Forwarding failed: ${error.message}`);
     }
   };
 
