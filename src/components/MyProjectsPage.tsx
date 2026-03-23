@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ type Project = Tables<"projects">;
 
 export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMessageClick }: { initialOpenForm?: boolean, onProfileClick: (p: Partial<Profile> & { user_id: string }) => void, onMessageClick: (uid: string) => void }) {
   const { user } = useAuth();
+  const { confirm: confirmAction } = useConfirmation();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -236,18 +238,25 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
   };
 
   const withdrawApplication = async (appId: string) => {
-    if (!confirm("Are you sure you want to withdraw this application?")) return;
-    const { error } = await supabase
-      .from('applications')
-      .delete()
-      .eq('id', appId);
+    confirmAction({
+      title: "Withdraw Application",
+      description: "Are you sure you want to withdraw this application? This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Withdraw",
+      onConfirm: async () => {
+        const { error } = await supabase
+          .from('applications')
+          .delete()
+          .eq('id', appId);
 
-    if (error) {
-      toast.error("Withdrawal failed");
-    } else {
-      toast.success("Application withdrawn successfully");
-      fetchMyApplications();
-    }
+        if (error) {
+          toast.error("Withdrawal failed");
+        } else {
+          toast.success("Application withdrawn successfully");
+          fetchMyApplications();
+        }
+      }
+    });
   };
 
   const handleSave = async () => {
@@ -291,15 +300,22 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
-    const { error } = await supabase.from("projects").delete().eq("id", id);
-    if (error) {
-      console.error("Delete error:", error);
-      toast.error(error.message);
-    } else {
-      toast.success("Project deleted successfully");
-      fetchProjects();
-    }
+    confirmAction({
+      title: "Delete Project",
+      description: "Are you sure you want to delete this project? All applications for this project will also be removed.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        const { error } = await supabase.from("projects").delete().eq("id", id);
+        if (error) {
+          console.error("Delete error:", error);
+          toast.error(error.message);
+        } else {
+          toast.success("Project deleted successfully");
+          fetchProjects();
+        }
+      }
+    });
   };
 
   const startEdit = (p: Project) => {

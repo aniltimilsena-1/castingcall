@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ type Profile = Tables<"profiles">;
 
 export default function SavedTalentsPage() {
   const { user, profile: currentUserProfile } = useAuth();
+  const { confirm: confirmAction } = useConfirmation();
   const [talents, setTalents] = useState<(Profile & { saved_id: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
@@ -52,10 +54,21 @@ export default function SavedTalentsPage() {
     const talent = talents.find(t => t.id === profileId);
     if (!talent) return;
 
-    const { error } = await supabase.from("saved_talents").delete().eq("id", talent.saved_id);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Removed from saved list");
-    fetchSaved();
+    confirmAction({
+      title: "Remove from Saved",
+      description: "Are you sure you want to remove this talent from your saved list?",
+      variant: "destructive",
+      confirmLabel: "Remove",
+      onConfirm: async () => {
+        const { error } = await supabase.from("saved_talents").delete().eq("id", talent.saved_id);
+        if (error) {
+          toast.error(error.message);
+        } else {
+          toast.success("Removed from saved list");
+          fetchSaved();
+        }
+      }
+    });
   };
 
   const handleOpenProfile = (p: Profile) => {

@@ -9,6 +9,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical, Share2, Flag } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
 
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ interface SearchPageProps {
 
 export default function SearchPage({ query, role, initialType = "talents", onBack, onTypeChange, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
   const { user, profile: currentUserProfile } = useAuth();
+  const { confirm: confirmAction } = useConfirmation();
   const [searchType, setSearchType] = useState<"talents" | "projects">(initialType);
 
   useEffect(() => {
@@ -489,6 +491,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
 
 function ProjectCard({ project }: { project: Tables<"projects"> }) {
   const { user } = useAuth();
+  const { confirm: confirmAction } = useConfirmation();
   const [applied, setApplied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -592,27 +595,33 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
     e.stopPropagation();
     if (!user || loading) return;
 
-    if (!confirm("Are you sure you want to cancel your application?")) return;
+    confirmAction({
+      title: "Cancel Application",
+      description: "Are you sure you want to cancel your application?",
+      variant: "destructive",
+      confirmLabel: "Cancel Application",
+      onConfirm: async () => {
+        setLoading(true);
+        try {
+          const { error } = await supabase
+            .from('applications' as any)
+            .delete()
+            .eq('project_id', project.id)
+            .eq('applicant_id', user.id);
 
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('applications' as any)
-        .delete()
-        .eq('project_id', project.id)
-        .eq('applicant_id', user.id);
+          if (error) throw error;
 
-      if (error) throw error;
-
-      setApplied(false);
-      toast.success("Application cancelled successfully");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to cancel application");
-    } finally {
-      setLoading(true); // Small delay before unblocking
-      setTimeout(() => setLoading(false), 500);
-    }
+          setApplied(false);
+          toast.success("Application cancelled successfully");
+        } catch (err) {
+          console.error(err);
+          toast.error("Failed to cancel application");
+        } finally {
+          setLoading(true); // Small delay before unblocking
+          setTimeout(() => setLoading(false), 500);
+        }
+      }
+    });
   };
 
   return (
@@ -729,6 +738,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
   currentUserProfile: Profile | null;
   photoOwnerId?: string;
 }) {
+  const { confirm: confirmAction } = useConfirmation();
   const { setPipVideo, setIsPipOpen } = useVideo();
   const [likes, setLikes] = useState<number>(0);
   const [userLiked, setUserLiked] = useState(false);
@@ -857,8 +867,21 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
   };
 
   const handleDeleteComment = async (id: string) => {
-    await supabase.from('photo_comments').delete().eq('id', id);
-    setComments(prev => prev.filter(c => c.id !== id));
+    confirmAction({
+      title: "Delete Comment",
+      description: "Are you sure you want to delete this comment?",
+      variant: "destructive",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        const { error } = await supabase.from('photo_comments').delete().eq('id', id);
+        if (!error) {
+          toast.success("Comment deleted");
+          setComments(prev => prev.filter(c => c.id !== id));
+        } else {
+          toast.error("Failed to delete comment");
+        }
+      }
+    });
   };
 
   const handleUpdateComment = async (id: string) => {

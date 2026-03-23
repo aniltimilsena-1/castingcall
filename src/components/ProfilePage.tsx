@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users } from "lucide-react";
 import { useVideo } from "@/contexts/VideoContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Badge } from "@/components/ui/badge";
 
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
@@ -55,6 +56,7 @@ interface ProfilePageProps {
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
   const { user, profile, loading, isPremium, refreshProfile } = useAuth();
+  const { confirm: confirmAction } = useConfirmation();
   const { setPipVideo, setIsPipOpen } = useVideo();
 
   // Mode
@@ -672,18 +674,26 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   >
                     <Plus size={16} /> Update Photo
                   </label>
-                  {profile?.photo_url && (
+                   {profile?.photo_url && (
                     <button
-                      onClick={async () => {
-                        if (!user) return;
-                        try {
-                          const { error } = await supabase.from('profiles').update({ photo_url: null }).eq('user_id', user.id);
-                          if (error) throw error;
-                          await refreshProfile();
-                          toast.success("Profile photo removed");
-                        } catch (err: any) {
-                          toast.error(err.message || "Failed to remove photo");
-                        }
+                      onClick={() => {
+                        confirmAction({
+                          title: "Remove Profile Photo",
+                          description: "Are you sure you want to remove your profile photo?",
+                          variant: "destructive",
+                          confirmLabel: "Remove",
+                          onConfirm: async () => {
+                            if (!user) return;
+                            try {
+                              const { error } = await supabase.from('profiles').update({ photo_url: null }).eq('user_id', user.id);
+                              if (error) throw error;
+                              await refreshProfile();
+                              toast.success("Profile photo removed");
+                            } catch (err: any) {
+                              toast.error(err.message || "Failed to remove photo");
+                            }
+                          }
+                        });
                       }}
                       className="bg-secondary/50 text-foreground/60 px-6 py-2.5 rounded-xl font-body font-normal text-xs hover:bg-red-500/10 hover:text-red-500 transition-all border border-border/50 flex items-center gap-2"
                     >
@@ -717,12 +727,20 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 <div className="relative aspect-square rounded-xl overflow-hidden border border-border group">
                   <img src={url} alt={`Portfolio ${index}`} className="w-full h-full object-cover" />
                     <button
-                      onClick={async () => {
-                        if (!user) return;
-                        const newPhotos = (profile as any).photos.filter((_: any, i: number) => i !== index);
-                        const { error } = await supabase.from('profiles').update({ photos: newPhotos } as any).eq('user_id', user.id);
-                        if (error) toast.error(error.message);
-                        else { toast.success("Photo removed"); await refreshProfile(); }
+                      onClick={() => {
+                        confirmAction({
+                          title: "Remove Photo",
+                          description: "Are you sure you want to remove this photo from your portfolio?",
+                          variant: "destructive",
+                          confirmLabel: "Remove",
+                          onConfirm: async () => {
+                            if (!user) return;
+                            const newPhotos = (profile as any).photos.filter((_: any, i: number) => i !== index);
+                            const { error } = await supabase.from('profiles').update({ photos: newPhotos } as any).eq('user_id', user.id);
+                            if (error) toast.error(error.message);
+                            else { toast.success("Photo removed"); await refreshProfile(); }
+                          }
+                        });
                       }}
                       className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full transition-all hover:bg-red-500 shadow-lg border border-white/20"
                     >

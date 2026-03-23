@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { adminService } from "@/services/adminService";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { Users, Shield, Search, DollarSign, Trash2, Globe, Crown, X, MapPin, MoreVertical } from "lucide-react";
@@ -40,6 +41,7 @@ interface AdminFinance extends Tables<"transactions"> { }
 interface AdminVerification extends Tables<"payment_verifications"> { }
 
 export default function AdminPage() {
+    const { confirm: confirmAction } = useConfirmation();
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
     const [allFeedItems, setAllFeedItems] = useState<AdminFeedItem[]>([]);
@@ -111,47 +113,68 @@ export default function AdminPage() {
     };
 
     const handleRejectPayment = async (v: AdminVerification) => {
-        if (!confirm("Reject this payment?")) return;
-        try {
-            await adminService.rejectPayment(v);
-            toast.info("Payment rejected.");
-            fetchAllData();
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            toast.error("Rejection failed: " + errorMessage);
-        }
+        confirmAction({
+            title: "Reject Payment",
+            description: "Are you sure you want to reject this payment verification?",
+            variant: "destructive",
+            confirmLabel: "Reject",
+            onConfirm: async () => {
+                try {
+                    await adminService.rejectPayment(v);
+                    toast.info("Payment rejected.");
+                    fetchAllData();
+                } catch (err: unknown) {
+                    const errorMessage = err instanceof Error ? err.message : String(err);
+                    toast.error("Rejection failed: " + errorMessage);
+                }
+            }
+        });
     };
 
     const handleDeleteProject = async (id: string) => {
-        if (!confirm("Are you sure? This will remove the casting call forever.")) return;
-        try {
-            const { error } = await adminService.deleteProject(id);
-            if (error) throw error;
-            toast.info("Project removed.");
-            fetchAllData();
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            console.error("Delete project error:", err);
-            toast.error("Failed to delete project: " + errorMessage);
-        }
+        confirmAction({
+            title: "Delete Project",
+            description: "Are you sure? This will remove the casting call forever.",
+            variant: "destructive",
+            confirmLabel: "Delete Forever",
+            onConfirm: async () => {
+                try {
+                    const { error } = await adminService.deleteProject(id);
+                    if (error) throw error;
+                    toast.info("Project removed.");
+                    fetchAllData();
+                } catch (err: unknown) {
+                    const errorMessage = err instanceof Error ? err.message : String(err);
+                    console.error("Delete project error:", err);
+                    toast.error("Failed to delete project: " + errorMessage);
+                }
+            }
+        });
     };
 
     const handleDeleteUser = async (profileId: string, isInternalId = false) => {
-        if (!confirm('Delete user account and profile?')) return;
-        try {
-            const { error } = isInternalId 
-                ? await supabase.from("profiles").delete().eq("id", profileId)
-                : await supabase.from("profiles").delete().eq("user_id", profileId);
+        confirmAction({
+            title: "Delete User Account",
+            description: "Are you sure you want to delete this user account and profile? This action is permanent.",
+            variant: "destructive",
+            confirmLabel: "Delete Account",
+            onConfirm: async () => {
+                try {
+                    const { error } = isInternalId 
+                        ? await supabase.from("profiles").delete().eq("id", profileId)
+                        : await supabase.from("profiles").delete().eq("user_id", profileId);
 
-            if (error) throw error;
-            
-            toast.success('Profile removed');
-            fetchAllData();
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            console.error("Delete user error:", err);
-            toast.error("Failed to delete user profile: " + errorMessage);
-        }
+                    if (error) throw error;
+                    
+                    toast.success('Profile removed');
+                    fetchAllData();
+                } catch (err: unknown) {
+                    const errorMessage = err instanceof Error ? err.message : String(err);
+                    console.error("Delete user error:", err);
+                    toast.error("Failed to delete user profile: " + errorMessage);
+                }
+            }
+        });
     };
 
     const handleOpenScreenshot = async (url: string) => {
@@ -322,15 +345,21 @@ export default function AdminPage() {
                                             <td className="px-10 py-6">
                                                 <button 
                                                     onClick={async () => { 
-                                                        if (confirm('Delete post?')) { 
-                                                            const { error } = await supabase.from('photo_captions').delete().eq('photo_url', f.url); 
-                                                            if (error) {
-                                                                toast.error("Error: " + error.message);
-                                                            } else {
-                                                                toast.success('Deleted'); 
-                                                                fetchAllData(); 
+                                                        confirmAction({
+                                                            title: "Delete Post",
+                                                            description: "Are you sure you want to delete this post?",
+                                                            variant: "destructive",
+                                                            confirmLabel: "Delete",
+                                                            onConfirm: async () => {
+                                                                const { error } = await supabase.from('photo_captions').delete().eq('photo_url', f.url); 
+                                                                if (error) {
+                                                                    toast.error("Error: " + error.message);
+                                                                } else {
+                                                                    toast.success('Deleted'); 
+                                                                    fetchAllData(); 
+                                                                }
                                                             }
-                                                        } 
+                                                        });
                                                     }} 
                                                     className="text-red-500 p-2 hover:bg-red-500/10 rounded-lg"
                                                 >

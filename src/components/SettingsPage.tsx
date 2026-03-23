@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -10,6 +11,7 @@ const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Cast
 
 export default function SettingsPage() {
   const { user, profile, refreshProfile, isRecovering } = useAuth();
+  const { confirm: confirmAction } = useConfirmation();
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
@@ -142,6 +144,32 @@ export default function SettingsPage() {
             >
               Update Photo
             </label>
+            {profile?.photo_url && (
+              <button
+                onClick={() => {
+                  confirmAction({
+                    title: "Remove Profile Photo",
+                    description: "Are you sure you want to remove your profile photo?",
+                    variant: "destructive",
+                    confirmLabel: "Remove",
+                    onConfirm: async () => {
+                      if (!user) return;
+                      try {
+                        const { error } = await supabase.from('profiles').update({ photo_url: null }).eq('user_id', user.id);
+                        if (error) throw error;
+                        await refreshProfile();
+                        toast.success("Profile photo removed");
+                      } catch (err: any) {
+                        toast.error(err.message || "Failed to remove photo");
+                      }
+                    }
+                  });
+                }}
+                className="ml-3 text-red-500 hover:text-red-600 transition-colors text-xs font-medium"
+              >
+                Remove
+              </button>
+            )}
             <p className="text-[0.7rem] text-muted-foreground">JPG, PNG or GIF. Max 2MB.</p>
           </div>
         </div>

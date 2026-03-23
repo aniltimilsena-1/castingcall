@@ -10,6 +10,7 @@ import { Heart, MessageCircle, Send, Bookmark, Sparkles, ArrowLeft, X, Crown, Lo
 import { toast } from "sonner";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 import { useVideo } from "@/contexts/VideoContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -42,6 +43,7 @@ interface FeedPageProps {
 
 export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     const { user, profile: currentUserProfile } = useAuth();
+    const { confirm: confirmAction } = useConfirmation();
     const [feed, setFeed] = useState<FeedItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -220,18 +222,24 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
 
     // ─── Comment handler ──────────────────────────────────────────────────────
     const handleDeleteComment = async (commentId: string, photoUrl: string) => {
-        if (!confirm("Are you sure you want to delete this comment?")) return;
-
-        try {
-            await feedService.deleteComment(commentId);
-            setComments(prev => ({
-                ...prev,
-                [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
-            }));
-            toast.success("Comment deleted");
-        } catch (err: any) {
-            toast.error(err.message || "Failed to delete comment");
-        }
+        confirmAction({
+            title: "Delete Comment",
+            description: "Are you sure you want to delete this comment? This action cannot be undone.",
+            variant: "destructive",
+            confirmLabel: "Delete",
+            onConfirm: async () => {
+                try {
+                    await feedService.deleteComment(commentId);
+                    setComments(prev => ({
+                        ...prev,
+                        [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
+                    }));
+                    toast.success("Comment deleted");
+                } catch (err: any) {
+                    toast.error(err.message || "Failed to delete comment");
+                }
+            }
+        });
     };
 
     const handleComment = async (mediaUrl: string) => {
@@ -347,47 +355,63 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     // ─── Render ───────────────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="max-w-[620px] mx-auto px-4 py-6 pb-20 space-y-8">
-                {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-card border border-card-border rounded-3xl overflow-hidden shadow-xl animate-pulse">
-                        {/* Fake header */}
-                        <div className="flex items-center gap-3 px-4 py-4">
-                            <div className="w-11 h-11 rounded-full bg-secondary/60" />
-                            <div className="flex-1 space-y-2">
-                                <div className="h-3 bg-secondary/60 rounded-full w-32" />
-                                <div className="h-2.5 bg-secondary/40 rounded-full w-20" />
+            <div className="h-full bg-black overflow-hidden relative">
+                <button 
+                    onClick={() => onBack?.()}
+                    className="fixed top-6 left-6 z-[250] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
+                    title="Back to Home"
+                >
+                    <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+                </button>
+
+                <div className="max-w-[620px] mx-auto px-4 py-16 pb-20 space-y-8 h-full overflow-y-auto">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="bg-card/20 border border-white/5 rounded-3xl overflow-hidden shadow-xl animate-pulse">
+                            <div className="flex items-center gap-3 px-4 py-4">
+                                <div className="w-11 h-11 rounded-full bg-white/10" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-3 bg-white/10 rounded-full w-32" />
+                                    <div className="h-2.5 bg-white/5 rounded-full w-20" />
+                                </div>
+                                <div className="w-6 h-6 rounded-full bg-white/5" />
                             </div>
-                            <div className="w-6 h-6 rounded-full bg-secondary/40" />
+                            <div className="w-full bg-white/5" style={{ height: `${240 + i * 40}px` }} />
+                            <div className="flex gap-4 px-4 py-3">
+                                <div className="h-5 w-14 bg-white/10 rounded-full" />
+                                <div className="h-5 w-14 bg-white/10 rounded-full" />
+                                <div className="flex-1" />
+                                <div className="h-5 w-5 bg-white/5 rounded-full" />
+                            </div>
+                            <div className="px-4 pb-4 space-y-2">
+                                <div className="h-2.5 bg-white/10 rounded-full w-3/4" />
+                                <div className="h-2.5 bg-white/5 rounded-full w-1/2" />
+                            </div>
                         </div>
-                        {/* Fake media */}
-                        <div className="w-full bg-secondary/40" style={{ height: `${240 + i * 40}px` }} />
-                        {/* Fake action bar */}
-                        <div className="flex gap-4 px-4 py-3">
-                            <div className="h-5 w-14 bg-secondary/50 rounded-full" />
-                            <div className="h-5 w-14 bg-secondary/50 rounded-full" />
-                            <div className="flex-1" />
-                            <div className="h-5 w-5 bg-secondary/40 rounded-full" />
-                        </div>
-                        {/* Fake caption */}
-                        <div className="px-4 pb-4 space-y-2">
-                            <div className="h-2.5 bg-secondary/50 rounded-full w-3/4" />
-                            <div className="h-2.5 bg-secondary/30 rounded-full w-1/2" />
-                        </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         );
     }
 
     if (feed.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center h-full gap-4 px-6 text-center">
-                <Sparkles className="w-14 h-14 text-primary/30" />
-                <h2 className="font-display text-3xl text-primary">Nothing here yet</h2>
-                <p className="text-muted-foreground text-sm max-w-xs">
-                    Be the first to share photos and videos on CaastingCall! Upload from your profile to appear in the feed.
-                </p>
-                <button onClick={handleRefresh} className="mt-4 text-primary bg-primary/10 px-6 py-2 rounded-full text-xs uppercase tracking-widest">Retry Refresh</button>
+            <div className="h-full bg-black overflow-hidden relative">
+                <button 
+                    onClick={() => onBack?.()}
+                    className="fixed top-6 left-6 z-[250] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
+                    title="Back to Home"
+                >
+                    <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+                </button>
+
+                <div className="flex flex-col items-center justify-center h-full gap-4 px-6 text-center text-white">
+                    <Sparkles className="w-14 h-14 text-primary/30" />
+                    <h2 className="font-display text-3xl text-primary">Nothing here yet</h2>
+                    <p className="text-white/60 text-sm max-w-xs">
+                        Be the first to share photos and videos on CaastingCall! Upload from your profile to appear in the feed.
+                    </p>
+                    <button onClick={handleRefresh} className="mt-4 text-primary bg-primary/10 px-6 py-2 rounded-full text-xs uppercase tracking-widest hover:bg-primary/20 transition-colors">Retry Refresh</button>
+                </div>
             </div>
         );
     }

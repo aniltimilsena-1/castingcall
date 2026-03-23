@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -72,6 +73,7 @@ interface MessagesPageProps {
 
 export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesPageProps) {
   const { user, profile: currentUserProfile, isPremium } = useAuth();
+  const { confirm: confirmAction } = useConfirmation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedPartner, setSelectedPartner] = useState<string | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<Profile | null>(null);
@@ -443,8 +445,21 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   };
 
   const deleteMessage = async (id: string) => {
-    const { error } = await supabase.from("messages").delete().eq("id", id);
-    if (!error) loadThread(selectedPartner!);
+    confirmAction({
+      title: "Delete Message",
+      description: "Are you sure you want to delete this message? This action cannot be undone.",
+      variant: "destructive",
+      confirmLabel: "Delete",
+      onConfirm: async () => {
+        const { error } = await supabase.from("messages").delete().eq("id", id);
+        if (!error) {
+          toast.success("Message deleted");
+          loadThread(selectedPartner!);
+        } else {
+          toast.error("Failed to delete message");
+        }
+      }
+    });
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
