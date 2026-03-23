@@ -1,16 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const feedService = {
-    async getFeedData(isAdmin: boolean = false) {
-        let q = supabase
+    async getFeedData() {
+        const { data: profiles, error } = await supabase
             .from("profiles")
-            .select("id, user_id, name, photo_url, role, plan, photos, created_at");
-
-        if (!isAdmin) {
-            q = q.neq('role', 'Admin');
-        }
-
-        const { data: profiles, error } = await q.order("created_at", { ascending: false });
+            .select("id, user_id, name, photo_url, role, plan, photos, created_at")
+            .order("created_at", { ascending: false });
+        
         if (error) throw error;
         return profiles;
     },

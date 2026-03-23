@@ -99,9 +99,8 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
         const loadFeed = async () => {
             setLoading(true);
             try {
-                const isAdmin = currentUserProfile?.role === 'Admin';
                 const [profiles, videoMap, captionMap] = await Promise.all([
-                    feedService.getFeedData(isAdmin),
+                    feedService.getFeedData(),
                     feedService.getVideoMap(),
                     feedService.getCaptionMap()
                 ]);
@@ -127,7 +126,7 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
                 });
 
                 // Shuffle for "for you" feel
-                const shuffled = items.sort(() => Math.random() - 0.4);
+                const shuffled = items.sort(() => Math.random() - 0.5);
                 setFeed(shuffled);
 
                 // Fetch social data (likes/comments) safely

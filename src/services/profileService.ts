@@ -34,11 +34,8 @@ export const profileService = {
         return data;
     },
 
-    async getFeaturedProfiles(isAdmin: boolean = false) {
+    async getFeaturedProfiles() {
         let q = supabase.from("profiles").select("*").eq("plan", "pro");
-        if (!isAdmin) {
-            q = q.neq("role", "Admin");
-        }
         const { data, error } = await q.order("created_at", { ascending: false });
         if (error) throw error;
         return data;
@@ -87,10 +84,6 @@ export const profileService = {
 
         if (params.looksLike) {
             q = q.overlaps('looks_like', [params.looksLike]);
-        }
-
-        if (!params.isAdmin) {
-            q = q.neq('role', 'Admin');
         }
 
         const { data, error } = await q;

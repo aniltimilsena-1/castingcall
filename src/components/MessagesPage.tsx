@@ -264,124 +264,63 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   useEffect(() => {
     if (!user) return;
 
-    // ── Channel 1: messages arriving FOR this user (receiver) ────────────
-    // Filtered server-side — only this user's incoming rows are streamed.
-    const incomingChannel = supabase
-      .channel(`messages-incoming-${user.id}`)
+    // ── Single Robust Real-time Channel for ALL Messages ──────────────────
+    const messageChannel = supabase
+      .channel(`user-messages-${user.id}`)
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*', // Listen to INSERT, UPDATE, DELETE
           schema: 'public',
           table: 'messages',
-          filter: `receiver_id=eq.${user.id}`,
         },
-        (payload) => {
-          const msg = payload.new as Message;
-          if (selectedPartner === msg.sender_id) {
-            setThread(prev => {
-              if (prev.some(m => m.id === msg.id)) return prev;
-              // Check for optimistic message from this user that might match (unlikely for incoming but safe)
-              const optIndex = prev.findIndex(m => 
-                m.id.startsWith('optimistic-') && 
-                m.content === msg.content && 
-                m.sender_id === msg.sender_id
-              );
-              if (optIndex !== -1) {
-                const newThread = [...prev];
-                newThread[optIndex] = msg;
-                return newThread;
-              }
-              return [...prev, msg];
-            });
-            // Mark as read — user is actively viewing this thread
-            void supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
-          }
-          void loadConversations();
-        }
-      )
-      .subscribe();
+        async (payload) => {
+          const { eventType, new: newMsg, old: oldMsg } = payload;
+          const msg = (newMsg || oldMsg) as Message;
 
-    // ── Channel 2: messages SENT by this user (sender confirmation) ───────
-    // Lets us replace the optimistic row with the real DB row reliably.
-    const outgoingChannel = supabase
-      .channel(`messages-outgoing-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `sender_id=eq.${user.id}`,
-        },
-        (payload) => {
-          const msg = payload.new as Message;
-          // Skip: we already handled this via optimistic insert + .select().single()
-          // Only act if somehow we don't have it yet (e.g. sent from another tab)
-          if (sentMessageIds.current.has(msg.id)) {
-            sentMessageIds.current.delete(msg.id);
-            return;
-          }
-          if (selectedPartner === msg.receiver_id) {
-            setThread(prev => {
-              if (prev.some(m => m.id === msg.id)) return prev;
-              // Reconcile optimistic: swap the client-generated row for the real one
-              const optIndex = prev.findIndex(m => 
-                m.id.startsWith('optimistic-') && 
-                m.content === msg.content && 
-                m.receiver_id === msg.receiver_id
-              );
-              if (optIndex !== -1) {
-                const newThread = [...prev];
-                newThread[optIndex] = msg;
-                return newThread;
-              }
-              return [...prev, msg];
-            });
-          }
-        }
-      )
-      .subscribe();
+          // Only process if the user is a participant
+          if (msg.sender_id !== user.id && msg.receiver_id !== user.id) return;
 
-    // ── Channel 3: updates/deletes to ANY message relevant to this user ─
-    // ── Channel 3: updates/deletes specifically FOR this user ───────────
-    const updatesChannel = supabase
-      .channel(`message-updates-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `or(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
-        },
-        (payload) => {
-          const msg = payload.new as Message;
-          if (selectedPartner === msg.sender_id || selectedPartner === msg.receiver_id) {
-            setThread(prev => prev.map(m => m.id === msg.id ? msg : m));
+          if (eventType === 'INSERT') {
+            // If it's the current active chat
+            if (selectedPartner === msg.sender_id || selectedPartner === msg.receiver_id) {
+              setThread(prev => {
+                if (prev.some(m => m.id === msg.id)) return prev;
+                // Replace optimistic matches
+                const optIndex = prev.findIndex(m => 
+                  m.id.startsWith('optimistic-') && 
+                  m.content === msg.content && 
+                  m.sender_id === msg.sender_id
+                );
+                if (optIndex !== -1) {
+                  const nt = [...prev];
+                  nt[optIndex] = msg;
+                  return nt;
+                }
+                return [...prev, msg];
+              });
+              
+              // Mark as read if receiving from partner
+              if (msg.receiver_id === user.id && selectedPartner === msg.sender_id) {
+                void supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
+              }
+            }
+          } else if (eventType === 'UPDATE') {
+            if (selectedPartner === msg.sender_id || selectedPartner === msg.receiver_id) {
+              setThread(prev => prev.map(m => m.id === msg.id ? msg : m));
+            }
+          } else if (eventType === 'DELETE') {
+            setThread(prev => prev.filter(m => m.id !== msg.id));
           }
-          void loadConversations();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'messages',
-          filter: `or(sender_id.eq.${user.id},receiver_id.eq.${user.id})`
-        },
-        (payload) => {
-          setThread(prev => prev.filter(m => m.id !== payload.old.id));
+
+          // Always refresh the conversation list on any change
           void loadConversations();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(incomingChannel);
-      supabase.removeChannel(outgoingChannel);
-      supabase.removeChannel(updatesChannel);
+      supabase.removeChannel(messageChannel);
     };
   }, [user, selectedPartner, loadConversations]);
 
