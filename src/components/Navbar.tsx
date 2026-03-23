@@ -106,15 +106,6 @@ export default function Navbar({
           <button onClick={() => onNavigate("home")} className={navItemClass("home")} title="Home">
             <Home size={14} />
           </button>
-          <button onClick={() => onNavigate("search", { searchType: "projects" })} className={navItemClass("search", "projects")} title="Casting Calls">
-            <Briefcase size={14} />
-          </button>
-          <button onClick={() => onNavigate("search", { searchType: "talents" })} className={navItemClass("search", "talents")} title="Actors">
-            <Users size={14} />
-          </button>
-          <button onClick={() => onNavigate("projects", { openForm: true })} className={navItemClass("projects")} title="Post Application">
-            <PlusCircle size={14} />
-          </button>
         </div>
 
         {/* Right Section */}
