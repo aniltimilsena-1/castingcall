@@ -665,14 +665,34 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 }}
               />
               <div className="space-y-3">
-                <label
-                  htmlFor="photo-upload-profile"
-                  className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-body font-normal text-xs cursor-pointer hover:opacity-90 transition-all shadow-md shadow-primary/10 inline-flex items-center gap-2"
-                >
-                  <Plus size={16} /> Update Profile Photo
-                </label>
+                <div className="flex flex-wrap gap-2">
+                  <label
+                    htmlFor="photo-upload-profile"
+                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl font-body font-normal text-xs cursor-pointer hover:opacity-90 transition-all shadow-md shadow-primary/10 inline-flex items-center gap-2"
+                  >
+                    <Plus size={16} /> Update Photo
+                  </label>
+                  {profile?.photo_url && (
+                    <button
+                      onClick={async () => {
+                        if (!user) return;
+                        try {
+                          const { error } = await supabase.from('profiles').update({ photo_url: null }).eq('user_id', user.id);
+                          if (error) throw error;
+                          await refreshProfile();
+                          toast.success("Profile photo removed");
+                        } catch (err: any) {
+                          toast.error(err.message || "Failed to remove photo");
+                        }
+                      }}
+                      className="bg-secondary/50 text-foreground/60 px-6 py-2.5 rounded-xl font-body font-normal text-xs hover:bg-red-500/10 hover:text-red-500 transition-all border border-border/50 flex items-center gap-2"
+                    >
+                      <Trash2 size={14} /> Remove
+                    </button>
+                  )}
+                </div>
                 <p className="text-[0.7rem] text-foreground/60 max-w-[220px]">
-                  Recommended: Square JPG or PNG, at least 400×400px. Max 2MB.
+                  Recommended: Square JPG or PNG, at least 400×400px.
                 </p>
               </div>
             </div>
@@ -696,18 +716,18 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <div className="space-y-2 relative">
                 <div className="relative aspect-square rounded-xl overflow-hidden border border-border group">
                   <img src={url} alt={`Portfolio ${index}`} className="w-full h-full object-cover" />
-                  <button
-                    onClick={async () => {
-                      if (!user) return;
-                      const newPhotos = (profile as any).photos.filter((_: any, i: number) => i !== index);
-                      const { error } = await supabase.from('profiles').update({ photos: newPhotos } as any).eq('user_id', user.id);
-                      if (error) toast.error(error.message);
-                      else { toast.success("Photo removed"); await refreshProfile(); }
-                    }}
-                    className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
-                  >
-                    <X size={14} />
-                  </button>
+                    <button
+                      onClick={async () => {
+                        if (!user) return;
+                        const newPhotos = (profile as any).photos.filter((_: any, i: number) => i !== index);
+                        const { error } = await supabase.from('profiles').update({ photos: newPhotos } as any).eq('user_id', user.id);
+                        if (error) toast.error(error.message);
+                        else { toast.success("Photo removed"); await refreshProfile(); }
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full transition-all hover:bg-red-500 shadow-lg border border-white/20"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   {captions[url]?.is_premium && (
                     <div className="absolute top-2 left-2 p-1 bg-amber-500 rounded-lg text-white shadow-lg">
                       <Lock size={12} />
@@ -832,9 +852,9 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     if (error) toast.error(error.message);
                     else { toast.success("Video removed"); await refreshProfile(); }
                   }}
-                  className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                  className="absolute top-2 right-2 p-1.5 bg-black/70 text-white rounded-full transition-all hover:bg-red-500 shadow-lg border border-white/20"
                 >
-                  <X size={14} />
+                  <Trash2 size={14} />
                 </button>
               </div>
             ))}

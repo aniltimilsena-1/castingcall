@@ -37,9 +37,10 @@ interface FeedItem {
 
 interface FeedPageProps {
     onProfileClick?: (profile: Partial<Profile> & { user_id: string }) => void;
+    onBack?: () => void;
 }
 
-export default function FeedPage({ onProfileClick }: FeedPageProps) {
+export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     const { user, profile: currentUserProfile } = useAuth();
     const [feed, setFeed] = useState<FeedItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -393,6 +394,15 @@ export default function FeedPage({ onProfileClick }: FeedPageProps) {
 
     return (
         <div className="h-full bg-black overflow-hidden relative">
+            {/* Back Button */}
+            <button 
+                onClick={() => onBack?.()}
+                className="fixed top-6 left-6 z-[250] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
+                title="Back to Home"
+            >
+                <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
+            </button>
+
             {/* ── Full-screen Post Modal ── */}
             <AnimatePresence>
                 {openPost && (
