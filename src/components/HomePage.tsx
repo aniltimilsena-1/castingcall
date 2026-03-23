@@ -201,14 +201,14 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── CATEGORIES (GLASSMORPHISM) ── */}
-      <section className="py-32 md:py-48 px-6 max-w-7xl mx-auto relative z-30">
-        <div className="text-center mb-24 space-y-6">
-          <h2 className="text-[0.75rem] uppercase tracking-[0.5em] text-primary font-black">Select Your Discipline</h2>
-          <h3 className="text-5xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-primary font-medium">Elite</span></h3>
-          <div className="w-16 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
+      <section className="py-12 md:py-48 px-6 max-w-7xl mx-auto relative z-30">
+        <div className="text-center mb-10 md:mb-24 space-y-4 md:space-y-6">
+          <h2 className="text-[0.65rem] md:text-[0.75rem] uppercase tracking-[0.5em] text-primary font-black">Select Your Discipline</h2>
+          <h3 className="text-4xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-primary font-medium">Elite</span></h3>
+          <div className="w-12 md:w-16 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
           {categories.map((cat, i) => (
             <motion.div
               key={cat.role}
@@ -220,7 +220,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             >
               <div
                 onClick={() => onCategoryClick(cat.role)}
-                className="relative z-10 h-64 bg-surface-low/60 border border-foreground/5 glass-card rounded-[2.5rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
+                className="relative z-10 h-48 md:h-64 bg-surface-low/60 border border-foreground/5 glass-card rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
               >
                 {/* Decorative background element */}
                 <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
@@ -240,8 +240,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-24 px-6 max-w-7xl mx-auto relative z-30">
-        <div className="bg-card border border-border rounded-[4rem] p-12 md:p-20 overflow-hidden relative">
+      <section className="py-12 md:py-24 px-4 md:px-6 max-w-7xl mx-auto relative z-30">
+        <div className="bg-card border border-border rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-20 overflow-hidden relative">
           {/* Abstract Background Glows */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
@@ -320,16 +320,16 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── FEATURED TALENTS ── */}
       {featured.length > 0 && (
-        <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[3rem] md:rounded-[4rem] border border-border relative z-30">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20 px-4">
-            <div className="space-y-4">
-              <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-amber-500 font-bold">Wall of Excellence</h2>
-              <h3 className="text-4xl md:text-5xl font-display text-amber-600 dark:text-amber-500">Spotlight Performers</h3>
+        <section className="py-12 md:py-32 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[2.5rem] md:rounded-[4rem] border border-border relative z-30">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 mb-10 md:mb-20 px-2 md:px-4">
+            <div className="space-y-3 md:space-y-4 text-center md:text-left">
+              <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-amber-500 font-bold">Wall of Excellence</h2>
+              <h3 className="text-3xl md:text-5xl font-display text-amber-600 dark:text-amber-500">Spotlight Performers</h3>
             </div>
             <button className="text-xs uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary border-b border-border pb-2 transition-colors">View Directory</button>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
             {featured.map((p, i) => {
               const isElite = p.plan === 'pro' || p.role === 'Admin';
               return (
@@ -397,10 +397,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── CASTING CALLS ── */}
       {recentProjects.length > 0 && (
-        <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
-          <div className="text-center mb-20 space-y-4">
-            <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Open Opportunities</h2>
-            <h3 className="text-4xl md:text-5xl font-display text-primary">Live Casting Calls</h3>
+        <section className="py-12 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
+          <div className="text-center mb-10 md:mb-20 space-y-3 md:space-y-4">
+            <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Open Opportunities</h2>
+            <h3 className="text-3xl md:text-5xl font-display text-primary">Live Casting Calls</h3>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
