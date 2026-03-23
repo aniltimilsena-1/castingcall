@@ -70,13 +70,15 @@ export default function Navbar({
   };
 
   const navItemClass = (id: PageName, currentSearchType?: string) => `
-    flex items-center gap-2 px-4 py-1.5 rounded-full text-[0.7rem] uppercase tracking-wider font-medium transition-all
-    ${activePage === id && (!currentSearchType || searchType === currentSearchType) ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'}
+    flex items-center gap-2 px-5 py-2 rounded-full text-[0.65rem] uppercase tracking-[0.12em] font-semibold transition-all duration-500
+    ${activePage === id && (!currentSearchType || searchType === currentSearchType) 
+      ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105' 
+      : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5 ghost-border'}
   `;
 
   return (
-    <nav className="sticky top-0 bg-background/60 backdrop-blur-xl z-50 border-b border-border/10">
-      <div className="flex items-center justify-between px-4 md:px-8 h-16 max-w-[1800px] mx-auto">
+    <nav className="sticky top-0 glass z-[100] border-b border-foreground/5 shadow-2xl shadow-black/5 dark:shadow-black/20">
+      <div className="flex items-center justify-between px-4 md:px-8 h-20 max-w-[2000px] mx-auto">
         {/* Logo */}
         <button onClick={onLogoClick} className="flex items-center group flex-shrink-0">
           <img
@@ -123,7 +125,7 @@ export default function Navbar({
           <div className="flex items-center gap-1">
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all duration-300"
+              className="hidden md:flex p-1.5 rounded-lg text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-foreground/10"
               title="Toggle color theme"
             >
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -133,18 +135,18 @@ export default function Navbar({
               <>
                 <button
                   onClick={onMessagesClick}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all relative"
+                  className="hidden md:flex p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
                   title="Direct Messages"
                 >
-                  <MessageSquare className={`w-4 h-4 transition-colors ${unreadMsgCount > 0 ? "text-red-500" : "text-muted-foreground"}`} />
+                  <MessageSquare size={18} className={`transition-colors ${unreadMsgCount > 0 ? "text-primary shadow-[0_0_10px_hsl(var(--gold)/0.4)]" : "text-muted-foreground"}`} />
                   {unreadMsgCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full border border-background animate-pulse" />
+                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background animate-pulse" />
                   )}
                 </button>
 
                 <button
                   onClick={onNotificationClick}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:bg-secondary hover:text-primary transition-all relative"
+                  className="hidden md:flex p-1.5 rounded-lg text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
                   title="Notifications"
                 >
                   <Bell className="w-4 h-4" />
@@ -168,13 +170,13 @@ export default function Navbar({
 
           <button
             onClick={onAuthClick}
-            className={`relative px-4 py-1.5 rounded-full font-body font-medium text-[0.7rem] uppercase tracking-wider transition-all flex items-center gap-2 ${isPro
-              ? "border-2 border-amber-500/50 text-amber-500 hover:bg-amber-500/5 shadow-[0_0_15px_-5px_rgba(245,158,11,0.3)]"
-              : "bg-primary text-primary-foreground hover:opacity-85 shadow-lg shadow-primary/20"
+            className={`relative px-4 py-2 sm:px-6 sm:py-2.5 rounded-full font-accent font-bold text-[0.6rem] sm:text-[0.65rem] uppercase tracking-[0.15em] transition-all duration-500 flex items-center gap-2 ${isPro
+              ? "border border-amber-500/40 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+              : "bg-primary text-primary-foreground hover:opacity-90 hover:scale-105 shadow-xl shadow-primary/30"
               }`}
           >
-            {isPro && <Crown className="w-3.5 h-3.5" />}
-            {user ? (isPro ? "PRO" : "Account") : "Sign In"}
+            {isPro && <Crown size={12} className="animate-pulse" />}
+            {user ? (isPro ? (window.innerWidth < 640 ? "PRO" : "PRO DASHBOARD") : "MY STAGE") : "JOIN"}
           </button>
 
           <button

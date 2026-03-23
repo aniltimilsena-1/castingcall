@@ -1,136 +1,144 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   FONT IMPORTS
-   Primary UI font: Inter — readability, forms, navigation, body copy
-   Accent/style font: Courier Prime — headings, labels, special sections ONLY
+   PREMIUM FONT IMPORTS
+   - Inter: Body & Utility
+   - Epilogue: Cinematic Display Headlines
+   - Outfit: Elegant Subheadings & Accents
 ───────────────────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Epilogue:wght@700;800;900&family=Outfit:wght@500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   DESIGN TOKENS
+   DESIGN TOKENS — Cinema Gold System
    Color System:
-     Light → off-white onion base (#F5E6D3), primary black, lilac accent
-     Dark  → near-black base, off-white text, same lilac accent (adjusted)
+     Light → Sophisticated Ivory (#FDFBF9), Deep Charcoal text, Cinema Gold accent
+     Dark  → Deep Charcoal (#131313), Warm Ivory text, Spotlight Gold accent
 
-   Lilac accent (derived from onion skin tones): #C8A2C8 / hsl(300 27% 71%)
+   Cinema Gold accent: #D4AF37 / hsl(46 91% 53%)
 ───────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
-    /* ── Gold (kept for backward-compat) ── */
-    --gold: 46 91% 53%;
-    --gold-glow: 46 91% 53% / 0.13;
-
-    /* ── Lilac accent (onion-skin inspired) ── */
-    --lilac: 300 27% 71%;          /* #C8A2C8 */
-    --lilac-soft: 300 27% 88%;     /* very pale lilac tint for bg panels */
-    --lilac-foreground: 300 20% 22%; /* dark purple-gray for text on lilac */
+    /* ── Cinema Gold Palette (Premium) ── */
+    --gold: 46 91% 53%;            /* Branding Gold #D4AF37 */
+    --gold-glow: 46 91% 53% / 0.18;
+    --gold-fixed: #F2CA50;         /* Highlight Gold */
+    --gold-dim: #E9C349;           /* Secondary Gold */
   }
 
-  /* ── LIGHT MODE (default) ────────────────────────────── */
+  /* ── LIGHT MODE ────────────────────────────────────────── */
   .light, :root:not(.dark) {
-    /* Base */
-    --background: 27 55% 90%;     /* #F5E6D3  off-white onion */
-    --foreground: 0 0% 0%;        /* #000000  primary text */
+    /* Base - Sophisticated Ivory/Milk foundation */
+    --background: 27 30% 98%;      /* #FDFBF9 - Clean ivory */
+    --foreground: 0 0% 12%;        /* #1E1E1E - Deep Charcoal */
 
-    /* Cards / surfaces — slightly lighter than bg */
-    --card: 27 55% 96%;
-    --card-foreground: 0 0% 0%;
-    --card-border: 0 0% 0% / 0.15; /* Substantial black outline for definition */
+    /* Cards - Soft elevation via neutral clay shifts */
+    --card: 27 20% 95%;            /* #F5F3F1 */
+    --card-foreground: 0 0% 12%;
+    --card-border: 0 0% 0% / 0.05;
 
     /* Popover */
-    --popover: 27 55% 97%;
-    --popover-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 12%;
 
-    /* Primary — lilac as the main brand accent in light mode */
-    --primary: 300 27% 56%;        /* medium lilac, #B07AB0 */
-    --primary-foreground: 0 0% 100%;
+    /* Primary - Inherit the Cinema Gold Branding */
+    --primary: 46 91% 45%;         /* Darker gold for light mode legibility */
+    --primary-foreground: 27 20% 98%;
 
     /* Secondary surface */
-    --secondary: 27 30% 84%;
-    --secondary-foreground: 0 0% 0%;
+    --secondary: 27 15% 92%;       /* Soft neutral clay */
+    --secondary-foreground: 0 0% 25%;
 
     /* Muted */
-    --muted: 27 30% 86%;
-    --muted-foreground: 0 0% 0%;  /* Forced to black for high contrast */
+    --muted: 27 15% 90%;
+    --muted-foreground: 0 0% 30%;  /* Darkened for visibility */
 
-    /* Accent (pop element) — lilac */
-    --accent: 300 27% 71%;         /* #C8A2C8 */
-    --accent-foreground: 300 20% 22%;
+    /* Accent - Clean Gold highlights */
+    --accent: 46 91% 53%;
+    --accent-foreground: 0 0% 12%;
 
     /* Destructive */
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
     /* Borders & inputs */
-    --border: 0 0% 0% / 0.2; /* Darker black outlines for visibility */
-    --input: 0 0% 0% / 0.2;
-    --ring: 300 27% 56%;
+    --border: 0 0% 0% / 0.08;
+    --input: 0 0% 0% / 0.08;
+    --ring: 46 91% 45%;
 
-    /* Sidebar */
-    --sidebar-background: 27 40% 93%;
+    /* Sidebar - Premium neutral depth */
+    --sidebar-background: 27 10% 94%;
     --sidebar-foreground: 0 0% 30%;
-    --sidebar-primary: 300 27% 56%;
+    --sidebar-primary: 46 91% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 27 30% 86%;
-    --sidebar-accent-foreground: 300 27% 40%;
-    --sidebar-border: 27 20% 80%;
-    --sidebar-ring: 300 27% 56%;
+    --sidebar-accent: 27 15% 90%;
+    --sidebar-accent-foreground: 46 91% 40%;
+    --sidebar-border: 27 10% 88%;
+    --sidebar-ring: 46 91% 45%;
+
+    /* Surface Depth (Light) */
+    --surface-low: 27 10% 94%;
+    --surface-high: 27 10% 90%;
+    --surface-bright: 27 10% 86%;
   }
 
   /* ── DARK MODE ───────────────────────────────────────── */
   .dark {
-    /* Base */
-    --background: 0 0% 6%;
-    --foreground: 27 20% 92%;      /* warm off-white instead of stark white */
+    /* Base - Deep Charcoal cinematic foundation */
+    --background: 0 0% 7%;         /* #131313 */
+    --foreground: 27 20% 90%;      /* #E5E2E1 warm ivory text */
 
-    /* Cards */
-    --card: 0 0% 9%;
-    --card-foreground: 27 20% 92%;
-    --card-border: 0 0% 14%;
+    /* Cards - Layered depth via tonal shifts */
+    --card: 0 0% 11%;              /* surface-low */
+    --card-foreground: 27 20% 90%;
+    --card-border: 0 0% 14% / 0.3;
 
-    /* Popover */
+    /* Popover - Elevated glass */
     --popover: 0 0% 9%;
-    --popover-foreground: 27 20% 92%;
+    --popover-foreground: 27 20% 90%;
 
-    /* Primary — lilac in dark mode */
-    --primary: 300 27% 71%;        /* #C8A2C8 */
-    --primary-foreground: 0 0% 0%;
+    /* Primary - Spotlight Gold */
+    --primary: 46 80% 63%;         /* #F2CA50 Gold */
+    --primary-foreground: 0 0% 10%;
 
     /* Secondary */
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 27 20% 92%;
+    --secondary: 0 0% 13%;
+    --secondary-foreground: 27 20% 90%;
 
     /* Muted */
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 52%;
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 55%;
 
     /* Accent */
-    --accent: 300 27% 71%;
-    --accent-foreground: 0 0% 0%;
+    --accent: 46 80% 63%;
+    --accent-foreground: 0 0% 10%;
 
     /* Destructive */
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 94%;
 
-    /* Borders & inputs */
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 300 27% 71%;
+    /* Borders & Inputs - "Ghost" Style */
+    --border: 0 0% 100% / 0.08;   /* Invisible boundaries rule */
+    --input: 0 0% 100% / 0.08;
+    --ring: 46 80% 63%;
 
-    /* Sidebar */
+    /* Sidebar - In-set dashboard feel */
     --sidebar-background: 0 0% 7%;
     --sidebar-foreground: 0 0% 58%;
-    --sidebar-primary: 300 27% 71%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 300 27% 71%;
-    --sidebar-border: 0 0% 12%;
-    --sidebar-ring: 300 27% 71%;
+    --sidebar-primary: 46 80% 63%;
+    --sidebar-primary-foreground: 0 0% 10%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 46 80% 63%;
+    --sidebar-border: 0 0% 14%;
+    --sidebar-ring: 46 80% 63%;
+
+    /* Surface Depth (Dark) */
+    --surface-low: 0 0% 11%;
+    --surface-high: 0 0% 16%;
+    --surface-bright: 0 0% 22%;
   }
 }
 
@@ -170,36 +178,37 @@
   }
 
   /* ── TYPOGRAPHY HIERARCHY ──────────────────────────────
-     Headings → Courier Prime, bold
-     Subheadings (h4–h6) → Courier Prime, medium (600)
+     Headings (h1–h3) → Epilogue, extra-bold
+     Subheadings (h4–h6) → Outfit, semibold
      Body → Inter, regular (400)
-     Labels / special sections → Courier Prime, normal
+     Labels → Outfit, medium
      Do NOT bold everything — structure comes from size + weight contrast.
   ─────────────────────────────────────────────────────── */
 
-  /* h1–h3: Courier Prime bold — primary section titles */
+  /* h1–h3: Cinematic Display (Epilogue) */
   h1, h2, h3 {
-    font-family: 'Courier Prime', monospace;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: normal;
+    font-family: 'Epilogue', sans-serif;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
   }
 
-  /* h4–h6: Courier Prime medium weight — sub-section titles */
+  /* h4–h6: Sophisticated Accent (Outfit) */
   h4, h5, h6 {
-    font-family: 'Courier Prime', monospace;
-    font-weight: 400;   /* Courier Prime has no true 600; bold vs regular */
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
     line-height: 1.3;
-    letter-spacing: normal;
+    letter-spacing: 0.02em;
   }
 
   /* Headings scale */
-  h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
-  h2 { font-size: clamp(1.375rem, 3vw, 2rem); }
-  h3 { font-size: clamp(1.125rem, 2.5vw, 1.5rem); }
-  h4 { font-size: 1.125rem; }
-  h5 { font-size: 1rem; }
-  h6 { font-size: 0.875rem; }
+  h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
+  h2 { font-size: clamp(1.5rem, 4vw, 2.75rem); }
+  h3 { font-size: clamp(1.25rem, 3vw, 2rem); }
+  h4 { font-size: 1.25rem; }
+  h5 { font-size: 1.125rem; }
+  h6 { font-size: 1rem; }
 
   /* Paragraphs — Inter, normal weight, generous line-height */
   p {
@@ -208,12 +217,13 @@
     line-height: 1.6;
   }
 
-  /* Labels — Courier Prime for character, not bold by default */
+  /* Labels — Outfit for character, not bold by default */
   label {
-    font-family: 'Courier Prime', monospace;
-    font-weight: 400;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
     font-size: 0.75rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
   /* Form inputs — Inter for readability */
@@ -248,70 +258,48 @@
 
   /* ── Font helpers ── */
   .font-ui      { font-family: 'Inter', sans-serif; }
-  .font-accent  { font-family: 'Courier Prime', monospace; }
+  .font-accent  { font-family: 'Outfit', sans-serif; }
 
-  /* ── Accent glow (lilac) ── */
-  .lilac-glow {
-    box-shadow: 0 8px 32px hsl(var(--lilac) / 0.2);
+  /* ── Cinema Glassmorphism ── */
+  .glass {
+    @apply bg-background/60 backdrop-blur-xl border border-foreground/5;
+  }
+  
+  .glass-card {
+    @apply bg-card/40 backdrop-blur-2xl border border-foreground/5;
   }
 
-  /* ── Legacy gold glow ── */
+  /* ── Cinematic Accent glow (Gold) ── */
   .gold-glow {
-    box-shadow: 0 8px 32px hsl(var(--gold-glow));
+    box-shadow: 0 12px 48px hsl(var(--gold) / 0.15);
   }
 
-  /* ── Scrollbars ── */
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  /* ── Ghost Border logic ── */
+  .ghost-border {
+    @apply border border-foreground/5 transition-all duration-300;
+  }
+  .ghost-border:hover {
+    @apply border-primary/40 bg-primary/5;
+    box-shadow: 0 0 20px hsl(var(--gold) / 0.1);
   }
 
-  .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--secondary));
-    border-radius: 10px;
+  /* ── Hover Effects ── */
+  .hover-cinematic {
+    @apply transition-all duration-500 ease-out;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
-  }
-
-  /* ── Safe-area insets (notch devices) ── */
-  .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
-  .pt-safe { padding-top: max(0px, env(safe-area-inset-top)); }
-
-  /* ── iOS momentum scroll ── */
-  .scrollable {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+  .hover-cinematic:hover {
+    @apply -translate-y-1 brightness-110;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   }
 
-  /* ── Micro-animations ── */
-  .hover-lift {
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-  }
-  .hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px hsl(var(--foreground) / 0.08);
-  }
-
-  .hover-scale {
-    transition: transform 0.15s ease;
-  }
-  .hover-scale:hover {
-    transform: scale(1.02);
-  }
-
-  /* ── Log / highlight text blocks (Courier Prime mono style) ── */
+  /* ── Log / highlight text blocks ── */
   .text-log,
   .text-highlight-block {
-    font-family: 'Courier Prime', monospace;
+    font-family: 'Outfit', sans-serif;
     font-size: 0.875rem;
     line-height: 1.55;
     background: hsl(var(--muted));
-    border-left: 3px solid hsl(var(--lilac));
+    border-left: 3px solid hsl(var(--gold));
     padding: 0.75rem 1rem;
     border-radius: 0 0.375rem 0.375rem 0;
   }
@@ -324,7 +312,7 @@
   }
 
   .form-field label {
-    font-family: 'Courier Prime', monospace;
+    font-family: 'Outfit', sans-serif;
     font-size: 0.72rem;
     font-weight: 400;
     letter-spacing: 0.06em;

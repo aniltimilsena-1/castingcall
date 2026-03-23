@@ -51,32 +51,32 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 
       {/* Drawer — 3-layer: sticky header | scrollable content | sticky footer */}
       <div
-        className={`fixed top-0 right-0 h-[100dvh] w-[300px] max-w-full bg-card border-l border-border z-[300] flex flex-col transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)] ${open ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 h-[100dvh] w-[320px] max-w-[90vw] glass z-[300] flex flex-col transition-transform duration-500 ease-[cubic-bezier(.4,0,.2,1)] shadow-[-20px_0_40px_rgba(0,0,0,0.5)] ${open ? "translate-x-0" : "translate-x-full"
           }`}
       >
         {/* ── Sticky Header ── */}
-        <div className="flex-shrink-0 px-6 pt-8 pb-5 border-b border-border flex items-center gap-4 relative">
+        <div className="flex-shrink-0 px-8 pt-10 pb-6 border-b border-foreground/5 flex items-center gap-5 relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-muted-foreground hover:text-primary transition-colors"
+            className="absolute top-5 right-5 text-muted-foreground/40 hover:text-primary transition-all hover:scale-110"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6 outline-none" />
           </button>
 
-          <div className="w-[52px] h-[52px] rounded-full bg-secondary border-2 border-primary flex items-center justify-center font-display text-xl text-primary flex-shrink-0 overflow-hidden">
+          <div className="w-16 h-16 rounded-2xl bg-foreground/5 border border-foreground/10 flex items-center justify-center font-display text-2xl text-primary flex-shrink-0 overflow-hidden shadow-2xl">
             {loading ? (
-              <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
             ) : profile?.photo_url ? (
               <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              initials
+              <span className="text-primary/40 italic">{initials}</span>
             )}
           </div>
           <div className="min-w-0">
-            <div className="font-normal text-sm text-foreground truncate">
+            <div className="font-display text-lg text-foreground font-bold leading-tight truncate">
               {loading ? "Syncing..." : (profile?.name || (user ? "Account" : "Guest"))}
             </div>
-            <div className="text-xs text-muted-foreground mt-0.5 truncate">
+            <div className="text-[0.6rem] text-primary font-bold uppercase tracking-[0.2em] mt-1 truncate">
               {loading ? "Please wait" : (profile?.role || (user ? "Member" : "Not signed in"))}
             </div>
           </div>
@@ -137,8 +137,8 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="px-6 pt-4 pb-1">
-      <div className="text-[0.65rem] font-normal tracking-[1.6px] uppercase text-muted-foreground/40 mb-1">
+    <div className="px-8 pt-6 pb-2">
+      <div className="text-[0.6rem] font-black tracking-[0.3em] uppercase text-primary/40 mb-3 ml-2">
         {label}
       </div>
       {children}
@@ -150,7 +150,7 @@ function Item({ children, onClick }: { children: React.ReactNode; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="block w-full text-left text-muted-foreground font-body text-sm font-medium px-3 py-2.5 rounded-lg hover:bg-secondary hover:text-primary transition-colors"
+      className="block w-full text-left text-muted-foreground/80 font-accent text-[0.7rem] font-semibold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-white/5 hover:text-primary transition-all border border-transparent hover:border-white/5 ghost-border mb-1"
     >
       {children}
     </button>

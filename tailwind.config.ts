@@ -18,9 +18,10 @@ export default {
         // Primary UI font — readability, forms, navigation, body copy
         body: ['"Inter"', 'sans-serif'],
         sans: ['"Inter"', 'sans-serif'],
-        // Accent / style font — headings, labels, special sections only
-        display: ['"Courier Prime"', 'monospace'],
-        accent: ['"Courier Prime"', 'monospace'],
+        // Premium Display font — high-impact headlines
+        display: ['"Epilogue"', 'sans-serif'],
+        // Cinematic Accent font — labels, badges, and smaller headers
+        accent: ['"Outfit"', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

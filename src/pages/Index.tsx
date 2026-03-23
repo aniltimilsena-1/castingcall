@@ -333,7 +333,7 @@ const Index = () => {
       </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
-      <nav className="md:hidden fixed bottom-4 inset-x-4 z-[150] bg-card/95 backdrop-blur-xl border border-border shadow-[0_8px_32px_rgba(0,0,0,0.12)] flex items-stretch h-16 rounded-2xl overflow-hidden pointer-events-auto" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
         {([
           { id: "home", label: "Home", icon: Home },
           { id: "feed", label: "Feed", icon: Sparkles },
@@ -343,13 +343,13 @@ const Index = () => {
           <button
             key={id}
             onClick={() => navigate(id)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground"
+            className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/50"
               }`}
           >
-            <div className={`relative flex items-center justify-center ${page === id ? "after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full" : ""}`}>
-              <Icon size={20} strokeWidth={page === id ? 2.5 : 1.5} className="transition-all" />
+            <div className={`relative flex items-center justify-center ${page === id ? "after:content-[''] after:absolute after:-bottom-2 after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:gold-glow" : ""}`}>
+              <Icon size={24} strokeWidth={page === id ? 2.5 : 1.5} className="transition-all" />
             </div>
-            <span className={`text-[0.6rem] transition-all font-medium uppercase tracking-[0.15em] ${page === id ? "opacity-100 scale-105" : "opacity-60"}`}>{label}</span>
+            <span className={`text-[0.55rem] transition-all font-black uppercase tracking-[0.2em] ${page === id ? "opacity-100 scale-105" : "opacity-40"}`}>{label}</span>
           </button>
         ))}
       </nav>

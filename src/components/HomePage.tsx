@@ -80,7 +80,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         {/* Background Layer */}
         <motion.div
           style={{ scale: heroScale, y: heroY, opacity: heroOpacity }}
-          className="absolute inset-0 z-0"
+          className="absolute inset-0 z-0 bg-black"
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/80 z-10" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40 z-10" />
@@ -110,10 +110,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-display text-[clamp(1.8rem,4.5vw,3.5rem)] leading-[1.05] tracking-tighter text-white mb-6 uppercase"
+            className="font-display text-[clamp(2.5rem,6vw,5rem)] leading-[0.9] tracking-[-0.04em] text-white mb-8 uppercase font-black"
           >
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-primary to-amber-500 italic font-normal">Casting</span> Opportunities <br />
-            <span className="text-white/80">for Actors & Creators</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-primary to-amber-500 italic font-medium">Casting</span> <br />
+            <span className="text-white">for Actors & Creators</span>
           </motion.h1>
 
           <motion.p
@@ -133,14 +133,14 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           >
             <button
               onClick={() => onCategoryClick("all")}
-              className="group relative px-10 py-4 bg-primary text-primary-foreground rounded-full font-display text-sm tracking-widest uppercase overflow-hidden transition-all hover:scale-105 active:scale-95"
+              className="group relative px-12 py-5 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95"
             >
-              <span className="relative z-10 flex items-center gap-2 font-bold">Browse Auditions <ChevronRight size={16} /></span>
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="relative z-10 flex items-center gap-2">Browse Auditions <ChevronRight size={18} /></span>
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </button>
             <button
               onClick={() => onCategoryClick("post")}
-              className="px-10 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/20 backdrop-blur-md rounded-full font-display text-sm tracking-widest uppercase transition-all hover:border-primary/50 shadow-xl"
+              className="px-12 py-5 bg-foreground/10 hover:bg-foreground/20 text-foreground border border-foreground/10 glass rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase transition-all duration-500 hover:border-primary/40 shadow-2xl hover:scale-105"
             >
               Post a Casting Call
             </button>
@@ -153,12 +153,12 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             transition={{ duration: 0.7, delay: 0.85 }}
             className="flex flex-wrap items-center justify-center gap-2 mt-8"
           >
-            <span className="text-[0.6rem] uppercase tracking-[0.25em] text-white/40 mr-1">Browse by role:</span>
+            <span className="text-[0.6rem] uppercase tracking-[0.25em] text-muted-foreground mr-1">Browse by role:</span>
             {["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"].map((role) => (
               <button
                 key={role}
                 onClick={() => onCategoryClick(role)}
-                className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/40 hover:bg-primary/15 hover:border-primary/40 hover:text-white text-[0.65rem] uppercase tracking-wider transition-all duration-200 backdrop-blur-sm"
+                className="px-5 py-2.5 rounded-full bg-foreground/5 border border-foreground/10 text-muted-foreground hover:bg-primary/15 hover:border-primary/40 hover:text-foreground text-[0.7rem] sm:text-[0.65rem] font-bold uppercase tracking-wider transition-all duration-200 backdrop-blur-sm shadow-xl"
               >
                 {role}
               </button>
@@ -177,7 +177,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── STATS SECTION ── */}
-      <section className="py-20 px-8 max-w-7xl mx-auto border-y border-border relative z-30">
+      <section className="py-12 sm:py-24 px-8 max-w-7xl mx-auto border-y border-border relative z-30">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           {[
             { label: "Talents Registered", value: statsData.talents },
@@ -201,11 +201,11 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── CATEGORIES (GLASSMORPHISM) ── */}
-      <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
-        <div className="text-center mb-20 space-y-4">
-          <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Select Your Pillar</h2>
-          <h3 className="text-4xl md:text-5xl font-display text-primary italic">Elite Talent Disciplines</h3>
-          <div className="w-20 h-[2px] bg-primary/20 mx-auto rounded-full" />
+      <section className="py-32 md:py-48 px-6 max-w-7xl mx-auto relative z-30">
+        <div className="text-center mb-24 space-y-6">
+          <h2 className="text-[0.75rem] uppercase tracking-[0.5em] text-primary/60 font-black">Select Your Discipline</h2>
+          <h3 className="text-5xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-primary font-medium">Elite</span></h3>
+          <div className="w-16 h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent mx-auto rounded-full" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -220,18 +220,18 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             >
               <div
                 onClick={() => onCategoryClick(cat.role)}
-                className="relative z-10 h-72 bg-card border border-border rounded-[2.5rem] p-10 flex flex-col items-center justify-between cursor-pointer backdrop-blur-sm hover:border-primary transition-all duration-500 overflow-hidden"
+                className="relative z-10 h-80 bg-surface-low/60 border border-foreground/5 glass-card rounded-[3rem] p-12 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
               >
                 {/* Decorative background element */}
-                <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/5 blur-[80px] rounded-full group-hover:bg-primary/10 transition-colors" />
+                <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
 
-                <div className="w-16 h-16 rounded-3xl bg-secondary border border-border flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 group-hover:border-primary/20 transition-all duration-500">
-                  <cat.icon className="w-8 h-8 text-primary/80 group-hover:text-primary" strokeWidth={1.5} />
+                <div className="w-20 h-20 rounded-[2rem] bg-foreground/5 border border-foreground/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 group-hover:border-primary/40 transition-all duration-700">
+                  <cat.icon className="w-9 h-9 text-primary/60 group-hover:text-primary" strokeWidth={1} />
                 </div>
 
-                <div className="text-center space-y-2">
-                  <span className="block font-display text-2xl text-foreground tracking-wide">{cat.role}</span>
-                  <span className="block text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground group-hover:text-primary transition-colors">Join the Ranks <ChevronRight className="inline-block w-3 h-3 ml-1" /></span>
+                <div className="text-center space-y-3">
+                  <span className="block font-display text-3xl text-foreground tracking-tight uppercase font-bold">{cat.role}</span>
+                  <span className="block text-[0.6rem] uppercase tracking-[0.25em] text-muted-foreground group-hover:text-primary transition-colors font-bold">Enter The Stage <ChevronRight className="inline-block w-3 h-3 ml-1" /></span>
                 </div>
               </div>
             </motion.div>
