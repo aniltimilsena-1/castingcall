@@ -103,8 +103,8 @@ export default function Navbar({
 
         {/* Center Links - Horizontal Scroll on Tablet/Mobile, Flex on Desktop */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 mask-fade-right lg:mask-none group/nav">
-          <button onClick={() => onNavigate("home")} className={navItemClass("home")}>
-            <Home size={14} /> Home
+          <button onClick={() => onNavigate("home")} className={navItemClass("home")} title="Home">
+            <Home size={14} />
           </button>
           <button onClick={() => onNavigate("search", { searchType: "projects" })} className={navItemClass("search", "projects")}>
             <Briefcase size={14} /> Casting Calls

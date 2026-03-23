@@ -3,6 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
+import { Sun, Moon, Laptop } from "lucide-react";
 
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
 
@@ -15,6 +17,7 @@ export default function SettingsPage() {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     if (profile) {
@@ -164,7 +167,36 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mt-6 space-y-6">
+        <h3 className="font-accent text-[0.7rem] tracking-[1.5px] uppercase text-muted-foreground mb-2">Display Preferences</h3>
+        <div className="grid grid-cols-3 gap-4">
+          <button
+            onClick={() => setTheme("light")}
+            className={`flex flex-col items-center justify-center gap-3 p-5 rounded-xl border-[1.5px] transition-all ${theme === 'light' ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10' : 'bg-background border-border text-muted-foreground hover:border-primary/50'}`}
+          >
+            <Sun size={20} />
+            <span className="text-[0.65rem] font-bold tracking-widest uppercase">Light</span>
+          </button>
+          
+          <button
+            onClick={() => setTheme("dark")}
+            className={`flex flex-col items-center justify-center gap-3 p-5 rounded-xl border-[1.5px] transition-all ${theme === 'dark' ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10' : 'bg-background border-border text-muted-foreground hover:border-primary/50'}`}
+          >
+            <Moon size={20} />
+            <span className="text-[0.65rem] font-bold tracking-widest uppercase">Dark</span>
+          </button>
+
+          <button
+            onClick={() => setTheme("system")}
+            className={`flex flex-col items-center justify-center gap-3 p-5 rounded-xl border-[1.5px] transition-all ${theme === 'system' ? 'bg-primary/5 border-primary text-primary shadow-lg shadow-primary/10' : 'bg-background border-border text-muted-foreground hover:border-primary/50'}`}
+          >
+            <Laptop size={20} />
+            <span className="text-[0.65rem] font-bold tracking-widest uppercase">Auto</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mt-6 space-y-4">
         <h3 className="font-accent text-[0.7rem] tracking-[1.5px] uppercase text-muted-foreground mb-2">Change Password</h3>
         {!isRecovering && (
           <InputField label="CURRENT PASSWORD" type="password" value={oldPassword} onChange={setOldPassword} placeholder="Enter your old password" />

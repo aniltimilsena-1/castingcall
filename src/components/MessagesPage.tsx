@@ -561,10 +561,21 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   };
 
   return (
-    <div className="max-w-[1250px] mx-auto px-4 py-4 md:py-6 h-[calc(100dvh-116px)] sm:h-[calc(100dvh-64px)] flex gap-6">
-      <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[350px] bg-[#1c1c1c] border border-border/20 rounded-3xl overflow-hidden flex-col shadow-xl`}>
-        <div className="p-4 space-y-4">
-          <h1 className="text-2xl text-white font-normal">Message Hub</h1>
+    <div className="w-screen h-[100dvh] flex bg-[#1c1c1c] overflow-hidden fixed inset-0 z-[200]">
+      <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[380px] bg-[#1c1c1c] border-r border-border/10 flex-col shadow-2xl relative z-10`}>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl text-white font-normal flex items-center gap-3">
+              <button 
+                onClick={() => onNavigate?.("home")}
+                className="p-2 -ml-2 text-muted-foreground hover:text-white transition-colors"
+                title="Back to Home"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              Hub
+            </h1>
+          </div>
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 w-4 h-4" />
             <input 
@@ -620,7 +631,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         )}
       </div>
 
-      <div className={`flex-1 flex flex-col bg-[#1c1c1c] border border-border/20 rounded-3xl overflow-hidden shadow-xl ${!selectedPartner ? "hidden md:flex items-center justify-center" : "flex"}`}>
+      <div className={`flex-1 flex flex-col bg-[#1c1c1c] overflow-hidden ${!selectedPartner ? "hidden md:flex items-center justify-center" : "flex"}`}>
         {!selectedPartner ? (
           <div className="text-center p-8 space-y-4">
             <MessageSquare size={64} className="text-white/10 mx-auto" />

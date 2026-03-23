@@ -220,18 +220,18 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             >
               <div
                 onClick={() => onCategoryClick(cat.role)}
-                className="relative z-10 h-64 bg-surface-low/60 border border-foreground/5 glass-card rounded-[2.5rem] p-8 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
+                className="relative z-10 h-64 bg-surface-low/60 border border-foreground/5 glass-card rounded-[2.5rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
               >
                 {/* Decorative background element */}
                 <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
 
-                <div className="w-20 h-20 rounded-[2rem] bg-foreground/5 border border-foreground/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 group-hover:border-primary/40 transition-all duration-700">
-                  <cat.icon className="w-9 h-9 text-primary/60 group-hover:text-primary" strokeWidth={1} />
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[2rem] bg-foreground/5 border border-foreground/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 group-hover:border-primary/40 transition-all duration-700">
+                  <cat.icon className="w-7 h-7 md:w-9 md:h-9 text-primary/60 group-hover:text-primary" strokeWidth={1} />
                 </div>
 
-                <div className="text-center space-y-3">
-                  <span className="block font-display text-3xl text-foreground tracking-tight uppercase font-bold">{cat.role}</span>
-                  <span className="block text-[0.6rem] uppercase tracking-[0.25em] text-muted-foreground group-hover:text-primary transition-colors font-bold">Enter The Stage <ChevronRight className="inline-block w-3 h-3 ml-1" /></span>
+                <div className="text-center space-y-1 md:space-y-3">
+                  <span className="block font-display text-lg md:text-3xl text-foreground tracking-tight uppercase font-bold truncate max-w-[140px] md:max-w-none">{cat.role}</span>
+                  <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-muted-foreground group-hover:text-primary transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
                 </div>
               </div>
             </motion.div>
@@ -403,7 +403,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             <h3 className="text-4xl md:text-5xl font-display text-primary">Live Casting Calls</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
             {recentProjects.map((proj, i) => (
               <motion.div
                 key={proj.id}
@@ -412,35 +412,35 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => onCategoryClick(proj.role_category || 'Actor')}
-                className="group relative h-full bg-card border border-border rounded-[1.8rem] p-7 hover:border-primary transition-all cursor-pointer flex flex-col justify-between"
+                className="group relative h-full bg-card border border-border rounded-[1.2rem] p-4 md:p-7 hover:border-primary transition-all cursor-pointer flex flex-col justify-between"
               >
-                <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary/50 mb-8">
+                <div className="relative aspect-[4/3] md:aspect-video rounded-xl overflow-hidden bg-secondary/50 mb-4 md:mb-8">
                   {proj.thumbnail_url ? (
                     <img src={proj.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-primary/10">
-                      <Layout className="w-12 h-12" />
+                      <Layout className="w-10 h-10" />
                     </div>
                   )}
-                  <div className="absolute top-4 left-4">
-                    <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full text-[0.55rem] font-bold tracking-[0.2em] text-white/50 border border-white/5">
+                  <div className="absolute top-2 left-2 md:top-4 md:left-4">
+                    <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-full text-[0.45rem] md:text-[0.55rem] font-bold tracking-[0.15em] text-white/50 border border-white/5">
                       {proj.location || 'Remote'}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-display text-2xl text-primary mb-4 group-hover:text-primary transition-all duration-300">{proj.title}</h4>
-                  <p className="text-xs text-muted-foreground mb-10 font-light italic leading-relaxed">Looking for: {proj.role_category}</p>
+                  <h4 className="font-display text-sm md:text-2xl text-primary mb-2 md:mb-4 group-hover:text-primary transition-all duration-300 line-clamp-1">{proj.title}</h4>
+                  <p className="text-[0.6rem] md:text-xs text-muted-foreground mb-4 md:mb-10 font-light italic leading-relaxed">Looking for: {proj.role_category}</p>
                 </div>
 
                 <div className="flex items-center justify-between mt-auto">
                   <div className="flex flex-col">
-                    <span className="text-[0.5rem] uppercase tracking-widest text-muted-foreground/50">Compensation</span>
-                    <span className="text-[0.7rem] text-amber-500 font-bold tracking-widest uppercase">Competitive</span>
+                    <span className="text-[0.4rem] md:text-[0.5rem] uppercase tracking-widest text-muted-foreground/50">Comp.</span>
+                    <span className="text-[0.5rem] md:text-[0.7rem] text-amber-500 font-bold tracking-widest uppercase">Competitive</span>
                   </div>
-                  <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
-                    <ChevronRight size={18} />
+                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
+                    <ChevronRight size={14} className="md:w-[18px] md:h-[18px]" />
                   </div>
                 </div>
               </motion.div>

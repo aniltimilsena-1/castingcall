@@ -285,18 +285,20 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar
-        onSearch={handleSearch}
-        onAuthClick={handleAuthClick}
-        onMenuClick={() => setDrawerOpen(true)}
-        onLogoClick={() => setPage("home")}
-        onPremiumClick={() => navigate("premium")}
-        onNotificationClick={() => navigate("notifications")}
-        onMessagesClick={() => navigate("messages")}
-        onNavigate={navigate}
-        activePage={page}
-        searchType={searchInitialType}
-      />
+      {page !== 'messages' && (
+        <Navbar
+          onSearch={handleSearch}
+          onAuthClick={handleAuthClick}
+          onMenuClick={() => setDrawerOpen(true)}
+          onLogoClick={() => setPage("home")}
+          onPremiumClick={() => navigate("premium")}
+          onNotificationClick={() => navigate("notifications")}
+          onMessagesClick={() => navigate("messages")}
+          onNavigate={navigate}
+          activePage={page}
+          searchType={searchInitialType}
+        />
+      )}
 
       <AppDrawer
         open={drawerOpen}
@@ -304,7 +306,7 @@ const Index = () => {
         onNavigate={navigate}
       />
 
-      <main className={`flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} pb-16 md:pb-0`}>
+      <main className={`flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' ? 'pb-0' : 'pb-16 md:pb-0'}`}>
         {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
         {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
@@ -333,26 +335,28 @@ const Index = () => {
       </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
-      <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
-        {([
-          { id: "home", label: "Home", icon: Home },
-          { id: "feed", label: "Feed", icon: Sparkles },
-          { id: "search", label: "Explore", icon: Search },
-          { id: "profile", label: "Profile", icon: User },
-        ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => navigate(id)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/70"
-              }`}
-          >
-            <div className={`relative flex items-center justify-center ${page === id ? "after:content-[''] after:absolute after:-bottom-2 after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:gold-glow" : ""}`}>
-              <Icon size={24} strokeWidth={page === id ? 2.5 : 1.5} className="transition-all" />
-            </div>
-            <span className={`text-[0.55rem] transition-all font-black uppercase tracking-[0.2em] ${page === id ? "opacity-100 scale-105" : ""}`}>{label}</span>
-          </button>
-        ))}
-      </nav>
+      {page !== 'messages' && (
+        <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+          {([
+            { id: "home", label: "Home", icon: Home },
+            { id: "feed", label: "Feed", icon: Sparkles },
+            { id: "search", label: "Explore", icon: Search },
+            { id: "profile", label: "Profile", icon: User },
+          ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => navigate(id)}
+              className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/70"
+                }`}
+            >
+              <div className={`relative flex items-center justify-center ${page === id ? "after:content-[''] after:absolute after:-bottom-2 after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:gold-glow" : ""}`}>
+                <Icon size={24} strokeWidth={page === id ? 2.5 : 1.5} className="transition-all" />
+              </div>
+              <span className={`text-[0.55rem] transition-all font-black uppercase tracking-[0.2em] ${page === id ? "opacity-100 scale-105" : ""}`}>{label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
 
       <ProfileDetailDialog
         profile={selectedProfileForDialog}
