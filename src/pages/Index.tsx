@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { profileService } from "@/services/profileService";
@@ -45,6 +45,8 @@ const Index = () => {
   const [activeMessagePartnerId, setActiveMessagePartnerId] = useState<string | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [projectFormInitiallyOpen, setProjectFormInitiallyOpen] = useState(false);
+  const [homeRefreshKey, setHomeRefreshKey] = useState(0);
+  const lastHomeClickRef = useRef<number>(0);
 
   useEffect(() => {
     if (!user) return;
@@ -307,7 +309,7 @@ const Index = () => {
       />
 
       <main className={`flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' ? 'pb-0' : 'pb-16 md:pb-0'}`}>
-        {page === "home" && <HomePage onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
+        {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
         {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
         {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
         {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
@@ -345,7 +347,17 @@ const Index = () => {
           ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => navigate(id)}
+              onClick={() => {
+                if (id === 'home' && page === 'home') {
+                  const now = Date.now();
+                  if (now - lastHomeClickRef.current < 300) {
+                    window.location.reload();
+                    return;
+                  }
+                  lastHomeClickRef.current = now;
+                }
+                navigate(id);
+              }}
               className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/70"
                 }`}
             >

@@ -191,51 +191,29 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       </div>
 
       {searchType === 'talents' && (
-        <div className="mb-12 space-y-8 p-8 rounded-[2.5rem] bg-gradient-to-br from-card to-secondary/20 border border-border shadow-2xl overflow-hidden relative group">
+        <div className="mb-8 md:mb-12 space-y-4 md:space-y-8 p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-card to-secondary/20 border border-border shadow-2xl overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
             <Sparkles size={120} className="text-primary" />
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
-            <div className="flex items-center gap-6">
+          </div>          <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 relative z-10">
+            <div className="flex items-center gap-4 md:gap-6">
               <h3 
-                className="font-display text-2xl text-primary flex items-center gap-3 cursor-pointer hover:text-primary/80 transition-all active:scale-95"
+                className="font-display text-lg md:text-2xl text-primary flex items-center gap-2 md:gap-3 cursor-pointer hover:text-primary/80 transition-all active:scale-95"
                 onClick={() => setShowFilters(!showFilters)}
               >
-                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 group-hover:border-primary/40 transition-all">
-                  <SlidersHorizontal className="text-primary" size={20} />
+                <div className="p-1.5 md:p-2 rounded-lg bg-primary/10 border border-primary/20 group-hover:border-primary/40 transition-all">
+                  <SlidersHorizontal className="text-primary w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 Smart Filters
               </h3>
-              <div className="flex items-center gap-3 bg-secondary/50 px-4 py-2 rounded-full border border-border">
-                <TrendingUp size={16} className={isTrending ? "text-primary" : "text-muted-foreground"} />
-                <span className="text-[0.65rem] font-normal uppercase tracking-widest text-muted-foreground">Trending</span>
+              <div className="flex items-center gap-2 md:gap-3 bg-secondary/50 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-border">
+                <TrendingUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isTrending ? "text-primary" : "text-muted-foreground"}`} />
+                <span className="text-[0.5rem] md:text-[0.65rem] font-normal uppercase tracking-widest text-muted-foreground">Trending</span>
                 <Switch
                   checked={isTrending}
                   onCheckedChange={setIsTrending}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-primary h-5 w-9 md:h-6 md:w-11"
                 />
               </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                <input
-                  type="text"
-                  placeholder="Looks like..."
-                  value={looksLikeQuery}
-                  onChange={(e) => setLooksLikeQuery(e.target.value)}
-                  className="bg-secondary/50 border border-border rounded-full pl-12 pr-6 py-2.5 text-sm outline-none focus:border-primary/50 transition-all w-48 md:w-64 text-foreground"
-                />
-              </div>
-              <button
-                onClick={() => setVisualSearchMode(!visualSearchMode)}
-                className={`p-2.5 rounded-full border border-border transition-all ${visualSearchMode ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'bg-secondary/50 text-muted-foreground hover:text-foreground'}`}
-                title="AI Visual Search"
-              >
-                <Sparkles size={20} />
-              </button>
             </div>
           </div>
 
@@ -402,34 +380,34 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="group relative flex flex-col md:flex-row md:items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-4 md:px-6 py-4 md:py-5 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5"
+                className="group relative flex flex-row items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-3 md:px-6 py-3 md:py-5 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5"
               >
-                <div className="flex flex-col items-center gap-3 flex-shrink-0 relative">
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
+                <div className="flex flex-col items-center flex-shrink-0 relative">
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-base md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
                     {p.photo_url ? (
                       <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
                     ) : (
                       (p.name || "U")[0].toUpperCase()
                     )}
                     {onlineUsers.has(p.user_id) && (
-                      <div className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-border rounded-full z-10 shadow-glow shadow-green-500/50" title="Online" />
+                      <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-border rounded-full z-10 shadow-glow shadow-green-500/50" title="Online" />
                     )}
                   </div>
                   {(p.plan === "pro" || p.role === "Admin") && (
-                    <div className="absolute -bottom-1.5 bg-amber-500 text-black text-[0.5rem] font-bold px-2.5 py-0.5 rounded-md shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>
+                    <div className="absolute -top-1.5 -left-1 md:bottom-[-6px] md:top-auto md:left-auto bg-amber-500 text-black text-[0.4rem] md:text-[0.5rem] font-bold px-1.5 md:px-2.5 py-0.5 rounded shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="text-base md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
+                  <div className="flex items-center gap-2 md:gap-3 mb-0.5 md:mb-2 text-left">
+                    <div className="text-sm md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
                       {p.name || "Unknown"}
-                      {(p.plan === "pro" || p.role === "Admin") && <Crown size={14} className="text-amber-500 fill-amber-500/10" />}
-                      {p.is_verified && <CheckCircle2 size={16} className="text-blue-500 fill-blue-500/10" />}
+                      {(p.plan === "pro" || p.role === "Admin") && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
+                      {p.is_verified && <CheckCircle2 size={14} className="text-blue-500 fill-blue-500/10" />}
                     </div>
                   </div>
-                  <div className="text-primary font-normal text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>
-                  <div className="flex flex-wrap gap-4 md:gap-8 mb-4">
+                  <div className="text-primary font-normal text-[0.6rem] md:text-xs mb-1 md:mb-3 tracking-wide uppercase opacity-80 text-left">{p.role || "Member"}</div>
+                  <div className="hidden md:flex flex-wrap gap-4 md:gap-8 mb-4">
                     {p.location && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
                     {p.trending_score !== undefined && p.trending_score > 80 && (
@@ -438,7 +416,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="hidden md:flex flex-wrap gap-2">
                     {p.mood_tags?.slice(0, 2).map((m: string) => (
                       <span key={m} className="text-[0.6rem] bg-secondary text-secondary-foreground/80 px-2 py-0.5 rounded-md border border-border uppercase tracking-tighter font-medium">{m}</span>
                     ))}
@@ -446,21 +424,21 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                       <span key={s} className="text-[0.6rem] bg-primary/20 text-primary px-2 py-0.5 rounded-md border border-primary/30 uppercase tracking-tighter font-bold">{s}</span>
                     ))}
                   </div>
-                  {p.bio && <p className="text-sm text-foreground/60 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
+                  {p.bio && <p className="hidden md:block text-sm text-foreground/60 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-auto mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => onProfileClick(p)}
-                    className="bg-primary text-primary-foreground px-4 md:px-6 py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
+                    className="bg-primary text-primary-foreground px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[0.6rem] md:text-[0.65rem] font-normal uppercase tracking-[1px] md:tracking-[2px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
                   >
-                    View Profile
+                    View
                   </button>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="p-2.5 rounded-xl border bg-secondary/40 border-border text-muted-foreground hover:border-primary/50 transition-all outline-none">
-                        <MoreVertical size={18} />
+                      <button className="p-2 md:p-2.5 rounded-lg md:rounded-xl border bg-secondary/40 border-border text-muted-foreground hover:border-primary/50 transition-all outline-none">
+                        <MoreVertical size={16} />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 bg-card border-border p-1.5 shadow-2xl z-[50]">

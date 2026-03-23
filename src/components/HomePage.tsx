@@ -177,7 +177,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── STATS SECTION ── */}
-      <section className="py-12 sm:py-24 px-8 max-w-7xl mx-auto border-y border-border relative z-30">
+      <section className="py-8 sm:py-12 px-8 max-w-7xl mx-auto border-y border-border relative z-30">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           {[
             { label: "Talents Registered", value: statsData.talents },
@@ -201,7 +201,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── CATEGORIES (GLASSMORPHISM) ── */}
-      <section className="py-12 md:py-48 px-6 max-w-7xl mx-auto relative z-30">
+      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto relative z-30">
         <div className="text-center mb-10 md:mb-24 space-y-4 md:space-y-6">
           <h2 className="text-[0.65rem] md:text-[0.75rem] uppercase tracking-[0.5em] text-primary font-black">Select Your Discipline</h2>
           <h3 className="text-4xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-primary font-medium">Elite</span></h3>
@@ -229,8 +229,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   <cat.icon className="w-7 h-7 md:w-9 md:h-9 text-primary/60 group-hover:text-primary" strokeWidth={1} />
                 </div>
 
-                <div className="text-center space-y-1 md:space-y-3">
-                  <span className="block font-display text-lg md:text-3xl text-foreground tracking-tight uppercase font-bold truncate max-w-[140px] md:max-w-none">{cat.role}</span>
+                <div className="text-center space-y-1 md:space-y-2 w-full px-2">
+                  <span className="block font-display text-[0.9rem] md:text-xl lg:text-2xl text-foreground tracking-tight uppercase font-bold truncate w-full">{cat.role}</span>
                   <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-muted-foreground group-hover:text-primary transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
                 </div>
               </div>
