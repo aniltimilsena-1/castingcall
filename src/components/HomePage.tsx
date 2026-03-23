@@ -208,7 +208,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           <div className="w-16 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           {categories.map((cat, i) => (
             <motion.div
               key={cat.role}
@@ -220,7 +220,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             >
               <div
                 onClick={() => onCategoryClick(cat.role)}
-                className="relative z-10 h-80 bg-surface-low/60 border border-foreground/5 glass-card rounded-[3rem] p-12 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
+                className="relative z-10 h-64 bg-surface-low/60 border border-foreground/5 glass-card rounded-[2.5rem] p-8 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
               >
                 {/* Decorative background element */}
                 <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
@@ -329,7 +329,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             <button className="text-xs uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary border-b border-border pb-2 transition-colors">View Directory</button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
             {featured.map((p, i) => {
               const isElite = p.plan === 'pro' || p.role === 'Admin';
               return (
@@ -340,7 +340,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                   onClick={() => onProfileClick(p)}
-                  className={`group relative bg-card border rounded-[2rem] p-8 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
+                  className={`group relative bg-card border rounded-[1.8rem] p-6 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
                     ? "border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] hover:border-amber-500/60"
                     : "border-border hover:border-primary/20"
                     }`}
@@ -356,7 +356,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                     </div>
                   )}
 
-                  <div className="relative w-28 h-28 rounded-full mb-6 p-1 bg-gradient-to-tr from-primary/10 to-transparent group-hover:from-primary/40">
+                  <div className="relative w-24 h-24 rounded-full mb-5 p-1 bg-gradient-to-tr from-primary/10 to-transparent group-hover:from-primary/40">
                     <div className={`w-full h-full rounded-full bg-secondary overflow-hidden shadow-2xl relative border-2 border-border`}>
                       {p.photo_url ? (
                         <img src={p.photo_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
@@ -403,7 +403,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             <h3 className="text-4xl md:text-5xl font-display text-primary">Live Casting Calls</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {recentProjects.map((proj, i) => (
               <motion.div
                 key={proj.id}
@@ -412,7 +412,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => onCategoryClick(proj.role_category || 'Actor')}
-                className="group relative h-full bg-card border border-border rounded-[2rem] p-10 hover:border-primary transition-all cursor-pointer flex flex-col justify-between"
+                className="group relative h-full bg-card border border-border rounded-[1.8rem] p-7 hover:border-primary transition-all cursor-pointer flex flex-col justify-between"
               >
                 <div className="relative aspect-video rounded-2xl overflow-hidden bg-secondary/50 mb-8">
                   {proj.thumbnail_url ? (
@@ -485,8 +485,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── FOOTER ── */}
       <footer className="mt-20 border-t border-border py-24 relative z-30 bg-secondary/50">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-left">
-          <div className="md:col-span-2 space-y-8">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 text-left">
+          <div className="col-span-2 md:col-span-2 space-y-8 text-center md:text-left mb-8 md:mb-0">
             <div className="flex justify-center md:justify-start">
               <h2 className="font-display text-3xl tracking-widest text-primary hover:text-primary/80 transition-all cursor-pointer uppercase italic">CaastingCall</h2>
             </div>
@@ -523,7 +523,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             <a href="#" className="hover:text-foreground transition-colors">Twitter (X)</a>
             <a href="#" className="hover:text-foreground transition-colors">YouTube</a>
           </div>
-          <p className="text-[0.6rem] text-muted-foreground/20 uppercase tracking-[0.3em]">© 2026 CaastingCall. All Rights Reserved.</p>
+          <p className="text-[0.6rem] text-muted-foreground/20 uppercase tracking-[0.2em] md:tracking-[0.3em] whitespace-nowrap">© 2026 CaastingCall. All Rights Reserved.</p>
         </div>
       </footer>
     </div>

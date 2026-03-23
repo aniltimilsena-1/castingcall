@@ -299,9 +299,9 @@ export default function ProfileDetailDialog({
     return (
         <>
             <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setShowFullProfile(false); }}>
-                <DialogContent className="max-w-4xl w-full bg-background p-0 border-none shadow-2xl rounded-3xl flex flex-col overflow-hidden" style={{ maxHeight: '92svh' }}>
+                <DialogContent className="max-w-4xl w-full bg-background p-0 border-none shadow-2xl rounded-3xl flex flex-col overflow-hidden h-[95vh] md:h-auto md:max-h-[92svh]">
                     <div
-                        className="flex-1 overflow-y-auto overscroll-contain no-scrollbar"
+                        className="flex-1 overflow-y-auto overscroll-contain no-scrollbar min-h-0"
                         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
                     >
                         <div className="p-5 md:p-8">

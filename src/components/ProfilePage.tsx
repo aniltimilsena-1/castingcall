@@ -194,9 +194,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         style_tags: styleTags.map(t => t.toLowerCase()),
         personality_traits: personalityTraits.map(t => t.toLowerCase()),
         looks_like: looksLike,
-        visual_search_keywords: visualSearchKeywords
+        visual_search_keywords: visualSearchKeywords,
+        user_id: user.id // Required for upsert
       };
-      const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user.id);
+      
+      // Use upsert instead of update to handle both creation and updates
+      const { error } = await supabase.from("profiles").upsert(updates as any, { onConflict: 'user_id' });
       if (error) throw error;
 
       const captionInserts = Object.entries(captions).map(([url, data]) => ({
@@ -259,23 +262,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   // VIEW MODE
   // ──────────────────────────────────────────────────────────────────────
   if (!isEditing) {
-    if (!profile && !loading) {
-       return (
-         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-6">
-           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-foreground/60">
-             <User size={32} />
-           </div>
-           <h2 className="text-xl font-display text-foreground">Profile Not Found</h2>
-           <p className="text-sm text-foreground/60 max-w-xs">We couldn't retrieve your profile data. Try refreshing or updating your info.</p>
-           <button 
-             onClick={() => setIsEditing(true)}
-             className="bg-primary text-black px-8 py-2.5 rounded-xl text-sm font-medium mt-2"
-           >
-             Create Profile
-           </button>
-         </div>
-       );
-    }
 
     return (
       <>

@@ -961,7 +961,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
 
   return (
     <Dialog open={!!url} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-5xl max-h-[90svh] p-0 bg-background border-none flex flex-col md:flex-row overflow-hidden shadow-2xl rounded-3xl">
+      <DialogContent className="max-w-5xl h-[95vh] md:h-[90vh] md:max-h-[850px] p-0 bg-background border-none flex flex-col md:flex-row overflow-hidden shadow-2xl rounded-3xl">
         <div className="flex-1 bg-black flex items-center justify-center p-4 relative">
           {url?.toLowerCase().match(/\.(mp4|webm|ogg|mov)$/) || url?.includes('videos%2F') ? (
             <div className="relative w-full h-full flex items-center justify-center">
@@ -991,7 +991,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
           <button onClick={onClose} className="absolute top-4 left-4 p-2 bg-black/50 hover:bg-black/80 text-white rounded-full transition-all z-10"><X size={20} /></button>
         </div>
 
-        <div className="w-full md:w-[400px] bg-card flex flex-col h-full border-l border-border">
+        <div className="w-full md:w-[400px] bg-card flex flex-col min-h-0 h-full border-t md:border-t-0 md:border-l border-border">
           <div className="p-6 border-b border-border flex items-center gap-4">
             <div className="w-12 h-12 rounded-full bg-secondary border border-primary flex items-center justify-center font-display text-xl text-primary overflow-hidden">
               {owner?.photo_url ? <img src={owner.photo_url} className="w-full h-full object-cover" alt="" /> : (owner?.name?.[0] || '?')}
