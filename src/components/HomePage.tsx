@@ -320,7 +320,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── FEATURED TALENTS ── */}
       {featured.length > 0 && (
-        <section className="py-12 md:py-32 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[2.5rem] md:rounded-[4rem] border border-border relative z-30">
+        <section className="py-12 md:py-16 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[2.5rem] md:rounded-[4rem] border border-border relative z-30">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 mb-10 md:mb-20 px-2 md:px-4">
             <div className="space-y-3 md:space-y-4 text-center md:text-left">
               <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-amber-500 font-bold">Wall of Excellence</h2>
@@ -397,7 +397,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── CASTING CALLS ── */}
       {recentProjects.length > 0 && (
-        <section className="py-12 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
+        <section className="py-12 md:py-16 px-6 max-w-7xl mx-auto relative z-30">
           <div className="text-center mb-10 md:mb-20 space-y-3 md:space-y-4">
             <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Open Opportunities</h2>
             <h3 className="text-3xl md:text-5xl font-display text-primary">Live Casting Calls</h3>
@@ -450,7 +450,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       )}
 
       {/* ── MISSION & VISION ── */}
-      <section className="py-20 md:py-32 px-6 max-w-7xl mx-auto relative z-30">
+      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto relative z-30">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
           <div className="space-y-8">
             <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold italic">Our Soul</h2>
@@ -484,7 +484,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="mt-20 border-t border-border py-24 relative z-30 bg-secondary/50">
+      <footer className="mt-12 border-t border-border py-16 relative z-30 bg-secondary/50">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 text-left">
           <div className="col-span-2 md:col-span-2 space-y-8 text-center md:text-left mb-8 md:mb-0">
             <div className="flex justify-center md:justify-start">

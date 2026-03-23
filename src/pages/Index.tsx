@@ -287,7 +287,7 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {page !== 'messages' && (
+      {page !== 'messages' && page !== 'feed' && (
         <Navbar
           onSearch={handleSearch}
           onAuthClick={handleAuthClick}
@@ -337,7 +337,7 @@ const Index = () => {
       </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
-      {page !== 'messages' && (
+      {page !== 'messages' && page !== 'feed' && (
         <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
           {([
             { id: "home", label: "Home", icon: Home },

@@ -744,14 +744,16 @@ function FeedCard({
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2.5 pointer-events-auto opacity-70">
-                    <Sparkles size={12} className="text-primary" />
-                    <div className="text-[0.6rem] uppercase tracking-[2px] overflow-hidden whitespace-nowrap">
-                        <motion.div animate={{ x: [0, -100, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }}>
-                            Original Audio · {item.owner.name}
-                        </motion.div>
-                    </div>
-                </div>
+                {item.type === 'video' && (
+                  <div className="flex items-center gap-2.5 pointer-events-auto opacity-70">
+                      <Sparkles size={12} className="text-primary" />
+                      <div className="text-[0.6rem] uppercase tracking-[2px] overflow-hidden whitespace-nowrap">
+                          <motion.div animate={{ x: [0, -100, 0] }} transition={{ duration: 15, repeat: Infinity, ease: "linear" }}>
+                              Original Audio · {item.owner.name}
+                          </motion.div>
+                      </div>
+                  </div>
+                )}
             </div>
 
             {/* Video Progress Bar */}
@@ -765,19 +767,21 @@ function FeedCard({
             )}
 
             {/* Music Disc Aesthetic */}
-            <div className="absolute right-4 bottom-10 z-20">
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="w-8 h-8 rounded-full bg-gradient-to-tr from-stone-900 to-stone-700 border-[3px] border-stone-800/80 shadow-2xl flex items-center justify-center overflow-hidden"
-                >
-                    {item.owner.photo_url ? (
-                        <img src={item.owner.photo_url} className="w-full h-full object-cover opacity-60 contrast-125" alt="" />
-                    ) : (
-                        <div className="w-3 h-3 rounded-full bg-stone-950" />
-                    )}
-                </motion.div>
-            </div>
+            {item.type === 'video' && (
+              <div className="absolute right-4 bottom-10 z-20">
+                  <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      className="w-8 h-8 rounded-full bg-gradient-to-tr from-stone-900 to-stone-700 border-[3px] border-stone-800/80 shadow-2xl flex items-center justify-center overflow-hidden"
+                  >
+                      {item.owner.photo_url ? (
+                          <img src={item.owner.photo_url} className="w-full h-full object-cover opacity-60 contrast-125" alt="" />
+                      ) : (
+                          <div className="w-3 h-3 rounded-full bg-stone-950" />
+                      )}
+                  </motion.div>
+              </div>
+            )}
 
             {/* Lock Overlay */}
             {!isUnlocked && (
