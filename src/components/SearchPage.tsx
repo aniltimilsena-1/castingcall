@@ -335,18 +335,18 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       {searchType === 'talents' && !query && selectedMoods.length === 0 && (
         <div className="mb-16">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="font-display text-2xl text-foreground flex items-center gap-3">
-              <TrendingUp className="text-orange-500" size={24} />
+            <h3 className="font-display text-xl md:text-2xl text-foreground flex items-center gap-2 md:gap-3">
+              <TrendingUp className="text-orange-500" size={20} />
               Trending {role || "Talent"}
             </h3>
             <span className="text-[0.6rem] font-normal uppercase tracking-[3px] text-muted-foreground">Updated Hourly</span>
           </div>
-          <div className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4 mask-edges">
+          <div className="flex gap-4 md:gap-6 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4 mask-edges">
             {trendingResults.map((p) => (
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="flex-shrink-0 w-64 group cursor-pointer"
+                className="flex-shrink-0 w-40 md:w-64 group cursor-pointer"
               >
                 <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-4 border border-white/5 shadow-2xl">
                   {p.photo_url ? (
@@ -376,7 +376,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         </div>
       )}
 
-      <h2 className="font-display text-5xl text-primary mb-12 tracking-tight flex items-center gap-6">
+      <h2 className="font-display text-3xl md:text-5xl text-primary mb-8 md:mb-12 tracking-tight flex items-center gap-4 md:gap-6">
         {searchType === 'talents' ? (
           <>
             {title}
