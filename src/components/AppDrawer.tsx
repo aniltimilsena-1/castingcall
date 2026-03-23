@@ -69,14 +69,14 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             ) : profile?.photo_url ? (
               <img src={profile.photo_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-primary/40 italic">{initials}</span>
+              <span className="text-foreground/40 group-hover:text-primary transition-colors italic">{initials}</span>
             )}
           </div>
           <div className="min-w-0">
             <div className="font-display text-lg text-foreground font-bold leading-tight truncate">
               {loading ? "Syncing..." : (profile?.name || (user ? "Account" : "Guest"))}
             </div>
-            <div className="text-[0.7rem] text-primary font-bold uppercase tracking-[0.12em] mt-1 truncate">
+            <div className="text-[0.7rem] text-primary/80 dark:text-primary font-bold uppercase tracking-[0.12em] mt-1 truncate">
               {loading ? "Please wait" : (profile?.role || (user ? "Member" : "Not signed in"))}
             </div>
           </div>
@@ -87,7 +87,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           <Section label="Explore">
             <Item onClick={() => go("home")}>Home</Item>
             <Item onClick={() => go("search", { searchType: "projects" })}>Casting Calls</Item>
-            <Item onClick={() => go("search", { searchType: "talents" })}>Find Actors</Item>
+            <Item onClick={() => go("search", { searchType: "talents" })}>Actors</Item>
             <Item onClick={() => go("feed")}>Feed</Item>
           </Section>
           <Hr />
@@ -106,7 +106,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           <Section label="System">
             {profile?.role === "Admin" && (
               <Item onClick={() => go("admin")}>
-                <span className="text-primary font-normal">Admin Panel</span>
+                <span className="text-primary/80 dark:text-primary font-normal">Admin Panel</span>
               </Item>
             )}
             <Item onClick={() => go("settings")}>Settings</Item>
@@ -138,7 +138,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="px-8 pt-6 pb-2">
-      <div className="text-sm font-black tracking-[0.3em] uppercase text-primary/40 mb-3 ml-2">
+      <div className="text-sm font-black tracking-[0.3em] uppercase text-foreground/40 dark:text-primary/60 mb-3 ml-2">
         {label}
       </div>
       {children}
@@ -150,7 +150,7 @@ function Item({ children, onClick }: { children: React.ReactNode; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="block w-full text-left text-muted-foreground/80 font-accent text-[0.7rem] font-semibold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-white/5 hover:text-primary transition-all border border-transparent hover:border-white/5 ghost-border mb-1"
+      className="block w-full text-left text-foreground/70 font-accent text-[0.7rem] font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20 ghost-border mb-1"
     >
       {children}
     </button>

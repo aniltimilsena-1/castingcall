@@ -486,8 +486,8 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                 </div>
               </div>
               <div className="flex justify-end gap-6 mt-12 pt-10 border-t border-border/50">
-                <button onClick={resetForm} className="px-8 py-4 rounded-2xl font-normal text-sm text-muted-foreground hover:text-white transition-colors">Discard</button>
-                <button onClick={handleSave} className="bg-primary text-black px-14 py-4 rounded-2xl font-normal text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30">{editId ? "Update Project" : "Publish Project"}</button>
+                <button onClick={resetForm} className="px-8 py-4 rounded-2xl font-bold text-sm text-muted-foreground hover:text-foreground transition-colors">Discard</button>
+                <button onClick={handleSave} className="bg-primary text-primary-foreground px-14 py-4 rounded-2xl font-bold text-xs uppercase tracking-[3px] hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30">{editId ? "Update Project" : "Publish Project"}</button>
               </div>
             </motion.div>
           )}
@@ -649,11 +649,11 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                       </div>
                     </div>
                     <div className="p-8">
-                      <div className="flex items-center gap-2 text-[0.6rem] font-normal tracking-[3px] text-primary uppercase mb-4 opacity-70">
+                      <div className="flex items-center gap-2 text-[0.6rem] font-bold tracking-[3px] text-primary uppercase mb-4 opacity-100">
                         <Briefcase size={12} /> {p.role_category} Search
                       </div>
-                      <h4 className="font-display text-2xl text-white mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
-                      <p className="text-muted-foreground text-sm line-clamp-2 mb-8 h-10 leading-relaxed font-body italic opacity-60">"{p.description}"</p>
+                      <h4 className="font-display text-2xl text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
+                      <p className="text-foreground/60 text-sm line-clamp-2 mb-8 h-10 leading-relaxed font-body italic">"{p.description}"</p>
 
                       <div className="flex items-center justify-between pt-6 border-t border-white/5">
                         <div className="flex gap-2">
@@ -703,16 +703,16 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                     </div>
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h3 className="font-display text-2xl text-white">{app.projects?.title}</h3>
-                        <span className={`px-3 py-1 rounded-full text-[0.6rem] font-normal uppercase tracking-widest ${app.status === 'accepted' ? 'bg-green-500 text-black' :
+                        <h3 className="font-display text-2xl text-foreground">{app.projects?.title}</h3>
+                        <span className={`px-3 py-1 rounded-full text-[0.6rem] font-bold uppercase tracking-widest ${app.status === 'accepted' ? 'bg-green-500 text-black' :
                           app.status === 'invited' ? 'bg-amber-500 text-black gold-glow animate-pulse' :
                             app.status === 'rejected' ? 'bg-red-500 text-white' :
-                              'bg-secondary text-muted-foreground'
+                              'bg-secondary text-secondary-foreground'
                           }`}>
                           {app.status === 'invited' ? 'PROJECT INVITATION' : app.status}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-1 mb-3">Looking for: {app.projects?.role_category} • Status: {app.projects?.status}</p>
+                      <p className="text-sm text-foreground/70 line-clamp-1 mb-3 font-medium">Looking for: {app.projects?.role_category} • Status: {app.projects?.status}</p>
 
                       {app.video_url ? (
                         <div className="flex items-center gap-4 mt-1 mb-4">
@@ -723,7 +723,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                             <Video size={14} /> Play My Audition
                           </button>
                           {app.status === 'pending' && (
-                            <label className="text-[0.65rem] text-muted-foreground hover:text-white cursor-pointer underline underline-offset-4 decoration-border">
+                            <label className="text-[0.65rem] text-foreground/50 hover:text-primary cursor-pointer underline underline-offset-4 decoration-border transition-colors">
                               Change Audition
                               <input type="file" accept="video/*,audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
                             </label>
@@ -732,7 +732,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                       ) : (
                         app.status === 'pending' && (
                           <div className="mt-2 mb-4">
-                            <label className="flex items-center gap-2 text-xs text-primary hover:underline cursor-pointer">
+                            <label className="flex items-center gap-2 text-xs text-primary hover:text-primary/70 cursor-pointer transition-colors font-medium">
                               <Plus size={14} /> Add Self-Tape Audition
                               <input type="file" accept="video/*,audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
                             </label>
@@ -740,7 +740,17 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                         )
                       )}
 
-                      <p className="text-xs text-muted-foreground/40 font-medium uppercase tracking-wider">Applied on {new Date(app.created_at).toLocaleDateString()}</p>
+                      <div className="flex items-center gap-6 mt-1">
+                        <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Applied on {new Date(app.created_at).toLocaleDateString()}</p>
+                        {app.status === 'pending' && (
+                          <button
+                            onClick={() => withdrawApplication(app.id)}
+                            className="text-[0.6rem] text-muted-foreground hover:text-red-500 font-bold uppercase tracking-widest transition-colors flex items-center gap-1 bg-foreground/5 px-3 py-1.5 rounded-full hover:bg-red-500/10"
+                          >
+                            <X size={12} /> Withdraw
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {app.status === 'invited' && (

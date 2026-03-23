@@ -204,7 +204,15 @@ export default function ProfileDetailDialog({
                 applicant_id: profile.user_id,
                 status: "invited"
             });
-            if (error) throw error;
+            
+            if (error) {
+                if (error.code === '23505') {
+                    setAlreadyAppliedOrInvited(prev => [...prev, projectId]);
+                    toast.info("This user has already applied or was invited to this project.");
+                    return;
+                }
+                throw error;
+            }
 
             // Send Notification
             await supabase.from("notifications").insert({
@@ -217,6 +225,7 @@ export default function ProfileDetailDialog({
             toast.success("Invitation sent!");
             setAlreadyAppliedOrInvited(prev => [...prev, projectId]);
         } catch (err: any) {
+            console.error("Invite error:", err);
             toast.error(err.message || "Failed to invite");
         } finally {
             setInvitingProjectId(null);
@@ -465,8 +474,8 @@ export default function ProfileDetailDialog({
                                             {isInviting && (
                                                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="mt-8 space-y-4 text-left bg-card border border-border p-6 rounded-[2.5rem] shadow-xl relative overflow-hidden">
                                                     <div className="flex items-center justify-between mb-4">
-                                                        <div className="text-[0.65rem] font-normal text-primary tracking-[2.5px] uppercase">Select Active Project</div>
-                                                        <button onClick={() => setIsInviting(false)} className="text-muted-foreground hover:text-white transition-colors"><X size={16} /></button>
+                                                        <div className="text-[0.65rem] font-bold text-primary tracking-[2.5px] uppercase">Select Active Project</div>
+                                                        <button onClick={() => setIsInviting(false)} className="text-muted-foreground hover:text-foreground transition-colors"><X size={16} /></button>
                                                     </div>
                                                     <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                                                         {userProjects.map((p) => {
@@ -476,7 +485,7 @@ export default function ProfileDetailDialog({
                                                                     key={p.id}
                                                                     disabled={isDone || invitingProjectId === p.id}
                                                                     onClick={() => handleInvite(p.id)}
-                                                                    className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all ${isDone ? 'bg-green-500/5 border-green-500/20 text-green-500/60 cursor-default' : 'bg-secondary/40 border-border/50 text-white hover:border-primary hover:bg-primary/5'}`}
+                                                                    className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border transition-all ${isDone ? 'bg-green-500/5 border-green-500/20 text-green-600/80 cursor-default font-medium' : 'bg-secondary border-border text-foreground hover:border-primary hover:bg-primary/5'}`}
                                                                 >
                                                                     <div className="flex items-center gap-4">
                                                                         <div className="w-8 h-8 rounded-lg bg-card border border-border flex items-center justify-center text-xs text-primary">{p.title[0]}</div>
@@ -501,13 +510,13 @@ export default function ProfileDetailDialog({
                                                             value={message}
                                                             onChange={(e) => setMessage(e.target.value)}
                                                             placeholder={`Aa`}
-                                                            className="w-full bg-background border border-border/50 rounded-2xl px-5 py-4 text-sm text-white outline-none focus:border-primary/50 transition-all resize-none h-28"
+                                                            className="w-full bg-background border border-border rounded-2xl px-5 py-4 text-sm text-foreground outline-none focus:border-primary/50 transition-all resize-none h-28"
                                                         />
                                                     </div>
                                                     <div className="flex justify-end gap-3">
                                                         <button
                                                             onClick={() => setIsMessaging(false)}
-                                                            className="px-5 py-2 text-xs font-normal text-white/60 hover:text-white transition-colors"
+                                                            className="px-5 py-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
                                                         >
                                                             Cancel
                                                         </button>
@@ -552,8 +561,8 @@ export default function ProfileDetailDialog({
                                     {isMessaging && showFullProfile && (
                                         <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="bg-secondary/30 border border-primary/20 rounded-3xl p-8 space-y-6">
                                             <div className="flex items-center justify-between">
-                                                <div className="text-[0.7rem] font-normal text-primary tracking-[3px] uppercase">New Message to {profile.name}</div>
-                                                <button onClick={() => setIsMessaging(false)} className="text-white/60 hover:text-primary transition-colors">
+                                                <div className="text-[0.7rem] font-bold text-primary tracking-[3px] uppercase">New Message to {profile.name}</div>
+                                                <button onClick={() => setIsMessaging(false)} className="text-muted-foreground hover:text-foreground transition-colors">
                                                     <X size={20} />
                                                 </button>
                                             </div>
@@ -564,7 +573,7 @@ export default function ProfileDetailDialog({
                                                 className="w-full bg-background border border-border rounded-xl px-6 py-5 text-sm text-foreground outline-none focus:border-primary/50 transition-all resize-none h-40"
                                             />
                                             <div className="flex justify-end items-center gap-6">
-                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-normal text-white/60 hover:text-white transition-colors">Cancel</button>
+                                                <button onClick={() => setIsMessaging(false)} className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                                                 <button
                                                     onClick={handleSendMessage}
                                                     disabled={sending || !message.trim()}

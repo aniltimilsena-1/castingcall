@@ -54,7 +54,7 @@
 
     /* Muted */
     --muted: 27 15% 90%;
-    --muted-foreground: 0 0% 30%;  /* Darkened for visibility */
+    --muted-foreground: 0 0% 18%;  /* Darkened for 4.5:1 core contrast */
 
     /* Accent - Clean Gold highlights */
     --accent: 46 91% 53%;
@@ -366,3 +366,4 @@
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .mask-fade-right { mask-image: linear-gradient(to right, black 80%, transparent 100%); width: 100%; }

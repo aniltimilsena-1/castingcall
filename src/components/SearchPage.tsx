@@ -324,7 +324,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             </button>
             <button
               onClick={() => setVisualSearchMode(false)}
-              className="bg-secondary text-white px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest"
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest transition-colors"
             >
               Disable
             </button>
@@ -361,8 +361,8 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   <div className="absolute bottom-4 left-4 right-4">
-                    <div className="text-white font-normal text-sm mb-1">{p.name}</div>
-                    <div className="text-primary text-[0.6rem] uppercase tracking-widest">{p.role}</div>
+                    <div className="text-white font-medium text-sm mb-1 drop-shadow-md">{p.name}</div>
+                    <div className="text-primary text-[0.6rem] uppercase tracking-widest font-bold drop-shadow-sm">{p.role}</div>
                   </div>
                   {p.trending_score && (
                     <div className="absolute top-4 right-4 bg-orange-500 text-primary-foreground text-[0.55rem] font-normal px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
@@ -430,8 +430,8 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   </div>
                   <div className="text-primary font-normal text-xs mb-2 md:mb-3 tracking-wide uppercase opacity-80">{p.role || "Member"}</div>
                   <div className="flex flex-wrap gap-4 md:gap-8 mb-4">
-                    {p.location && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
-                    {p.experience_years !== null && <span className="text-sm text-muted-foreground flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
+                    {p.location && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
+                    {p.experience_years !== null && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
                     {p.trending_score !== undefined && p.trending_score > 80 && (
                       <span className="text-[0.6rem] bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-full border border-orange-500/20 font-normal uppercase tracking-widest flex items-center gap-2">
                         <TrendingUp size={10} /> Hot
@@ -440,13 +440,13 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {p.mood_tags?.slice(0, 2).map((m: string) => (
-                      <span key={m} className="text-[0.6rem] bg-secondary/40 text-muted-foreground px-2 py-0.5 rounded-md border border-border uppercase tracking-tighter">{m}</span>
+                      <span key={m} className="text-[0.6rem] bg-secondary text-secondary-foreground/80 px-2 py-0.5 rounded-md border border-border uppercase tracking-tighter font-medium">{m}</span>
                     ))}
                     {p.style_tags?.slice(0, 2).map((s: string) => (
-                      <span key={s} className="text-[0.6rem] bg-primary/10 text-primary px-2 py-0.5 rounded-md border border-primary/20 uppercase tracking-tighter">{s}</span>
+                      <span key={s} className="text-[0.6rem] bg-primary/20 text-primary px-2 py-0.5 rounded-md border border-primary/30 uppercase tracking-tighter font-bold">{s}</span>
                     ))}
                   </div>
-                  {p.bio && <p className="text-sm text-muted-foreground/50 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
+                  {p.bio && <p className="text-sm text-foreground/60 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
                 </div>
 
                 <div className="flex items-center gap-2 flex-shrink-0 self-end md:self-auto mt-2 md:mt-0" onClick={(e) => e.stopPropagation()}>
@@ -519,8 +519,20 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
   useEffect(() => {
     if (user && project.id) {
       const checkApplied = async () => {
-        const { data } = await supabase.from('applications' as any).select('id').eq('project_id', project.id).eq('applicant_id', user.id).maybeSingle();
-        if (data) setApplied(true);
+        try {
+          // Robust check: don't use maybeSingle as it might error if multiple rows exist
+          const { data, count, error } = await supabase
+            .from('applications' as any)
+            .select('id', { count: 'exact', head: true })
+            .eq('project_id', project.id)
+            .eq('applicant_id', user.id);
+          
+          if (error) throw error;
+          if (count && count > 0) setApplied(true);
+        } catch (err) {
+          console.error("Error checking application status:", err);
+          // If checking fails, don't assume anything, but we'll try again on next mount
+        }
       };
       checkApplied();
     }
@@ -531,10 +543,24 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
       toast.error("Sign in to apply for casting calls");
       return;
     }
-    if (applied) return;
+    if (applied || loading) return;
 
     setLoading(true);
     try {
+      // 1. Double check before proceeding to avoid race conditions
+      const { count: existingCount } = await supabase
+        .from('applications' as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('project_id', project.id)
+        .eq('applicant_id', user.id);
+
+      if (existingCount && existingCount > 0) {
+        setApplied(true);
+        toast.info("You've already applied for this casting call.");
+        setLoading(false);
+        return;
+      }
+
       let videoUrl = null;
       if (videoFile) {
         if (videoFile.size > 50 * 1024 * 1024) {
@@ -562,14 +588,52 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
         status: 'pending',
         video_url: videoUrl
       });
-      if (error) throw error;
-      setApplied(true);
-      toast.success("Application submitted successfully!");
+
+      if (error) {
+        // Handle Postgres unique constraint violation
+        if (error.code === '23505') {
+          setApplied(true);
+          toast.info("You've already applied for this casting call.");
+        } else {
+          throw error;
+        }
+      } else {
+        setApplied(true);
+        toast.success("Application submitted successfully!");
+      }
     } catch (err: any) {
+      console.error("Submission error:", err);
       toast.error(err.message || "Failed to submit application");
     } finally {
       setLoading(false);
       setUploadingVideo(false);
+    }
+  };
+
+  const handleCancelApply = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || loading) return;
+
+    if (!confirm("Are you sure you want to cancel your application?")) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('applications' as any)
+        .delete()
+        .eq('project_id', project.id)
+        .eq('applicant_id', user.id);
+
+      if (error) throw error;
+
+      setApplied(false);
+      toast.success("Application cancelled successfully");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to cancel application");
+    } finally {
+      setLoading(true); // Small delay before unblocking
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -600,11 +664,11 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
       </div>
       <div className="p-10">
         <h4 className="font-display text-3xl text-foreground mb-4 group-hover:text-primary transition-colors leading-tight">{project.title}</h4>
-        <div className="flex flex-wrap items-center gap-6 text-[0.65rem] text-muted-foreground mb-8 font-normal uppercase tracking-[2px]">
+        <div className="flex flex-wrap items-center gap-6 text-[0.65rem] text-foreground/60 mb-8 font-bold uppercase tracking-[2px]">
           <span className="flex items-center gap-2.5"><MapPin size={16} className="text-primary" /> {project.location || 'Remote'}</span>
           <span className="flex items-center gap-2.5"><DollarSign size={16} className="text-primary" /> {project.salary_range || 'Competitive'}</span>
         </div>
-        <p className="text-sm text-muted-foreground/60 line-clamp-2 mb-8 leading-relaxed font-body">
+        <p className="text-sm text-foreground/60 line-clamp-2 mb-8 leading-relaxed font-body">
           {project.description || "No detailed description provided for this casting call."}
         </p>
 
@@ -649,16 +713,32 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
           </div>
         )}
 
-        <button
-          onClick={handleApply}
-          disabled={applied || loading}
-          className={`w-full py-5 rounded-2xl text-[0.7rem] font-normal uppercase tracking-[3px] transition-all shadow-xl ${applied
-            ? 'bg-green-500/10 text-green-500 border-2 border-green-500/20 cursor-default'
-            : 'bg-secondary/80 backdrop-blur-sm border-2 border-border group-hover:border-primary/50 text-white hover:bg-primary hover:text-black hover:border-primary'
-            }`}
-        >
-          {uploadingVideo ? 'Uploading Self-Tape...' : loading ? 'Submitting...' : applied ? 'Application Sent' : 'Apply for this role'}
-        </button>
+        {applied ? (
+          <div className="flex gap-4">
+            <button
+              disabled
+              className="flex-1 py-5 rounded-2xl text-[0.7rem] font-bold uppercase tracking-[3px] bg-green-500/10 text-green-600 border-2 border-green-500/20 cursor-default"
+            >
+              Application Sent
+            </button>
+            <button
+              onClick={handleCancelApply}
+              disabled={loading}
+              className="px-6 py-5 rounded-2xl text-[0.7rem] font-bold uppercase tracking-[2px] bg-red-500/10 text-red-500 border-2 border-red-500/20 hover:bg-red-500 hover:text-white transition-all active:scale-95"
+              title="Cancel Application"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleApply}
+            disabled={loading}
+            className="w-full py-5 rounded-2xl text-[0.7rem] font-bold uppercase tracking-[3px] transition-all shadow-xl bg-secondary text-secondary-foreground border-2 border-border group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground active:scale-95"
+          >
+            {uploadingVideo ? 'Uploading Self-Tape...' : loading ? 'Submitting...' : 'Apply for this role'}
+          </button>
+        )}
       </div>
     </motion.div>
   );

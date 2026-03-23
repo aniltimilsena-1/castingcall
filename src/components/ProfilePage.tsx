@@ -163,12 +163,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     }
   }, [profile]);
 
-  if (!user) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Please sign in to view your profile.</div>;
+  if (!user) return <div className="min-h-screen flex items-center justify-center text-foreground/60 font-medium">Please sign in to view your profile.</div>;
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4 text-muted-foreground">
+      <div className="flex flex-col items-center gap-4 text-foreground/60">
         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-        <p className="text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Syncing Profile Data...</p>
+        <p className="text-[0.65rem] font-bold tracking-[4px] uppercase animate-pulse">Syncing Profile Data...</p>
       </div>
     </div>
   );
@@ -262,11 +262,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     if (!profile && !loading) {
        return (
          <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-6">
-           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-foreground/60">
              <User size={32} />
            </div>
            <h2 className="text-xl font-display text-foreground">Profile Not Found</h2>
-           <p className="text-sm text-muted-foreground max-w-xs">We couldn't retrieve your profile data. Try refreshing or updating your info.</p>
+           <p className="text-sm text-foreground/60 max-w-xs">We couldn't retrieve your profile data. Try refreshing or updating your info.</p>
            <button 
              onClick={() => setIsEditing(true)}
              className="bg-primary text-black px-8 py-2.5 rounded-xl text-sm font-medium mt-2"
@@ -287,7 +287,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <button onClick={onBack} className="text-muted-foreground hover:text-primary transition-colors text-sm font-normal flex items-center gap-1.5">
+          <button onClick={onBack} className="text-foreground/60 hover:text-primary transition-colors text-sm font-normal flex items-center gap-1.5">
             ← Back
           </button>
           <div className="flex items-center gap-2">
@@ -297,14 +297,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 navigator.clipboard.writeText(url);
                 toast.success("Profile link copied to clipboard!");
               }}
-              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-muted-foreground px-5 py-2.5 rounded-xl font-normal text-sm transition-all"
+              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-foreground/70 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
             >
               <Share2 size={15} />
               Share Link
             </button>
             <button
               onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-muted-foreground px-5 py-2.5 rounded-xl font-normal text-sm transition-all"
+              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-foreground/70 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
             >
               <Edit2 size={15} />
               Edit Profile
@@ -328,7 +328,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
             {/* Photo upload button */}
             <label className="absolute bottom-3 left-40 md:left-44 cursor-pointer">
-              <div className="bg-secondary/80 backdrop-blur-sm border border-border text-muted-foreground hover:text-primary hover:border-primary px-3 py-1.5 rounded-full text-[0.65rem] font-normal flex items-center gap-1.5 transition-all">
+              <div className="bg-secondary/80 backdrop-blur-sm border border-border text-foreground/60 hover:text-primary hover:border-primary px-3 py-1.5 rounded-full text-[0.65rem] font-normal flex items-center gap-1.5 transition-all">
                 <Camera size={12} />
                 Change Photo
               </div>
@@ -378,7 +378,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 className="flex flex-col items-start hover:opacity-70 transition-opacity"
               >
                 <span className="text-xl font-display text-foreground leading-tight">{followCounts.followers.toLocaleString()}</span>
-                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">Followers</span>
+                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-foreground/60">Followers</span>
               </button>
               <div className="w-px h-8 bg-border" />
               <button
@@ -386,11 +386,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 className="flex flex-col items-start hover:opacity-70 transition-opacity"
               >
                 <span className="text-xl font-display text-foreground leading-tight">{followCounts.following.toLocaleString()}</span>
-                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground">Following</span>
+                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-foreground/60">Following</span>
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-5">
+            <div className="flex flex-wrap gap-4 text-sm text-foreground/60 mb-5">
               {profile?.location && (
                 <span className="flex items-center gap-1.5"><MapPin size={14} className="text-primary/60" />{profile.location}</span>
               )}
@@ -405,11 +405,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
 
             {profile?.bio ? (
-              <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl italic border-l-2 border-primary/20 pl-4">
+              <p className="text-foreground/70 text-sm leading-relaxed max-w-2xl italic border-l-2 border-primary/20 pl-4">
                 "{profile.bio}"
               </p>
             ) : (
-              <p className="text-muted-foreground/40 text-sm italic">No bio added yet. Click Edit Profile to add one.</p>
+              <p className="text-foreground/60/40 text-sm italic">No bio added yet. Click Edit Profile to add one.</p>
             )}
           </div>
         </div>
@@ -422,26 +422,26 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
           <div className="space-y-4">
             {moodTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Moods:</span>
+                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-widest mr-2">Moods:</span>
                   {(moodTags || []).map(t => <Badge key={t} variant="secondary" className="bg-secondary/40 text-foreground font-normal text-[0.65rem]">{t}</Badge>)}
                 </div>
               )}
               {styleTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Style:</span>
+                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-widest mr-2">Style:</span>
                   {(styleTags || []).map(t => <Badge key={t} variant="secondary" className="bg-primary/20 text-primary border-primary/20 font-normal text-[0.65rem]">{t}</Badge>)}
                 </div>
               )}
               {personalityTraits.length > 0 && (
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Traits:</span>
+                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-widest mr-2">Traits:</span>
                   {(personalityTraits || []).map(t => <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal text-[0.65rem]">{t}</Badge>)}
                 </div>
               )}
               {looksLike.length > 0 && (
                 <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-muted-foreground uppercase tracking-widest mr-2">Looks Like:</span>
-                  {(looksLike || []).map(t => <Badge key={t} variant="outline" className="border-border text-foreground font-normal text-[0.65rem]">{t}</Badge>)}
+                  <span className="text-[0.6rem] text-foreground/50 uppercase tracking-widest mr-2">Looks Like:</span>
+                  {(looksLike || []).map(t => <Badge key={t} variant="outline" className="border-border/30 text-foreground/80 font-bold text-[0.65rem]">{t}</Badge>)}
                 </div>
               )}
           </div>
@@ -450,7 +450,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Stats row */}
         {(profile?.height || profile?.age || profile?.gender || profile?.hair_color || profile?.eye_color) && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Physical Attributes</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Physical Attributes</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {profile?.height && <Stat label="Height" value={profile.height} />}
               {profile?.age != null && <Stat label="Age" value={`${profile.age} yrs`} />}
@@ -464,7 +464,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Skills */}
         {profile?.skills && profile.skills.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Skills & Specialties</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Skills & Specialties</h3>
             <div className="flex flex-wrap gap-2">
               {(profile.skills || []).map((skill) => (
                 <span key={skill} className="bg-primary/5 text-primary text-xs font-medium px-3 py-1.5 rounded-xl border border-primary/20">
@@ -478,7 +478,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Photos */}
         {(profile as any)?.photos?.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Portfolio Photos</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Portfolio Photos</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {((profile as any)?.photos || []).map((url: string, i: number) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border">
@@ -492,7 +492,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Videos */}
         {(profile as any)?.videos?.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4">Video Reel</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Video Reel</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {((profile as any)?.videos || []).map((url: string, i: number) => (
                 <div key={i} className="relative group rounded-xl overflow-hidden border border-border bg-black">
@@ -551,13 +551,13 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <div className="flex items-center gap-2">
                       <Users size={18} className="text-primary" />
                       <h3 className="font-display text-lg text-primary capitalize">{followModal}</h3>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-foreground/60">
                         ({followModal === "followers" ? followCounts.followers : followCounts.following})
                       </span>
                     </div>
                     <div
                       onClick={(e) => { e.stopPropagation(); setFollowModal(null); }}
-                      className="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-secondary/20 cursor-pointer pointer-events-auto"
+                      className="text-foreground/60 hover:text-foreground transition-colors p-2 rounded-lg hover:bg-secondary/20 cursor-pointer pointer-events-auto"
                     >
                       <X size={20} />
                     </div>
@@ -566,12 +566,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     {followListLoading ? (
                       <div className="flex flex-col items-center gap-3 py-16">
                         <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                        <p className="text-[0.65rem] uppercase tracking-[3px] text-muted-foreground animate-pulse">Loading...</p>
+                        <p className="text-[0.65rem] uppercase tracking-[3px] text-foreground/60 animate-pulse">Loading...</p>
                       </div>
                     ) : followList.length === 0 ? (
                       <div className="flex flex-col items-center py-16 gap-3">
-                        <Users size={36} className="text-muted-foreground/20" />
-                        <p className="text-muted-foreground text-sm">
+                        <Users size={36} className="text-foreground/60/20" />
+                        <p className="text-foreground/60 text-sm">
                           {followModal === "followers" ? "No followers yet." : "Not following anyone yet."}
                         </p>
                       </div>
@@ -598,7 +598,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   <div className="p-4 border-t border-border flex-shrink-0 bg-secondary/10">
                     <button
                       onClick={(e) => { e.stopPropagation(); setFollowModal(null); }}
-                      className="w-full py-3 bg-secondary hover:bg-secondary/80 text-white rounded-xl text-sm font-medium transition-all pointer-events-auto"
+                      className="w-full py-3 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-xl text-sm font-bold transition-all pointer-events-auto border border-border/50"
                     >
                       Close
                     </button>
@@ -626,11 +626,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-4xl text-primary">Edit Profile</h1>
-          <p className="text-muted-foreground text-sm mt-1">Update your professional casting profile</p>
+          <p className="text-foreground/60 text-sm mt-1">Update your professional casting profile</p>
         </div>
         <button
           onClick={handleCancelEdit}
-          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm font-normal"
+          className="flex items-center gap-2 text-foreground/60 hover:text-primary transition-colors text-sm font-normal"
         >
           <X size={16} />
           Cancel
@@ -640,7 +640,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       <div className="space-y-6">
         {/* Profile Photo Section */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Profile Photo</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Profile Photo</h3>
           <div className="flex items-center gap-6">
             <div className="flex flex-col items-center gap-3">
               <div className="w-32 h-32 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0 flex items-center justify-center font-display text-4xl text-primary shadow-lg shadow-primary/10">
@@ -685,7 +685,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 >
                   <Plus size={16} /> Update Profile Photo
                 </label>
-                <p className="text-[0.7rem] text-muted-foreground max-w-[220px]">
+                <p className="text-[0.7rem] text-foreground/60 max-w-[220px]">
                   Recommended: Square JPG or PNG, at least 400×400px. Max 2MB.
                 </p>
               </div>
@@ -696,12 +696,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* ── Photos Section ── */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40">Portfolio Photos</h3>
-            <span className="text-[0.65rem] font-normal text-muted-foreground/50">
+            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40">Portfolio Photos</h3>
+            <span className="text-[0.65rem] font-normal text-foreground/60/50">
               {(profile as any)?.photos?.length || 0} / {profile?.plan === 'pro' ? '∞' : '3'}
             </span>
           </div>
-          <p className="text-[0.68rem] text-muted-foreground/50 mb-4">
+          <p className="text-[0.68rem] text-foreground/60/50 mb-4">
             {profile?.plan === 'pro' ? 'Unlimited photos (PRO)' : 'Free plan: up to 3 photos'}
           </p>
 
@@ -744,7 +744,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                       ...captions,
                       [url]: { ...(captions[url] || { description: "", price: 0 }), is_premium: !captions[url]?.is_premium }
                     })}
-                    className={`flex-1 text-[0.6rem] py-1 rounded-md border transition-all ${captions[url]?.is_premium ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-background border-border text-muted-foreground'}`}
+                    className={`flex-1 text-[0.6rem] py-1 rounded-md border transition-all ${captions[url]?.is_premium ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-background border-border text-foreground/60'}`}
                   >
                     {captions[url]?.is_premium ? 'Premium' : 'Free Content'}
                   </button>
@@ -766,7 +766,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
             {/* Add photo slot — hidden if free limit reached */}
             {(profile?.plan === 'pro' || ((profile as any)?.photos?.length || 0) < 3) ? (
-              <label className="aspect-square rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary group">
+              <label className="aspect-square rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all text-foreground/60 hover:text-primary group">
                 <Plus size={24} className="group-hover:scale-110 transition-transform" />
                 <span className="text-[0.65rem] font-normal uppercase tracking-wider">Add Photo</span>
                 <input
@@ -825,12 +825,12 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* ── Video Reel Section ── */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40">Video Reel</h3>
-            <span className="text-[0.65rem] font-normal text-muted-foreground/50">
+            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40">Video Reel</h3>
+            <span className="text-[0.65rem] font-normal text-foreground/60/50">
               {(profile as any)?.videos?.length || 0} / {profile?.plan === 'pro' ? '∞' : '1'}
             </span>
           </div>
-          <p className="text-[0.68rem] text-muted-foreground/50 mb-4">
+          <p className="text-[0.68rem] text-foreground/60/50 mb-4">
             {profile?.plan === 'pro' ? 'Unlimited videos (PRO)' : 'Free plan: 1 video. Upgrade for more.'}
           </p>
 
@@ -856,13 +856,13 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
           {/* Add video slot */}
           {(profile?.plan === 'pro' || ((profile as any)?.videos?.length || 0) < 1) ? (
-            <label className="flex items-center gap-3 border-2 border-dashed border-border rounded-xl px-5 py-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary group w-full">
+            <label className="flex items-center gap-3 border-2 border-dashed border-border rounded-xl px-5 py-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all text-foreground/60 hover:text-primary group w-full">
               <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
                 <Plus size={20} className="group-hover:scale-110 transition-transform" />
               </div>
               <div>
                 <div className="text-sm font-normal">Upload Video</div>
-                <div className="text-[0.68rem] text-muted-foreground/60">MP4, MOV, WebM · Max 100MB</div>
+                <div className="text-[0.68rem] text-foreground/60/60">MP4, MOV, WebM · Max 100MB</div>
               </div>
               <input
                 type="file"
@@ -914,7 +914,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Basic Info */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Basic Information</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="FULL NAME" value={name} onChange={setName} />
             <Field label="PHONE (FOR SMS ALERTS)" value={phone} onChange={setPhone} placeholder="+977..." />
@@ -923,7 +923,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             <Field label="EMAIL (READ ONLY)" value={profile?.email || ""} onChange={() => { }} disabled />
           </div>
           <div className="mt-4">
-            <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">BIO</label>
+            <label className="block text-[0.76rem] text-foreground/60 font-normal tracking-wider mb-1">BIO</label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -936,14 +936,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Smart Tags Section (Edit Mode) */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5 flex items-center justify-between">
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5 flex items-center justify-between">
             Smart Search Tags
             <Sparkles size={14} className="text-primary/40" />
           </h3>
 
           <div className="space-y-6">
             <div>
-              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Moods</label>
+              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Moods</label>
               <div className="flex flex-wrap gap-1.5">
                 {RECOMMENDED_TAGS.Moods.map(t => {
                   const isSelected = moodTags.includes(t.toLowerCase());
@@ -951,7 +951,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <button
                       key={t}
                       onClick={() => setMoodTags(isSelected ? moodTags.filter(x => x !== t.toLowerCase()) : [...moodTags, t.toLowerCase()])}
-                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-muted-foreground hover:border-primary/50"}`}
+                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
                     >
                       {t}
                     </button>
@@ -961,7 +961,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
 
             <div>
-              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Styles</label>
+              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Styles</label>
               <div className="flex flex-wrap gap-1.5">
                 {RECOMMENDED_TAGS.Styles.map(t => {
                   const isSelected = styleTags.includes(t.toLowerCase());
@@ -969,7 +969,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <button
                       key={t}
                       onClick={() => setStyleTags(isSelected ? styleTags.filter(x => x !== t.toLowerCase()) : [...styleTags, t.toLowerCase()])}
-                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-muted-foreground hover:border-primary/50"}`}
+                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
                     >
                       {t}
                     </button>
@@ -979,7 +979,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
 
             <div>
-              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Personality</label>
+              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Personality</label>
               <div className="flex flex-wrap gap-1.5">
                 {RECOMMENDED_TAGS.Personality.map(t => {
                   const isSelected = personalityTraits.includes(t.toLowerCase());
@@ -987,7 +987,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <button
                       key={t}
                       onClick={() => setPersonalityTraits(isSelected ? personalityTraits.filter(x => x !== t.toLowerCase()) : [...personalityTraits, t.toLowerCase()])}
-                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-muted-foreground hover:border-primary/50"}`}
+                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
                     >
                       {t}
                     </button>
@@ -997,7 +997,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
 
             <div className="pt-2">
-              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Looks Like (Celebrity or Character Type)</label>
+              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Looks Like (Celebrity or Character Type)</label>
               <div className="flex flex-wrap gap-2 mb-3">
                 {looksLike.map(t => (
                   <Badge key={t} variant="secondary" className="bg-secondary/40 text-white gap-1.5 py-1 px-2.5">
@@ -1025,7 +1025,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
 
             <div className="pt-2">
-              <label className="block text-[0.65rem] text-muted-foreground font-normal tracking-wider mb-2 uppercase">Visual Search Keywords (Hidden from public)</label>
+              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Visual Search Keywords (Hidden from public)</label>
               <textarea
                 value={visualSearchKeywords}
                 onChange={(e) => setVisualSearchKeywords(e.target.value)}
@@ -1039,7 +1039,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Physical Attributes */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Physical Attributes</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Physical Attributes</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field label="HEIGHT" value={height} onChange={setHeight} placeholder="e.g. 5'10" />
             <Field label="AGE" value={age} onChange={setAge} type="number" placeholder="Years" />
@@ -1051,14 +1051,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Professional */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-muted-foreground/40 mb-5">Professional Experience</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Professional Experience</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Field label="YEARS OF EXPERIENCE" value={experienceYears} onChange={setExperienceYears} type="number" />
             <Field label="PORTFOLIO / IMDB URL" value={portfolioUrl} onChange={setPortfolioUrl} placeholder="https://..." />
           </div>
 
           <div>
-            <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-2">SKILLS & SPECIALTIES</label>
+            <label className="block text-[0.76rem] text-foreground/60 font-normal tracking-wider mb-2">SKILLS & SPECIALTIES</label>
             <div className="flex flex-wrap gap-2 mb-4">
               {skills.map((skill) => (
                 <span key={skill} className="bg-primary border border-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-normal flex items-center gap-2 shadow-sm animate-in fade-in zoom-in duration-200">
@@ -1085,7 +1085,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
 
             <div className="space-y-5 bg-secondary/20 p-5 rounded-2xl border border-border/50">
-              <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-muted-foreground/60">Quick Add Skills</h4>
+              <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/60">Quick Add Skills</h4>
               {Object.entries(RECOMMENDED_SKILLS).map(([category, categorySkills]) => (
                 <div key={category}>
                   <div className="text-[0.7rem] font-normal text-primary/80 mb-2 flex items-center gap-2">
@@ -1101,7 +1101,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                           onClick={() => isSelected ? removeSkill(s) : setSkills([...skills, s])}
                           className={`px-3 py-1.5 rounded-lg text-[0.68rem] font-medium transition-all border ${isSelected
                             ? "bg-primary/10 border-primary text-primary shadow-sm"
-                            : "bg-background border-border text-muted-foreground hover:border-primary/50 hover:text-primary"
+                            : "bg-background border-border text-foreground/60 hover:border-primary/50 hover:text-primary"
                             }`}
                         >
                           {s}
@@ -1119,7 +1119,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         <div className="flex items-center justify-between pt-4 pb-8 gap-4">
           <button
             onClick={handleCancelEdit}
-            className="px-8 py-3 rounded-xl border border-border text-muted-foreground hover:text-white hover:border-white/20 transition-all font-normal text-sm"
+            className="px-8 py-3 rounded-xl border border-border text-foreground/60 hover:text-white hover:border-white/20 transition-all font-normal text-sm"
           >
             Cancel
           </button>
@@ -1143,7 +1143,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-background/50 border border-border rounded-xl px-4 py-3 text-center">
-      <div className="text-[0.6rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-1">{label}</div>
+      <div className="text-[0.6rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-1">{label}</div>
       <div className="text-sm font-normal text-foreground">{value}</div>
     </div>
   );
@@ -1154,7 +1154,7 @@ function Field({ label, value, onChange, placeholder, type = "text", disabled = 
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
+      <label className="block text-[0.76rem] text-foreground/60 font-normal tracking-wider mb-1">{label}</label>
       <input
         type={type}
         value={value}
@@ -1172,7 +1172,7 @@ function SelectField({ label, value, onChange, options }: {
 }) {
   return (
     <div>
-      <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">{label}</label>
+      <label className="block text-[0.76rem] text-foreground/60 font-normal tracking-wider mb-1">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}

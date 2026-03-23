@@ -191,10 +191,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="space-y-1"
+              className="space-y-2"
             >
-              <div className="text-3xl md:text-4xl font-display text-amber-500">{stat.value}</div>
-              <div className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground font-medium">{stat.label}</div>
+              <div className="text-3xl md:text-5xl font-display text-amber-500 drop-shadow-sm">{stat.value}</div>
+              <div className="text-[0.65rem] uppercase tracking-[0.25em] text-foreground/60 font-bold">{stat.label}</div>
             </motion.div>
           ))}
         </div>
@@ -203,9 +203,9 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       {/* ── CATEGORIES (GLASSMORPHISM) ── */}
       <section className="py-32 md:py-48 px-6 max-w-7xl mx-auto relative z-30">
         <div className="text-center mb-24 space-y-6">
-          <h2 className="text-[0.75rem] uppercase tracking-[0.5em] text-primary/60 font-black">Select Your Discipline</h2>
+          <h2 className="text-[0.75rem] uppercase tracking-[0.5em] text-primary font-black">Select Your Discipline</h2>
           <h3 className="text-5xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-primary font-medium">Elite</span></h3>
-          <div className="w-16 h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent mx-auto rounded-full" />
+          <div className="w-16 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -101,8 +101,8 @@ export default function Navbar({
           />
         </button>
 
-        {/* Center Links - Desktop Only */}
-        <div className="hidden lg:flex items-center gap-2">
+        {/* Center Links - Horizontal Scroll on Tablet/Mobile, Flex on Desktop */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 mask-fade-right lg:mask-none group/nav">
           <button onClick={() => onNavigate("home")} className={navItemClass("home")}>
             <Home size={14} /> Home
           </button>
@@ -113,7 +113,7 @@ export default function Navbar({
             <Users size={14} /> Actors
           </button>
           <button onClick={() => onNavigate("projects", { openForm: true })} className={navItemClass("projects")}>
-            <PlusCircle size={14} /> Post Casting
+            <PlusCircle size={14} /> Post
           </button>
         </div>
 
@@ -141,10 +141,10 @@ export default function Navbar({
             </button>
 
             {user && (
-              <>
+              <div className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={onMessagesClick}
-                  className="hidden md:flex p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
+                  className="flex p-2 md:p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
                   title="Direct Messages"
                 >
                   <MessageSquare size={18} className={`transition-colors ${unreadMsgCount > 0 ? "text-primary shadow-[0_0_10px_hsl(var(--gold)/0.4)]" : "text-muted-foreground"}`} />
@@ -152,18 +152,18 @@ export default function Navbar({
                     <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background animate-pulse" />
                   )}
                 </button>
-
+  
                 <button
                   onClick={onNotificationClick}
-                  className="hidden md:flex p-1.5 rounded-lg text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
+                  className="flex p-2 md:p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
                   title="Notifications"
                 >
-                  <Bell className="w-4 h-4" />
+                  <Bell className="w-4 h-4 md:w-[18px] md:h-[18px]" />
                   {unreadCount > 0 && (
                     <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full border border-background animate-pulse" />
                   )}
                 </button>
-              </>
+              </div>
             )}
           </div>
 
