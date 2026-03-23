@@ -229,8 +229,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   <cat.icon className="w-7 h-7 md:w-9 md:h-9 text-primary/60 group-hover:text-primary" strokeWidth={1} />
                 </div>
 
-                <div className="text-center space-y-1 md:space-y-2 w-full px-2">
-                  <span className="block font-display text-[0.9rem] md:text-xl lg:text-2xl text-foreground tracking-tight uppercase font-bold truncate w-full">{cat.role}</span>
+                <div className="text-center space-y-1 md:space-y-2 w-full px-4">
+                  <span className="block font-display text-[0.9rem] md:text-lg lg:text-xl text-foreground tracking-tight uppercase font-bold truncate w-full">{cat.role}</span>
                   <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-muted-foreground group-hover:text-primary transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
                 </div>
               </div>
