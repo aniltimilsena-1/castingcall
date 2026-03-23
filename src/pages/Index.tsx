@@ -343,13 +343,13 @@ const Index = () => {
           <button
             key={id}
             onClick={() => navigate(id)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/50"
+            className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/70"
               }`}
           >
             <div className={`relative flex items-center justify-center ${page === id ? "after:content-[''] after:absolute after:-bottom-2 after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:gold-glow" : ""}`}>
               <Icon size={24} strokeWidth={page === id ? 2.5 : 1.5} className="transition-all" />
             </div>
-            <span className={`text-[0.55rem] transition-all font-black uppercase tracking-[0.2em] ${page === id ? "opacity-100 scale-105" : "opacity-40"}`}>{label}</span>
+            <span className={`text-[0.55rem] transition-all font-black uppercase tracking-[0.2em] ${page === id ? "opacity-100 scale-105" : ""}`}>{label}</span>
           </button>
         ))}
       </nav>

@@ -76,6 +76,15 @@ export default function Navbar({
       : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5 ghost-border'}
   `;
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <nav className="sticky top-0 glass z-[100] border-b border-foreground/5 shadow-2xl shadow-black/5 dark:shadow-black/20">
       <div className="flex items-center justify-between px-4 md:px-8 h-20 max-w-[2000px] mx-auto">
@@ -176,7 +185,7 @@ export default function Navbar({
               }`}
           >
             {isPro && <Crown size={12} className="animate-pulse" />}
-            {user ? (isPro ? (window.innerWidth < 640 ? "PRO" : "PRO DASHBOARD") : "MY STAGE") : "JOIN"}
+            {user ? (isPro ? (isMobile ? "PRO" : "PRO DASHBOARD") : "MY STAGE") : "JOIN"}
           </button>
 
           <button

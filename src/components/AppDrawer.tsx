@@ -60,7 +60,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             onClick={onClose}
             className="absolute top-5 right-5 text-muted-foreground/40 hover:text-primary transition-all hover:scale-110"
           >
-            <X className="w-6 h-6 outline-none" />
+            <X className="w-6 h-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary" />
           </button>
 
           <div className="w-16 h-16 rounded-2xl bg-foreground/5 border border-foreground/10 flex items-center justify-center font-display text-2xl text-primary flex-shrink-0 overflow-hidden shadow-2xl">
@@ -76,7 +76,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             <div className="font-display text-lg text-foreground font-bold leading-tight truncate">
               {loading ? "Syncing..." : (profile?.name || (user ? "Account" : "Guest"))}
             </div>
-            <div className="text-[0.6rem] text-primary font-bold uppercase tracking-[0.2em] mt-1 truncate">
+            <div className="text-[0.7rem] text-primary font-bold uppercase tracking-[0.12em] mt-1 truncate">
               {loading ? "Please wait" : (profile?.role || (user ? "Member" : "Not signed in"))}
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="px-8 pt-6 pb-2">
-      <div className="text-[0.6rem] font-black tracking-[0.3em] uppercase text-primary/40 mb-3 ml-2">
+      <div className="text-sm font-black tracking-[0.3em] uppercase text-primary/40 mb-3 ml-2">
         {label}
       </div>
       {children}
