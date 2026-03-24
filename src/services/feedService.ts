@@ -65,10 +65,18 @@ export const feedService = {
     async getComments(urls: string[]) {
         const { data: commentRows } = await supabase
             .from("photo_comments")
-            .select("id, photo_url, content, user_id, created_at")
+            .select("id, photo_url, content, user_id, created_at, parent_id")
             .in("photo_url", urls)
             .order("created_at", { ascending: true });
         return commentRows || [];
+    },
+
+    async getCommentLikes(commentIds: string[]) {
+        const { data: likeRows } = await supabase
+            .from("photo_comment_likes")
+            .select("comment_id, user_id")
+            .in("comment_id", commentIds);
+        return likeRows || [];
     },
 
     async getCommenters(ids: string[]) {
@@ -95,14 +103,35 @@ export const feedService = {
         if (error) throw error;
     },
 
-    async addComment(photoUrl: string, userId: string, content: string) {
+    async addComment(photoUrl: string, userId: string, content: string, parentId: string | null = null) {
         const { data, error } = await supabase
             .from("photo_comments")
-            .insert({ photo_url: photoUrl, user_id: userId, content: content.trim() })
+            .insert({ 
+                photo_url: photoUrl, 
+                user_id: userId, 
+                content: content.trim(),
+                parent_id: parentId 
+            })
             .select()
             .single();
         if (error) throw error;
         return data;
+    },
+
+    async likeComment(commentId: string, userId: string) {
+        const { error } = await supabase
+            .from("photo_comment_likes")
+            .insert({ comment_id: commentId, user_id: userId });
+        if (error) throw error;
+    },
+
+    async unlikeComment(commentId: string, userId: string) {
+        const { error } = await supabase
+            .from("photo_comment_likes")
+            .delete()
+            .eq("comment_id", commentId)
+            .eq("user_id", userId);
+        if (error) throw error;
     },
 
     async deleteComment(commentId: string) {

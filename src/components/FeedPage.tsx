@@ -6,7 +6,7 @@ import { followService } from "@/services/followService";
 import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Send, Bookmark, Sparkles, ArrowLeft, X, Crown, Lock, Unlock, Gift, Minimize2, Trash2, Play, MoreVertical } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Sparkles, ArrowLeft, X, Crown, Lock, Unlock, Gift, Minimize2, Trash2, Play, MoreVertical, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 import { useVideo } from "@/contexts/VideoContext";
@@ -59,10 +59,13 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     // likes: map of mediaUrl → count + isLiked
     const [likes, setLikes] = useState<Record<string, { count: number; liked: boolean }>>({});
     // comments: map of mediaUrl → comment[]
-    const [comments, setComments] = useState<Record<string, { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string }[]>>({});
+    const [comments, setComments] = useState<Record<string, { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string; parent_id: string | null }[]>>({});
     const [openComments, setOpenComments] = useState<string | null>(null);
     const [commentText, setCommentText] = useState<Record<string, string>>({});
     const [postingComment, setPostingComment] = useState<string | null>(null);
+    const [commentLikes, setCommentLikes] = useState<Record<string, { count: number; liked: boolean }>>({});
+    const [replyingTo, setReplyingTo] = useState<{ id: string; commenter: string; photoUrl: string } | null>(null);
+    const [isMuted, setIsMuted] = useState(true);
 
     // ── Subs & Purchases state
     const [subscriptions, setSubscriptions] = useState<Set<string>>(new Set());
@@ -150,6 +153,19 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                         };
                     });
                     setLikes(likeMap);
+
+                    // Fetch comment likes
+                    const commentIds = (commentRows || []).map(c => c.id);
+                    const commentLikeRows = await feedService.getCommentLikes(commentIds);
+                    const clMap: Record<string, { count: number; liked: boolean }> = {};
+                    commentIds.forEach(id => {
+                        const cl = (commentLikeRows || []).filter(l => l.comment_id === id);
+                        clMap[id] = {
+                            count: cl.length,
+                            liked: !!(user && cl.find(l => l.user_id === user.id))
+                        };
+                    });
+                    setCommentLikes(clMap);
     
                     // Map comments (need unique commenters)
                     const uniqueCommenters = Array.from(new Set((commentRows || []).map((c) => c.user_id)));
@@ -251,7 +267,7 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
 
         setPostingComment(mediaUrl);
         try {
-            const data = await feedService.addComment(mediaUrl, user.id, text);
+            const data = await feedService.addComment(mediaUrl, user.id, text, replyingTo?.photoUrl === mediaUrl ? replyingTo.id : null);
             if (!data) throw new Error("Could not add comment");
 
             const newComment = {
@@ -265,11 +281,38 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                 [mediaUrl]: [...(prev[mediaUrl] || []), newComment]
             }));
             setCommentText(prev => ({ ...prev, [mediaUrl]: "" }));
+            setReplyingTo(null);
             toast.success("Comment added!");
         } catch (err: any) {
             toast.error(err.message || "Failed to post comment");
         } finally {
             setPostingComment(null);
+        }
+    };
+
+    const handleLikeComment = async (commentId: string) => {
+        if (!user) {
+            toast.error("Please log in to like comments");
+            return;
+        }
+
+        const isLiked = commentLikes[commentId]?.liked;
+        try {
+            if (isLiked) {
+                await feedService.unlikeComment(commentId, user.id);
+                setCommentLikes(prev => ({
+                    ...prev,
+                    [commentId]: { count: Math.max(0, prev[commentId].count - 1), liked: false }
+                }));
+            } else {
+                await feedService.likeComment(commentId, user.id);
+                setCommentLikes(prev => ({
+                    ...prev,
+                    [commentId]: { count: (prev[commentId]?.count || 0) + 1, liked: true }
+                }));
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Operation failed");
         }
     };
 
@@ -437,9 +480,16 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                         item={openPost}
                         likeData={likes[openPost.url] || { count: 0, liked: false }}
                         commentList={comments[openPost.url] || []}
+                        commentLikes={commentLikes}
+                        replyingTo={replyingTo}
+                        isMuted={isMuted}
+                        onToggleMute={() => setIsMuted(!isMuted)}
+                        onLikeComment={handleLikeComment}
+                        onReply={(cid, name) => setReplyingTo({ id: cid, commenter: name, photoUrl: openPost.url })}
+                        onCancelReply={() => setReplyingTo(null)}
                         commentValue={commentText[openPost.url] || ""}
                         isPostingComment={postingComment === openPost.url}
-                        onClose={() => setOpenPost(null)}
+                        onClose={() => { setOpenPost(null); setReplyingTo(null); }}
                         onLike={() => handleLike(openPost.url)}
                         onCommentChange={(v) => setCommentText(prev => ({ ...prev, [openPost.url]: v }))}
                         onCommentSubmit={() => handleComment(openPost.url)}
@@ -463,14 +513,21 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
 
                     return (
                         <div key={item.id} className="h-full w-full snap-start snap-always relative border-b border-white/5">
-                            <FeedCard
-                                item={item}
-                                isUnlocked={isUnlocked}
-                                likeData={likes[item.url] || { count: 0, liked: false }}
-                                commentList={comments[item.url] || []}
-                                commentValue={commentText[item.url] || ""}
-                                commentsOpen={openComments === item.url}
-                                isPostingComment={postingComment === item.url}
+                                <FeedCard
+                                    item={item}
+                                    isUnlocked={isUnlocked}
+                                    likeData={likes[item.url] || { count: 0, liked: false }}
+                                    commentList={comments[item.url] || []}
+                                    commentValue={commentText[item.url] || ""}
+                                    commentLikes={commentLikes}
+                                    replyingTo={replyingTo}
+                                    isMuted={isMuted}
+                                    onToggleMute={() => setIsMuted(!isMuted)}
+                                    onLikeComment={handleLikeComment}
+                                    onReply={(cid, name) => setReplyingTo({ id: cid, commenter: name, photoUrl: item.url })}
+                                    onCancelReply={() => setReplyingTo(null)}
+                                    commentsOpen={openComments === item.url}
+                                    isPostingComment={postingComment === item.url}
                                 onLike={() => handleLike(item.url)}
                                 onToggleComments={() => setOpenComments(openComments === item.url ? null : item.url)}
                                 onCommentChange={(v) => setCommentText(prev => ({ ...prev, [item.url]: v }))}
@@ -552,7 +609,14 @@ interface FeedCardProps {
     item: FeedItem;
     isUnlocked: boolean;
     likeData: { count: number; liked: boolean };
-    commentList: { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string }[];
+    commentList: { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string; parent_id: string | null }[];
+    commentLikes: Record<string, { count: number; liked: boolean }>;
+    replyingTo: { id: string; commenter: string; photoUrl: string } | null;
+    isMuted: boolean;
+    onToggleMute: () => void;
+    onLikeComment: (cid: string) => void;
+    onReply: (cid: string, commenter: string) => void;
+    onCancelReply: () => void;
     commentValue: string;
     commentsOpen: boolean;
     isPostingComment: boolean;
@@ -574,7 +638,7 @@ interface FeedCardProps {
 }
 
 function FeedCard({
-    item, isUnlocked, likeData, commentList, commentValue, commentsOpen,
+    item, isUnlocked, likeData, commentList, commentValue, commentLikes, replyingTo, isMuted, onToggleMute, onLikeComment, onReply, onCancelReply, commentsOpen,
     isPostingComment, onLike, onDeleteComment, onToggleComments, onCommentChange,
     onCommentSubmit, onProfileClick, onOpenPost, onUnlock, onTip, onSavePost, onSharePost, isFollowing, onToggleFollow, isSavedPost, index
 }: FeedCardProps) {
@@ -667,7 +731,7 @@ function FeedCard({
                         src={item.url}
                         className={`relative z-10 w-full h-full object-contain transition-all duration-700 ${!isUnlocked ? "blur-3xl opacity-50 scale-125" : ""}`}
                         loop
-                        muted
+                        muted={isMuted}
                         playsInline
                         onClick={(e) => {
                             e.stopPropagation();
@@ -684,6 +748,14 @@ function FeedCard({
             {/* Overlaid UI (Actions - Right Side) */}
             {/* Overlaid UI (Actions - Right Side) */}
             <div className="absolute right-4 bottom-24 flex flex-col gap-5 z-20 items-center">
+                {item.type === 'video' && (
+                    <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={(e) => { e.stopPropagation(); onToggleMute(); }}>
+                        <button className="w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center text-white/80 transition-all border border-white/5">
+                            {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+                        </button>
+                    </div>
+                )}
+                
                 <div className="flex flex-col items-center gap-1.5 hover:scale-105 transition-transform cursor-pointer" onClick={onLike}>
                     <button
                         className={`w-11 h-11 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center transition-all ${likeData.liked ? "text-red-500" : "text-white"}`}
@@ -901,40 +973,100 @@ function FeedCard({
                                     <p className="text-xs uppercase tracking-widest italic">Be the first to comment</p>
                                 </div>
                             )}
-                            {commentList.map((c) => (
-                                <div key={c.id} className="flex gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-secondary border border-white/5 flex-shrink-0 overflow-hidden">
-                                        {c.commenter_photo ? <img src={c.commenter_photo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs">{c.commenter[0]}</div>}
-                                    </div>
-                                    <div className="flex-1 group/comment">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-foreground uppercase tracking-wider">{c.commenter}</span>
-                                                {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
-                                                    <button
-                                                        onClick={() => onDeleteComment(c.id)}
-                                                        className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
-                                                    >
-                                                        <Trash2 size={10} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <span className="text-[0.6rem] text-muted-foreground uppercase">{timeAgo(c.created_at)}</span>
+                            {commentList.filter(c => !c.parent_id).map((c) => (
+                                <div key={c.id} className="flex flex-col gap-4">
+                                    {/* Top Level Comment */}
+                                    <div className="flex gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-secondary border border-white/5 flex-shrink-0 overflow-hidden">
+                                            {c.commenter_photo ? <img src={c.commenter_photo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs">{c.commenter[0]}</div>}
                                         </div>
-                                        <p className="text-xs text-foreground/80 leading-relaxed">{c.content}</p>
+                                        <div className="flex-1 group/comment">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">{c.commenter}</span>
+                                                    {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
+                                                        <button
+                                                            onClick={() => onDeleteComment(c.id)}
+                                                            className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
+                                                        >
+                                                            <Trash2 size={10} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <span className="text-[0.6rem] text-muted-foreground uppercase">{timeAgo(c.created_at)}</span>
+                                            </div>
+                                            <p className="text-xs text-foreground/80 leading-relaxed">{c.content}</p>
+                                            
+                                            {/* Action Bar */}
+                                            <div className="flex items-center gap-4 mt-2">
+                                                <button onClick={() => onLikeComment(c.id)} className={`flex items-center gap-1.5 text-[0.65rem] font-bold ${commentLikes[c.id]?.liked ? 'text-rose-500' : 'text-muted-foreground hover:text-white'} transition-colors`}>
+                                                    <Heart size={12} fill={commentLikes[c.id]?.liked ? "currentColor" : "none"} />
+                                                    {commentLikes[c.id]?.count || 0}
+                                                </button>
+                                                <button onClick={() => onReply(c.id, c.commenter)} className="flex items-center gap-1 text-[0.65rem] font-bold text-muted-foreground hover:text-white transition-colors uppercase tracking-widest">
+                                                    Reply
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    {/* Nested Replies */}
+                                    {commentList.filter(r => r.parent_id === c.id).length > 0 && (
+                                        <div className="flex flex-col gap-4 pl-12">
+                                            {commentList.filter(r => r.parent_id === c.id).map(r => (
+                                                <div key={r.id} className="flex gap-3 relative">
+                                                    {/* Thread Connector Line */}
+                                                    <div className="absolute -left-6 top-1 bottom-1 w-px bg-white/10" />
+                                                    <div className="w-8 h-8 rounded-full bg-secondary border border-white/5 flex-shrink-0 overflow-hidden relative z-10">
+                                                        {r.commenter_photo ? <img src={r.commenter_photo} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[0.6rem]">{r.commenter[0]}</div>}
+                                                    </div>
+                                                    <div className="flex-1 group/reply">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[0.65rem] font-bold text-foreground uppercase tracking-wider">{r.commenter}</span>
+                                                                {(user?.id === r.user_id || currentUserProfile?.role === 'Admin') && (
+                                                                    <button
+                                                                        onClick={() => onDeleteComment(r.id)}
+                                                                        className="opacity-0 group-hover/reply:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
+                                                                    >
+                                                                        <Trash2 size={10} />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-[0.55rem] text-muted-foreground uppercase">{timeAgo(r.created_at)}</span>
+                                                        </div>
+                                                        <p className="text-[0.7rem] text-foreground/80 leading-relaxed">{r.content}</p>
+                                                        
+                                                        {/* Reply Action Bar */}
+                                                        <div className="flex items-center gap-4 mt-1.5">
+                                                            <button onClick={() => onLikeComment(r.id)} className={`flex items-center gap-1.5 text-[0.6rem] font-bold ${commentLikes[r.id]?.liked ? 'text-rose-500' : 'text-muted-foreground hover:text-white'} transition-colors`}>
+                                                                <Heart size={10} fill={commentLikes[r.id]?.liked ? "currentColor" : "none"} />
+                                                                {commentLikes[r.id]?.count || 0}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
 
                         <div className="p-6 border-t border-white/5 flex-shrink-0 bg-background/50">
                             <div className="relative">
+                                {replyingTo && (
+                                    <div className="absolute -top-10 left-3 flex items-center justify-between gap-4 bg-primary text-black px-4 py-1.5 rounded-full text-[0.65rem] uppercase tracking-widest font-bold shadow-lg shadow-primary/20">
+                                        <span>Replying to {replyingTo.commenter}</span>
+                                        <button onClick={onCancelReply} className="hover:text-black/60 transition-colors bg-black/10 rounded-full p-0.5"><X size={12} /></button>
+                                    </div>
+                                )}
                                 <input
                                     type="text"
                                     value={commentValue}
                                     onChange={(e) => onCommentChange(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && !isPostingComment && onCommentSubmit()}
-                                    placeholder="Speak your mind..."
+                                    placeholder={replyingTo ? `Replying to @${replyingTo.commenter}...` : "Speak your mind..."}
                                     className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-12 py-4 text-xs outline-none focus:border-primary transition-all text-white"
                                 />
                                 <button
@@ -958,7 +1090,14 @@ function FeedCard({
 interface PostModalProps {
     item: FeedItem;
     likeData: { count: number; liked: boolean };
-    commentList: { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string }[];
+    commentList: { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string; parent_id: string | null }[];
+    commentLikes: Record<string, { count: number; liked: boolean }>;
+    replyingTo: { id: string; commenter: string; photoUrl: string } | null;
+    isMuted: boolean;
+    onToggleMute: () => void;
+    onLikeComment: (cid: string) => void;
+    onReply: (cid: string, commenter: string) => void;
+    onCancelReply: () => void;
     commentValue: string;
     isPostingComment: boolean;
     onClose: () => void;
@@ -973,9 +1112,9 @@ interface PostModalProps {
 }
 
 function PostModal({ 
-    item, likeData, commentList, commentValue, isPostingComment, 
-    onClose, onLike, onCommentChange, onCommentSubmit, onDeleteComment, 
-    onProfileClick, onSavePost, onSharePost, isSavedPost 
+    item, likeData, commentList, commentLikes, replyingTo, isMuted, onToggleMute, onLikeComment, onReply, onCancelReply,
+    commentValue, isPostingComment, onClose, onLike, onCommentChange, onCommentSubmit, 
+    onDeleteComment, onProfileClick, onSavePost, onSharePost, isSavedPost 
 }: PostModalProps) {
     const { user, profile: currentUserProfile } = useAuth();
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -1074,7 +1213,7 @@ function PostModal({
                     {item.type === "photo" ? (
                         <img src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" alt="" />
                     ) : (
-                        <video src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" muted />
+                        <video src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" muted={isMuted} />
                     )}
                 </div>
 
@@ -1091,6 +1230,7 @@ function PostModal({
                             src={item.url}
                             className="w-full h-full object-contain max-h-[70vh] md:max-h-full"
                             loop playsInline
+                            muted={isMuted}
                             onClick={() => {
                                 if (videoRef.current) {
                                     if (isPlaying) { videoRef.current.pause(); setIsPlaying(false); }
@@ -1106,6 +1246,12 @@ function PostModal({
                                 </div>
                             </button>
                         )}
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
+                            className="absolute bottom-4 right-4 z-50 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white transition-all shadow-xl"
+                        >
+                            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                        </button>
                     </div>
                 )}
             </div>
@@ -1122,51 +1268,104 @@ function PostModal({
                 {commentList.length === 0 && (
                     <p className="text-center text-muted-foreground/50 text-sm py-6">No comments yet — be the first!</p>
                 )}
-                {commentList.map((c) => (
-                    <div key={c.id} className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0 flex items-center justify-center text-[0.65rem] font-normal text-primary">
-                            {c.commenter_photo
-                                ? <img src={c.commenter_photo} className="w-full h-full object-cover" alt="" />
-                                : c.commenter?.[0]?.toUpperCase()
-                            }
-                        </div>
-                        <div className="flex-1 bg-secondary/20 rounded-2xl px-3 py-2 group/comment relative">
-                            <div className="flex items-center justify-between">
-                                <span className="font-normal text-xs text-foreground mr-1.5">{c.commenter}</span>
-                                {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
-                                    <button
-                                        onClick={() => onDeleteComment(c.id)}
-                                        className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
-                                    >
-                                        <Trash2 size={10} />
-                                    </button>
-                                )}
+                {commentList.filter(c => !c.parent_id).map((c) => (
+                    <div key={c.id} className="flex flex-col gap-3">
+                        {/* Top Level Comment */}
+                        <div className="flex gap-3">
+                            <div className="w-8 h-8 rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0 flex items-center justify-center text-[0.65rem] font-normal text-primary">
+                                {c.commenter_photo
+                                    ? <img src={c.commenter_photo} className="w-full h-full object-cover" alt="" />
+                                    : c.commenter?.[0]?.toUpperCase()
+                                }
                             </div>
-                            <span className="text-xs text-foreground/80 break-words">{c.content}</span>
-                            <div className="text-[0.6rem] text-muted-foreground/50 mt-1">{timeAgo(c.created_at)}</div>
+                            <div className="flex-1 bg-secondary/20 rounded-2xl px-3 py-2 group/comment relative">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-normal text-xs text-foreground mr-1.5">{c.commenter}</span>
+                                    {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
+                                        <button
+                                            onClick={() => onDeleteComment(c.id)}
+                                            className="opacity-0 group-hover/comment:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
+                                        >
+                                            <Trash2 size={10} />
+                                        </button>
+                                    )}
+                                </div>
+                                <span className="text-xs text-foreground/80 break-words">{c.content}</span>
+                                
+                                <div className="flex items-center gap-3 text-[0.6rem] text-muted-foreground/50 mt-1.5 font-medium">
+                                    <span>{timeAgo(c.created_at)}</span>
+                                    <button onClick={() => onLikeComment(c.id)} className={`flex items-center gap-1 hover:text-foreground transition-colors ${commentLikes[c.id]?.liked ? 'text-rose-500' : ''}`}>
+                                        <Heart size={10} fill={commentLikes[c.id]?.liked ? "currentColor" : "none"} />
+                                        {commentLikes[c.id]?.count || 0}
+                                    </button>
+                                    <button onClick={() => onReply(c.id, c.commenter)} className="hover:text-foreground transition-colors uppercase tracking-wider">Reply</button>
+                                </div>
+                            </div>
                         </div>
+
+                        {/* Nested Replies */}
+                        {commentList.filter(r => r.parent_id === c.id).length > 0 && (
+                            <div className="flex flex-col gap-3 pl-11">
+                                {commentList.filter(r => r.parent_id === c.id).map(r => (
+                                    <div key={r.id} className="flex gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-secondary border border-border overflow-hidden flex-shrink-0 flex items-center justify-center text-[0.55rem] font-normal text-primary">
+                                            {r.commenter_photo ? <img src={r.commenter_photo} className="w-full h-full object-cover" alt="" /> : r.commenter?.[0]?.toUpperCase()}
+                                        </div>
+                                        <div className="flex-1 bg-secondary/10 rounded-xl px-2.5 py-1.5 group/reply relative">
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-normal text-[0.65rem] text-foreground mr-1.5">{r.commenter}</span>
+                                                {(user?.id === r.user_id || currentUserProfile?.role === 'Admin') && (
+                                                    <button
+                                                        onClick={() => onDeleteComment(r.id)}
+                                                        className="opacity-0 group-hover/reply:opacity-100 transition-opacity p-1 text-muted-foreground hover:text-red-500"
+                                                    >
+                                                        <Trash2 size={10} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <span className="text-[0.65rem] text-foreground/80 break-words">{r.content}</span>
+                                            
+                                            <div className="flex items-center gap-3 text-[0.55rem] text-muted-foreground/50 mt-1 font-medium">
+                                                <span>{timeAgo(r.created_at)}</span>
+                                                <button onClick={() => onLikeComment(r.id)} className={`flex items-center gap-1 hover:text-foreground transition-colors ${commentLikes[r.id]?.liked ? 'text-rose-500' : ''}`}>
+                                                    <Heart size={8} fill={commentLikes[r.id]?.liked ? "currentColor" : "none"} />
+                                                    {commentLikes[r.id]?.count || 0}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
 
             {/* ── Comment Input (pinned to bottom) ── */}
-            <div className="flex items-center gap-2 px-4 py-3 border-t border-border bg-card flex-shrink-0"
-                style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-                <input
-                    type="text"
-                    value={commentValue}
-                    onChange={(e) => onCommentChange(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !isPostingComment && onCommentSubmit()}
-                    placeholder="Write a comment…"
-                    className="flex-1 bg-secondary/30 border border-border rounded-full px-4 py-2.5 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
-                />
-                <button
-                    onClick={onCommentSubmit}
-                    disabled={!commentValue.trim() || !!isPostingComment}
-                    className="p-2.5 bg-primary text-primary-foreground rounded-full disabled:opacity-30 hover:opacity-85 transition-opacity"
-                >
-                    <Send size={16} />
-                </button>
+            <div className="flex flex-col px-4 py-3 border-t border-border bg-card flex-shrink-0" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+                {replyingTo && (
+                    <div className="flex items-center justify-between gap-4 bg-primary/10 text-primary px-3 py-1.5 rounded-t-xl text-[0.65rem] font-bold mb-2">
+                        <span>Replying to {replyingTo.commenter}</span>
+                        <button onClick={onCancelReply} className="hover:text-primary/70 transition-colors bg-primary/20 rounded-full p-0.5"><X size={12} /></button>
+                    </div>
+                )}
+                <div className="flex items-center gap-2">
+                    <input
+                        type="text"
+                        value={commentValue}
+                        onChange={(e) => onCommentChange(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && !isPostingComment && onCommentSubmit()}
+                        placeholder={replyingTo ? `Replying to @${replyingTo.commenter}...` : "Write a comment…"}
+                        className="flex-1 bg-secondary/30 border border-border rounded-full px-4 py-2.5 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
+                    />
+                    <button
+                        onClick={onCommentSubmit}
+                        disabled={!commentValue.trim() || !!isPostingComment}
+                        className="p-2.5 bg-primary text-primary-foreground rounded-full disabled:opacity-30 hover:opacity-85 transition-opacity"
+                    >
+                        <Send size={16} />
+                    </button>
+                </div>
             </div>
         </motion.div>
     );
