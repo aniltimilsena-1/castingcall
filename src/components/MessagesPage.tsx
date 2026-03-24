@@ -105,6 +105,13 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
   const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string } | null>(null);
 
+  const incomingCallRef = useRef(incomingCall);
+  const activeCallRef = useRef(activeCall);
+  const globalPresenceChannelRef = useRef<any>(null);
+
+  useEffect(() => { incomingCallRef.current = incomingCall; }, [incomingCall]);
+  useEffect(() => { activeCallRef.current = activeCall; }, [activeCall]);
+
   // Track IDs of messages we already inserted optimistically to skip the
   // realtime echo that would otherwise cause a duplicate.
   const sentMessageIds = useRef<Set<string>>(new Set());
@@ -270,23 +277,35 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       .on('broadcast', { event: 'call_signal' }, (payload) => {
         const data = payload.payload;
         if (data.targetId === user.id) {
+          const currentActive = activeCallRef.current;
+          const currentIncoming = incomingCallRef.current;
+
           if (data.action === 'call') {
+            if (currentActive || currentIncoming) return; // Prevent spam/simultaneous calls
             setIncomingCall({ roomId: data.roomId, callerName: data.callerName, type: data.type, callerId: data.callerId });
           } else if (data.action === 'accept') {
-            setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId });
+            if (currentActive && currentActive.partnerId === data.callerId) {
+              setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId });
+            }
           } else if (data.action === 'decline' || data.action === 'end') {
-            setIncomingCall(null);
-            setActiveCall(null);
+            if (currentIncoming && currentIncoming.callerId === data.callerId) {
+              setIncomingCall(null);
+            }
+            if (currentActive && currentActive.partnerId === data.callerId) {
+              setActiveCall(null);
+            }
           }
         }
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
+          globalPresenceChannelRef.current = channel;
           await channel.track({ online_at: new Date().toISOString() });
         }
       });
 
     return () => {
+      globalPresenceChannelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [user]);
@@ -414,63 +433,89 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     }
   }, [initialPartnerId, loadThread]);
 
-  const startCall = (type: 'video' | 'audio') => {
+  const startCall = async (type: 'video' | 'audio') => {
     if (!selectedPartner || !partnerProfile || !user) return;
-    const roomId = `cc-${user.id}-${selectedPartner}-${Date.now()}`;
+    if (activeCallRef.current || incomingCallRef.current) return;
     
+    const roomId = `cc-${user.id}-${selectedPartner}-${Date.now()}`;
     setActiveCall({ roomId, type, partnerId: selectedPartner }); 
     
-    supabase.channel('global-presence').send({
-      type: 'broadcast',
-      event: 'call_signal',
-      payload: {
-        targetId: selectedPartner,
-        callerId: user.id,
-        callerName: currentUserProfile?.name || 'User',
-        roomId,
-        type,
-        action: 'call'
+    if (globalPresenceChannelRef.current) {
+      try {
+        await globalPresenceChannelRef.current.send({
+          type: 'broadcast',
+          event: 'call_signal',
+          payload: {
+            targetId: selectedPartner,
+            callerId: user.id,
+            callerName: currentUserProfile?.name || 'User',
+            roomId,
+            type,
+            action: 'call'
+          }
+        });
+      } catch (err) {
+        console.error("Start call signal failed", err);
       }
-    });
+    }
   };
 
-  const answerCall = () => {
+  const answerCall = async () => {
     if (!incomingCall || !user) return;
-    supabase.channel('global-presence').send({
-      type: 'broadcast',
-      event: 'call_signal',
-      payload: {
-        targetId: incomingCall.callerId,
-        roomId: incomingCall.roomId,
-        type: incomingCall.type,
-        action: 'accept'
+    
+    if (globalPresenceChannelRef.current) {
+      try {
+        await globalPresenceChannelRef.current.send({
+          type: 'broadcast',
+          event: 'call_signal',
+          payload: {
+            targetId: incomingCall.callerId,
+            callerId: user.id, // Explicitly include callerId for standard reference
+            roomId: incomingCall.roomId,
+            type: incomingCall.type,
+            action: 'accept'
+          }
+        });
+      } catch (err) {
+        console.error("Answer call signal failed", err);
       }
-    });
+    }
     setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId });
     setIncomingCall(null);
   };
 
-  const rejectCall = () => {
+  const rejectCall = async () => {
     if (!incomingCall || !user) return;
-    supabase.channel('global-presence').send({
-      type: 'broadcast',
-      event: 'call_signal',
-      payload: {
-        targetId: incomingCall.callerId,
-        action: 'decline'
+    if (globalPresenceChannelRef.current) {
+      try {
+        await globalPresenceChannelRef.current.send({
+          type: 'broadcast',
+          event: 'call_signal',
+          payload: {
+            targetId: incomingCall.callerId,
+            callerId: user.id,
+            action: 'decline'
+          }
+        });
+      } catch (err) {
+        console.error("Reject call signal failed", err);
       }
-    });
+    }
     setIncomingCall(null);
   };
 
-  const endCall = () => {
+  const endCall = async () => {
     if (!activeCall || !user) return;
-    if (activeCall.partnerId) {
-      supabase.channel('global-presence').send({
-        type: 'broadcast',
-        event: 'call_signal',
-        payload: { targetId: activeCall.partnerId, action: 'end' }
-      });
+    if (activeCall.partnerId && globalPresenceChannelRef.current) {
+      try {
+        await globalPresenceChannelRef.current.send({
+          type: 'broadcast',
+          event: 'call_signal',
+          payload: { targetId: activeCall.partnerId, callerId: user.id, action: 'end' }
+        });
+      } catch (err) {
+        console.error("End call signal failed", err);
+      }
     }
     setActiveCall(null);
   };
@@ -764,10 +809,20 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2">
-                <button onClick={() => startCall('audio')} className="p-2.5 text-white/50 hover:bg-white/5 hover:text-white rounded-full transition-all" title="Audio Call">
+                <button 
+                  onClick={() => startCall('audio')} 
+                  disabled={!!activeCall || !!incomingCall}
+                  className={`p-2.5 transition-all rounded-full ${activeCall || incomingCall ? 'opacity-30 pointer-events-none' : 'text-white/50 hover:bg-white/5 hover:text-white'}`} 
+                  title="Audio Call"
+                >
                   <Phone size={20} />
                 </button>
-                <button onClick={() => startCall('video')} className="p-2.5 text-white/50 hover:bg-white/5 hover:text-white rounded-full transition-all" title="Video Call">
+                <button 
+                  onClick={() => startCall('video')} 
+                  disabled={!!activeCall || !!incomingCall}
+                  className={`p-2.5 transition-all rounded-full ${activeCall || incomingCall ? 'opacity-30 pointer-events-none' : 'text-white/50 hover:bg-white/5 hover:text-white'}`} 
+                  title="Video Call"
+                >
                   <Video size={20} />
                 </button>
               </div>
@@ -1073,7 +1128,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         <div className="fixed inset-0 z-[400] bg-black flex flex-col items-center justify-center">
           <iframe
             allow="camera; microphone; fullscreen; display-capture; autoplay"
-            src={`https://meet.jit.si/${activeCall.roomId}#config.prejoinPageEnabled=false&userInfo.displayName="${encodeURIComponent(currentUserProfile?.name || user?.email || 'User')}"`}
+            src={`https://meet.jit.si/${encodeURIComponent(activeCall.roomId)}#config.prejoinPageEnabled=false&userInfo.displayName=${encodeURIComponent(currentUserProfile?.name || user?.email || 'User')}`}
             style={{ width: '100%', height: '100%', border: 'none' }}
           />
           <button 
