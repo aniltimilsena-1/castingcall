@@ -59,6 +59,7 @@ export default function WebRTCCall({
   useEffect(() => {
     if (!streamReady || !isAccepted) return;
 
+    const iceCandidateQueue: RTCIceCandidateInit[] = [];
     const channel = supabase.channel(`webrtc-${roomId}`);
 
     const iceServers: RTCIceServer[] = [
@@ -121,6 +122,10 @@ export default function WebRTCCall({
             event: 'rtc_answer',
             payload: { answer, targetId: payload.callerId },
           });
+          // Process any ICE candidates that arrived before description was set
+          iceCandidateQueue.forEach(async (c) => {
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+          });
         } catch (e) {
           console.error("Error handling WebRTC Offer:", e);
         }
@@ -129,6 +134,10 @@ export default function WebRTCCall({
         if (payload.targetId !== currentUserId) return;
         try {
           await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
+          // Process any ICE candidates that arrived before description was set
+          iceCandidateQueue.forEach(async (c) => {
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+          });
         } catch (e) {
           console.error("Error handling WebRTC Answer:", e);
         }
@@ -136,7 +145,11 @@ export default function WebRTCCall({
       .on('broadcast', { event: 'rtc_ice' }, async ({ payload }) => {
         if (payload.targetId !== currentUserId) return;
         try {
-          await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+          if (pc.remoteDescription) {
+            await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+          } else {
+            iceCandidateQueue.push(payload.candidate);
+          }
         } catch (e) {
           console.error("Error adding remote ICE Candidate:", e);
         }
@@ -144,17 +157,20 @@ export default function WebRTCCall({
       .subscribe(async (status) => {
         // Only the caller throws the first pitch
         if (status === 'SUBSCRIBED' && isCaller) {
-          try {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            channel.send({
-              type: 'broadcast',
-              event: 'rtc_offer',
-              payload: { offer, targetId, callerId: currentUserId },
-            });
-          } catch (e) {
-            console.error("Error dispatching original WebRTC Offer:", e);
-          }
+          // Add deterministic buffer to ensure the receiver's Supabase channel accurately finished hooking its backend socket.
+          setTimeout(async () => {
+            try {
+              const offer = await pc.createOffer();
+              await pc.setLocalDescription(offer);
+              channel.send({
+                type: 'broadcast',
+                event: 'rtc_offer',
+                payload: { offer, targetId, callerId: currentUserId },
+              });
+            } catch (e) {
+              console.error("Error dispatching original WebRTC Offer:", e);
+            }
+          }, 1500);
         }
       });
 
