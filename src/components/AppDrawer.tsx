@@ -87,7 +87,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
         {/* ── Scrollable Nav Items ── */}
         <div className="flex-1 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
           <Section label="Explore">
-            <Item onClick={() => go("home")}>{t('nav.feed')}</Item>
+            <Item onClick={() => go("home")}>{t('nav.home')}</Item>
             <Item onClick={() => go("search", { searchType: "projects" })}>Casting Calls</Item>
             <Item onClick={() => go("search", { searchType: "talents" })}>Actors</Item>
             <Item onClick={() => go("feed")}>{t('nav.feed')}</Item>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback, useRef } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback, useRef, useEffect } from "react";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 
 interface ConfirmOptions {
@@ -30,31 +30,43 @@ export const ConfirmationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
 
   const optionsRef = useRef<ConfirmOptions | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   
   const confirm = useCallback((newOptions: ConfirmOptions) => {
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     optionsRef.current = newOptions;
     setOptions(newOptions);
     setIsOpen(true);
   }, []);
 
   const handleClose = useCallback(() => {
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     setIsOpen(false);
-    optionsRef.current?.onCancel?.();
-    // Delay clearing options to allow Dialog exit animation
-    setTimeout(() => {
+    const callback = optionsRef.current?.onCancel;
+    optionsRef.current = null;
+    callback?.();
+
+    timeoutRef.current = window.setTimeout(() => {
       setOptions(null);
-      optionsRef.current = null;
+      timeoutRef.current = null;
     }, 400);
   }, []);
 
   const handleConfirm = useCallback(() => {
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     setIsOpen(false);
-    optionsRef.current?.onConfirm?.();
-    // Delay clearing options to allow Dialog exit animation
-    setTimeout(() => {
+    const callback = optionsRef.current?.onConfirm;
+    optionsRef.current = null;
+    callback?.();
+
+    timeoutRef.current = window.setTimeout(() => {
       setOptions(null);
-      optionsRef.current = null;
+      timeoutRef.current = null;
     }, 400);
+  }, []);
+
+  useEffect(() => {
+    return () => { if (timeoutRef.current) window.clearTimeout(timeoutRef.current); };
   }, []);
 
   return (

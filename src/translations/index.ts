@@ -1,6 +1,79 @@
 export type Language = 'English' | 'Hindi' | 'Nepali' | 'Spanish';
 
-export const translations: Record<Language, any> = {
+export interface TranslationSchema {
+  nav: {
+    home: string;
+    feed: string;
+    projects: string;
+    profile: string;
+    settings: string;
+    logout: string;
+    castingCalls: string;
+    actors: string;
+    searchPlaceholder: string;
+    search: string;
+  };
+  settings: {
+    title: string;
+    titlePart1: string;
+    titlePart2: string;
+    subtitle: string;
+    tabs: {
+      profile: string;
+      privacy: string;
+      security: string;
+      comms: string;
+    };
+    profile: {
+      identity: string;
+      upload: string;
+      remove: string;
+      displayName: string;
+      role: string;
+      location: string;
+      bio: string;
+      availability: string;
+      availabilitySubtitle: string;
+      willingness: string;
+      preferredRoles: string;
+      updateBtn: string;
+      processing: string;
+    };
+    privacy: {
+      visibility: string;
+      permissions: string;
+      whoSee: string;
+      whoMessage: string;
+      showContact: string;
+      manageBlockedAccounts: string;
+      protection: {
+        title: string;
+        watermark: string;
+        watermarkDesc: string;
+        preventDownload: string;
+        preventDownloadDesc: string;
+      };
+    };
+    security: {
+      password: string;
+      sessions: string;
+      currentPass: string;
+      newPass: string;
+      updatePass: string;
+      logoutOthers: string;
+    };
+    comms: {
+      engagement: string;
+      preferences: string;
+      autoResponse: string;
+      emailNotif: string;
+      language: string;
+      theme: string;
+    };
+  };
+}
+
+export const translations: Record<Language, TranslationSchema> = {
   English: {
     nav: {
       home: "Home",
@@ -11,9 +84,13 @@ export const translations: Record<Language, any> = {
       logout: "Logout",
       castingCalls: "Casting Calls",
       actors: "Actors",
+      searchPlaceholder: "Search projects...",
+      search: "Search",
     },
     settings: {
         title: "Executive Settings",
+        titlePart1: "Executive",
+        titlePart2: "Settings",
         subtitle: "Manage your digital identity, security and platform preferences",
         tabs: {
             profile: "Profile",
@@ -42,6 +119,7 @@ export const translations: Record<Language, any> = {
             whoSee: "Who can see profile?",
             whoMessage: "Who can message you?",
             showContact: "Hide contact details until accepted",
+            manageBlockedAccounts: "Manage Blocked Accounts",
             protection: {
                 title: "Content Protection",
                 watermark: "Watermark Images",
@@ -78,9 +156,13 @@ export const translations: Record<Language, any> = {
       logout: "लॉगआउट",
       castingCalls: "कास्टिंग कॉल",
       actors: "अभिनेता",
+      searchPlaceholder: "परियोजनाएं खोजें...",
+      search: "खोजें",
     },
     settings: {
         title: "कार्यकारी सेटिंग्स",
+        titlePart1: "कार्यकारी",
+        titlePart2: "सेटिंग्स",
         subtitle: "अपनी डिजिटल पहचान, सुरक्षा और प्लेटफॉर्म प्राथमिकताओं का प्रबंधन करें",
         tabs: {
             profile: "प्रोफ़ाइल",
@@ -109,6 +191,7 @@ export const translations: Record<Language, any> = {
             whoSee: "प्रोफ़ाइल कौन देख सकता है?",
             whoMessage: "आपको कौन संदेश भेज सकता है?",
             showContact: "स्वीकार किए जाने तक संपर्क विवरण छिपाएं",
+            manageBlockedAccounts: "अवरुद्ध खातों का प्रबंधन करें",
             protection: {
                 title: "सामग्री सुरक्षा",
                 watermark: "चित्रों पर वॉटरमार्क",
@@ -145,9 +228,13 @@ export const translations: Record<Language, any> = {
       logout: "लगआउट",
       castingCalls: "कास्टिंग कलहरू",
       actors: "कलाकारहरू",
+      searchPlaceholder: "आयोजनाहरू खोज्नुहोस्...",
+      search: "खोज्नुहोस्",
     },
     settings: {
         title: "कार्यकारी सेटिङहरू",
+        titlePart1: "कार्यकारी",
+        titlePart2: "सेटिङहरू",
         subtitle: "आफ्नो डिजिटल पहिचान, सुरक्षा र प्लेटफर्म प्राथमिकताहरू व्यवस्थापन गर्नुहोस्",
         tabs: {
             profile: "प्रोफाइल",
@@ -176,6 +263,7 @@ export const translations: Record<Language, any> = {
             whoSee: "प्रोफाइल कसले हेर्न सक्छ?",
             whoMessage: "तपाईंलाई कसले सन्देश पठाउन सक्छ?",
             showContact: "स्वीकृत नभएसम्म सम्पर्क विवरण लुकाउनुहोस्",
+            manageBlockedAccounts: "अवरुद्ध खाताहरू व्यवस्थापन गर्नुहोस्",
             protection: {
                 title: "सामग्री सुरक्षा",
                 watermark: "तस्विरहरूमा वाटरमार्क",
@@ -205,22 +293,26 @@ export const translations: Record<Language, any> = {
   Spanish: {
     nav: {
       home: "Inicio",
-      feed: "Inicio",
+      feed: "Novedades",
       projects: "Proyectos",
       profile: "Perfil",
       settings: "Ajustes",
       logout: "Cerrar sesión",
       castingCalls: "Llamados de casting",
       actors: "Actores",
+      searchPlaceholder: "Buscar proyectos...",
+      search: "Buscar",
     },
     settings: {
         title: "Ajustes Ejecutivos",
+        titlePart1: "Ajustes",
+        titlePart2: "Ejecutivos",
         subtitle: "Gestione su identidad digital, seguridad y preferencias de la plataforma",
         tabs: {
             profile: "Perfil",
             privacy: "Privacidad",
             security: "Seguridad",
-            comms: "Comms",
+            comms: "Comunicaciones",
         },
         profile: {
             identity: "Identidad Básica",
@@ -243,6 +335,7 @@ export const translations: Record<Language, any> = {
             whoSee: "¿Quién puede ver el perfil?",
             whoMessage: "¿Quién puede enviarte mensajes?",
             showContact: "Ocultar detalles de contacto hasta aceptado",
+            manageBlockedAccounts: "Gestionar cuentas bloqueadas",
             protection: {
                 title: "Protección de Contenido",
                 watermark: "Marcar Imágenes",

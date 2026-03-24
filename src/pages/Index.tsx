@@ -342,9 +342,9 @@ const Index = () => {
       {page !== 'messages' && page !== 'feed' && (
         <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
           {([
-            { id: "home", label: t('nav.feed'), icon: Home },
+            { id: "home", label: t('nav.home'), icon: Home },
             { id: "feed", label: t('nav.feed'), icon: Sparkles },
-            { id: "search", label: t('nav.projects'), icon: Search },
+            { id: "search", label: t('nav.search'), icon: Search },
             { id: "profile", label: t('nav.profile'), icon: User },
           ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
             <button

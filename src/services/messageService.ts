@@ -27,9 +27,15 @@ export const messageService = {
 
     async sendMessage(senderId: string, receiverId: string, content: string, fileUrl?: string, fileType?: 'image' | 'video' | 'file') {
         // 1. Check if recipient has blocked sender
-        const isBlocked = await settingsService.isBlocked(receiverId, senderId);
-        if (isBlocked) {
+        const isBlockedByRecipient = await settingsService.isBlocked(receiverId, senderId);
+        if (isBlockedByRecipient) {
             throw new Error("You cannot send messages to this user.");
+        }
+
+        // 1b. Check if sender has blocked recipient
+        const isBlockedByMe = await settingsService.isBlocked(senderId, receiverId);
+        if (isBlockedByMe) {
+            throw new Error("You have blocked this user. Unblock to send messages.");
         }
 
         // 2. Check if recipient allows messaging (Permissions)

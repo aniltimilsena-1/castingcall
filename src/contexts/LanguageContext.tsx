@@ -16,15 +16,24 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [language, setLanguageState] = useState<LanguageType>('English');
 
   useEffect(() => {
+    let active = true;
     const loadLanguage = async () => {
       if (user) {
-        const settings = await settingsService.getSettings(user.id);
-        if (settings.advanced.language && translations[settings.advanced.language as LanguageType]) {
-          setLanguageState(settings.advanced.language as LanguageType);
+        try {
+          const settings = await settingsService.getSettings(user.id);
+          if (active && settings?.advanced?.language) {
+            const lang = settings.advanced.language as LanguageType;
+            if (translations[lang]) {
+              setLanguageState(lang);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to load language settings:", error);
         }
       }
     };
     loadLanguage();
+    return () => { active = false; };
   }, [user]);
 
   const setLanguage = (lang: LanguageType) => {
@@ -33,15 +42,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const t = (path: string): string => {
     const keys = path.split('.');
-    let result = translations[language];
+    let result: any = translations[language];
     for (const key of keys) {
-      if (result && result[key]) {
+      if (result !== null && typeof result === 'object' && Object.prototype.hasOwnProperty.call(result, key)) {
         result = result[key];
       } else {
-        return path; // Return key if not found
+        return path;
       }
     }
-    return result as unknown as string;
+    return typeof result === 'string' ? result : path;
   };
 
   return (

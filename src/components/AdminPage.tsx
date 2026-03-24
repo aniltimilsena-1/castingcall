@@ -162,20 +162,36 @@ export default function AdminPage() {
                 try {
                     // To "give all access" and ensure deletion works, we should attempt to clean up related data
                     // that might have foreign key constraints if CASCADE is not set.
-                    const userId = isInternalId 
+                    let userId = isInternalId 
                         ? (profiles.find(p => p.id === profileId)?.user_id) 
                         : profileId;
 
-                    if (userId) {
-                        // Cleanup related records first to ensure the profile can be deleted
-                        await Promise.all([
-                            supabase.from("projects").delete().eq("user_id", userId),
-                            supabase.from("applications").delete().eq("applicant_id", userId),
-                            supabase.from("photo_captions").delete().eq("user_id", userId),
-                            supabase.from("notifications").delete().eq("user_id", userId),
-                            supabase.from("payment_verifications").delete().eq("user_id", userId)
-                        ]);
+                    if (isInternalId && !userId) {
+                      const { data: profileRecord } = await supabase
+                        .from("profiles")
+                        .select("user_id")
+                        .eq("id", profileId)
+                        .maybeSingle();
+                      userId = profileRecord?.user_id;
                     }
+
+                    if (!userId) {
+                        throw new Error("Could not resolve valid user ID for deletion.");
+                    }
+
+                    // Cleanup related records first to ensure the profile can be deleted
+                    const cleanupResults = await Promise.all([
+                        supabase.from("projects").delete().eq("user_id", userId),
+                        supabase.from("applications").delete().eq("applicant_id", userId),
+                        supabase.from("photo_captions").delete().eq("user_id", userId),
+                        supabase.from("notifications").delete().eq("user_id", userId),
+                        supabase.from("payment_verifications").delete().eq("user_id", userId),
+                        supabase.from("audition_slots" as any).delete().eq("user_id", userId),
+                        supabase.from("transactions" as any).delete().eq("user_id", userId)
+                    ]);
+                    
+                    const cleanupError = cleanupResults.find(r => r.error)?.error;
+                    if (cleanupError) throw cleanupError;
 
                     const { error } = isInternalId 
                         ? await supabase.from("profiles").delete().eq("id", profileId)

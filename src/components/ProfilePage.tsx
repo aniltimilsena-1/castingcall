@@ -16,6 +16,12 @@ const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Cast
 const GENDERS = ["Male", "Female", "Non-binary", "Other", "Prefer not to say"];
 const COLORS = ["Black", "Brown", "Blonde", "Red", "Grey", "White", "Bald", "Blue", "Green", "Hazel", "Other"];
 
+interface PhotoCaption {
+  description: string;
+  is_premium: boolean;
+  price: number;
+}
+
 const RECOMMENDED_SKILLS = {
   "Acting (Primary)": [
     "Camera Acting", "Theatre Acting", "Improvisation", "Method Acting",
@@ -141,14 +147,21 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       setLooksLike((profile as any).looks_like || []);
       setVisualSearchKeywords((profile as any).visual_search_keywords || "");
 
+      const currentProfileId = profile.user_id;
+
       const fetchCaptions = async () => {
         try {
-          const { data } = await supabase.from('photo_captions').select('photo_url, description, is_premium, price').eq('user_id', profile.user_id);
-          const caps: Record<string, { description: string; is_premium: boolean; price: number }> = {};
-          data?.forEach(c => caps[c.photo_url] = {
-            description: c.description || "",
-            is_premium: !!c.is_premium,
-            price: c.price || 0
+          const { data, error } = await supabase.from('photo_captions').select('*').eq('user_id', currentProfileId);
+          if (error) throw error;
+          if (profile.user_id !== currentProfileId) return;
+
+          const caps: Record<string, PhotoCaption> = {};
+          data?.forEach(c => {
+            caps[c.photo_url] = {
+              description: c.description || "",
+              is_premium: !!c.is_premium,
+              price: c.price || 0
+            };
           });
           setCaptions(caps);
         } catch (err) {
@@ -158,7 +171,9 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
       const fetchProducts = async () => {
         try {
-          const { data } = await supabase.from('digital_products' as any).select('*').eq('seller_id', profile.user_id);
+          const { data, error } = await (supabase.from('digital_products' as any).select('*').eq('seller_id', currentProfileId) as any);
+          if (error) throw error;
+          if (profile.user_id !== currentProfileId) return;
           setDigitalProducts(data || []);
         } catch (err) {
           console.error("Error fetching products:", err);
@@ -169,11 +184,20 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       fetchProducts();
 
       // Load settings
-      settingsService.getSettings(profile.user_id).then(setUserSettings);
+      settingsService.getSettings(currentProfileId)
+        .then(res => {
+          if (profile.user_id === currentProfileId) setUserSettings(res);
+        })
+        .catch(err => console.error("Settings load error:", err));
       
-      // Check if blocked (if viewing someone else)
-      if (user && user.id !== profile.user_id) {
-        settingsService.isBlocked(user.id, profile.user_id).then(setIsBlocked);
+      // Check if blocked
+      setIsBlocked(false);
+      if (user && user.id !== currentProfileId) {
+        settingsService.isBlocked(user.id, currentProfileId)
+          .then(res => {
+            if (profile.user_id === currentProfileId) setIsBlocked(res);
+          })
+          .catch(err => console.error("Block check error:", err));
       }
     }
   }, [profile, user]);
@@ -306,14 +330,23 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             {user && profile && user.id !== profile.user_id && (
               <button
                 onClick={async () => {
+                  const blockTitle = isBlocked ? "Unblock User" : "Block User";
+                  const blockDesc = isBlocked 
+                    ? `Are you sure you want to unblock ${profile.name}? They will be able to message you and see your content again.`
+                    : `Are you sure you want to block ${profile.name}? They will no longer be able to message you or see your content.`;
+                  
                   confirmAction({
-                    title: isBlocked ? "Unblock User" : "Block User",
-                    description: `Are you sure you want to ${isBlocked ? 'unblock' : 'block'} ${profile.name}? They will no longer be able to message you or see your content.`,
-                    variant: "destructive",
+                    title: blockTitle,
+                    description: blockDesc,
+                    variant: isBlocked ? "default" : "destructive",
                     onConfirm: async () => {
-                      await settingsService.toggleBlock(user.id, profile.user_id);
-                      setIsBlocked(!isBlocked);
-                      toast.success(isBlocked ? "User unblocked" : "User blocked");
+                      try {
+                        const newBlocked = await settingsService.toggleBlock(user.id, profile.user_id);
+                        setIsBlocked(newBlocked);
+                        toast.success(newBlocked ? "User blocked" : "User unblocked");
+                      } catch (err: any) {
+                        toast.error(err.message || "Failed to toggle block");
+                      }
                     }
                   });
                 }}

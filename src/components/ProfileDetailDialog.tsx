@@ -59,6 +59,7 @@ export default function ProfileDetailDialog({
     const [invitingProjectId, setInvitingProjectId] = useState<string | null>(null);
     const [loadingProjects, setLoadingProjects] = useState(false);
     const [alreadyAppliedOrInvited, setAlreadyAppliedOrInvited] = useState<string[]>([]);
+    const [hasAcceptedConnection, setHasAcceptedConnection] = useState(false);
 
     // ── Monetization States
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -173,6 +174,52 @@ export default function ProfileDetailDialog({
             setFollowLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (open && profile?.id && user) {
+            const fetchConnectionStatus = async () => {
+                try {
+                    // Check if there is an accepted application between these two users in either direction
+                    const { data: acceptedFromMe } = await supabase
+                        .from("applications")
+                        .select("id")
+                        .eq("status", "accepted")
+                        .eq("applicant_id", profile.user_id)
+                        .in("project_id", userProjects.map(p => p.id));
+                    
+                    if (acceptedFromMe && acceptedFromMe.length > 0) {
+                        setHasAcceptedConnection(true);
+                        return;
+                    }
+
+                    // Also check if I am accepted to one of THEIR projects
+                    const { data: theirProjects } = await supabase.from("projects").select("id").eq("user_id", profile.user_id);
+                    if (theirProjects && theirProjects.length > 0) {
+                        const { data: acceptedToThem } = await supabase
+                            .from("applications")
+                            .select("id")
+                            .eq("status", "accepted")
+                            .eq("applicant_id", user.id)
+                            .in("project_id", theirProjects.map(p => p.id));
+                        
+                        if (acceptedToThem && acceptedToThem.length > 0) {
+                            setHasAcceptedConnection(true);
+                            return;
+                        }
+                    }
+                    setHasAcceptedConnection(false);
+                } catch (err) {
+                    console.error("Connection check failed:", err);
+                }
+            };
+
+            if (userProjects.length > 0) {
+                fetchConnectionStatus();
+            } else {
+                // Fetch user projects first if needed, or wait for the other useEffect
+            }
+        }
+    }, [open, profile?.id, user, userProjects]);
 
     useEffect(() => {
         if (open && profile?.id) {
@@ -519,9 +566,13 @@ export default function ProfileDetailDialog({
                                                             {user?.id !== profile.user_id && (
                                                                 <DropdownMenuItem
                                                                     onClick={async () => {
-                                                                        const blocked = await settingsService.toggleBlock(user.id, profile.user_id);
-                                                                        setIsBlocked(blocked);
-                                                                        toast.success(blocked ? "User blocked" : "User unblocked");
+                                                                        try {
+                                                                            const blocked = await settingsService.toggleBlock(user.id, profile.user_id);
+                                                                            setIsBlocked(blocked);
+                                                                            toast.success(blocked ? "User blocked" : "User unblocked");
+                                                                        } catch (err: any) {
+                                                                            toast.error(err.message || "Action failed");
+                                                                        }
                                                                     }}
                                                                     className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-xs ${isBlocked ? 'text-red-500 bg-red-500/5 hover:bg-red-500/10' : 'text-foreground hover:bg-red-500/10'}`}
                                                                 >
@@ -815,7 +866,7 @@ export default function ProfileDetailDialog({
                                                     <Detail 
                                                         label="EMAIL" 
                                                         value={
-                                                            (userSettings?.visibility.showContactOnlyOnAccepted && !alreadyAppliedOrInvited.includes('any')) // Simplified check, ideally needs specific 'accepted' check
+                                                            (userSettings?.visibility.showContactOnlyOnAccepted && !hasAcceptedConnection && user?.id !== profile?.user_id) 
                                                             ? "••••••••@••••.••• (Hidden)"
                                                             : profile?.email
                                                         } 
