@@ -241,20 +241,27 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
 
     // ─── Comment handler ──────────────────────────────────────────────────────
     const handleDeleteComment = async (commentId: string, photoUrl: string) => {
-        // Optimistically remove comment from UI (optional for snappiness, but backend handles it fast enough anyway)
-        try {
-            await feedService.deleteComment(commentId);
-            setComments(prev => {
-                if (!prev[photoUrl]) return prev;
-                return {
-                    ...prev,
-                    [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
-                };
-            });
-            toast.success("Comment deleted");
-        } catch (err: any) {
-            toast.error("Failed to delete comment");
-        }
+        confirmAction({
+            title: "Delete Comment",
+            description: "Are you sure you want to delete this comment?",
+            variant: "destructive",
+            confirmLabel: "Delete",
+            onConfirm: async () => {
+                try {
+                    await feedService.deleteComment(commentId);
+                    setComments(prev => {
+                        if (!prev[photoUrl]) return prev;
+                        return {
+                            ...prev,
+                            [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
+                        };
+                    });
+                    toast.success("Comment deleted");
+                } catch (err: any) {
+                    toast.error("Failed to delete comment");
+                }
+            }
+        });
     };
 
     const handleComment = async (mediaUrl: string) => {
