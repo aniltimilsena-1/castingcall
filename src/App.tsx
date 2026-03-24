@@ -11,6 +11,8 @@ import NotFound from "./pages/NotFound";
 import { ConfirmationProvider } from "@/contexts/ConfirmationContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
+import { ErrorBoundary } from "@/components/ErrorTelemetry";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -21,49 +23,51 @@ const queryClient = new QueryClient({
   },
 });
 
-console.log("🛠️ App.tsx script loading... [v15]");
+console.log("🛠️ App.tsx script loading... [v16]");
 
 const App = () => {
   console.log("🎬 App component executing...");
   try {
     return (
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <AuthProvider>
-            <VideoProvider>
-              <LanguageProvider>
-                <ConfirmationProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/profile" element={<Index />} />
-                        <Route path="/profile/:id" element={<Index />} />
-                        <Route path="/search" element={<Index />} />
-                        <Route path="/feed" element={<Index />} />
-                        <Route path="/projects" element={<Index />} />
-                        <Route path="/notifications" element={<Index />} />
-                        <Route path="/messages" element={<Index />} />
-                        <Route path="/settings" element={<Index />} />
-                        <Route path="/saved" element={<Index />} />
-                        <Route path="/analytics" element={<Index />} />
-                        <Route path="/help" element={<Index />} />
-                        <Route path="/terms" element={<Index />} />
-                        <Route path="/premium" element={<Index />} />
-                        <Route path="/admin" element={<Index />} />
-                        <Route path="/:page" element={<Index />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </BrowserRouter>
-                  </TooltipProvider>
-                </ConfirmationProvider>
-              </LanguageProvider>
-            </VideoProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+            <AuthProvider>
+              <VideoProvider>
+                <LanguageProvider>
+                  <ConfirmationProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      <BrowserRouter>
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/profile" element={<Index />} />
+                          <Route path="/profile/:id" element={<Index />} />
+                          <Route path="/search" element={<Index />} />
+                          <Route path="/feed" element={<Index />} />
+                          <Route path="/projects" element={<Index />} />
+                          <Route path="/notifications" element={<Index />} />
+                          <Route path="/messages" element={<Index />} />
+                          <Route path="/settings" element={<Index />} />
+                          <Route path="/saved" element={<Index />} />
+                          <Route path="/analytics" element={<Index />} />
+                          <Route path="/help" element={<Index />} />
+                          <Route path="/terms" element={<Index />} />
+                          <Route path="/premium" element={<Index />} />
+                          <Route path="/admin" element={<Index />} />
+                          <Route path="/:page" element={<Index />} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </BrowserRouter>
+                    </TooltipProvider>
+                  </ConfirmationProvider>
+                </LanguageProvider>
+              </VideoProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
     );
   } catch (err) {
     console.error("💥 App component RENDER CRASHED:", err);

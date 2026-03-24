@@ -19,14 +19,15 @@ export const adminService = {
             }
         };
 
-        const [profiles, projects, feedItems, applications, schedules, finances, verifications] = await Promise.all([
+        const [profiles, projects, feedItems, applications, schedules, finances, verifications, crashReports] = await Promise.all([
             fetchTable("profiles"),
             fetchTable("projects"),
             fetchTable("photo_captions"),
             fetchTable("applications", "*, projects:project_id(title)"),
             fetchTable("audition_slots", "*, projects:project_id(title)", { column: "start_time", ascending: true }),
             fetchTable("transactions"),
-            fetchTable("payment_verifications")
+            fetchTable("payment_verifications"),
+            fetchTable("crash_reports" as any)
         ]);
 
         return {
@@ -36,7 +37,8 @@ export const adminService = {
             applications,
             schedules,
             finances,
-            verifications
+            verifications,
+            crashReports
         };
     },
 

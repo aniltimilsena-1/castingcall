@@ -3,7 +3,12 @@ import { adminService } from "@/services/adminService";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
-import { Users, Shield, Search, DollarSign, Trash2, Globe, Crown, X, MapPin, MoreVertical } from "lucide-react";
+import { Users, Shield, Search, DollarSign, Trash2, Globe, Crown, X, MapPin, MoreVertical, BarChart3, TrendingUp, PieChart as PieIcon, Activity, Terminal, AlertCircle } from "lucide-react";
+import { 
+    PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip, 
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+    LineChart, Line, Legend
+} from "recharts";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -16,7 +21,7 @@ type Profile = Tables<"profiles">;
 type Project = Tables<"projects">;
 type FeedPost = Tables<"photo_captions">;
 
-type AdminTab = "talents" | "projects" | "feed" | "applications" | "schedules" | "finances" | "verifications";
+type AdminTab = "talents" | "projects" | "feed" | "applications" | "schedules" | "finances" | "verifications" | "metrics" | "logs";
 
 interface AdminFeedItem {
     url: string;
@@ -40,6 +45,18 @@ interface AdminFinance extends Tables<"transactions"> { }
 
 interface AdminVerification extends Tables<"payment_verifications"> { }
 
+interface AdminCrashReport {
+    id: string;
+    user_id?: string;
+    error_message: string;
+    error_stack?: string;
+    component_stack?: string;
+    url?: string;
+    user_agent?: string;
+    created_at: string;
+    metadata?: any;
+}
+
 export default function AdminPage() {
     const { confirm: confirmAction } = useConfirmation();
     const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -49,6 +66,7 @@ export default function AdminPage() {
     const [schedules, setSchedules] = useState<AdminSchedule[]>([]);
     const [finances, setFinances] = useState<AdminFinance[]>([]);
     const [verifications, setVerifications] = useState<AdminVerification[]>([]);
+    const [crashReports, setCrashReports] = useState<AdminCrashReport[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<AdminTab>("talents");
@@ -91,6 +109,7 @@ export default function AdminPage() {
             if (data.schedules) setSchedules(data.schedules as any[]);
             if (data.finances) setFinances(data.finances as any[]);
             if (data.verifications) setVerifications(data.verifications as any[]);
+            if (data.crashReports) setCrashReports(data.crashReports as any[]);
 
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : String(err);
@@ -258,10 +277,13 @@ export default function AdminPage() {
                     </div>
 
                     <nav className="flex flex-wrap items-center gap-2 bg-white/5 p-1.5 rounded-2xl">
-                        {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances', 'verifications'] as AdminTab[]).map((tab) => (
-                            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-2.5 rounded-xl text-[0.6rem] uppercase tracking-widest ${activeTab === tab ? 'bg-primary text-black' : 'text-muted-foreground hover:text-white'}`}>
+                        {(['talents', 'projects', 'feed', 'applications', 'schedules', 'finances', 'verifications', 'metrics', 'logs'] as AdminTab[]).map((tab) => (
+                            <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-2.5 rounded-xl text-[0.6rem] uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-primary text-black' : 'text-muted-foreground hover:text-white'}`}>
                                 {tab}
                                 {tab === 'verifications' && verifications.filter(v => v.status === 'pending').length > 0 && <span className="ml-2 bg-red-500 rounded-full px-1.5 py-0.5 text-[0.5rem] text-white">!</span>}
+                                {tab === 'metrics' && <TrendingUp size={12} className="ml-2 inline opacity-50" />}
+                                {tab === 'logs' && <Terminal size={12} className="ml-2 inline opacity-50" />}
+                                {tab === 'logs' && crashReports.length > 0 && <span className="ml-1 bg-amber-500/20 text-amber-500 px-1 rounded-sm text-[0.5rem]">{crashReports.length}</span>}
                             </button>
                         ))}
                     </nav>
@@ -284,15 +306,138 @@ export default function AdminPage() {
                     </div>
 
                     <div className="overflow-x-auto">
+                        {activeTab === 'metrics' && (
+                            <div className="p-10 space-y-12">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                    {/* Role Distribution Chart */}
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/5">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <h3 className="text-[0.65rem] uppercase tracking-[4px] text-primary">Role Distribution</h3>
+                                            <PieIcon size={16} className="text-muted-foreground" />
+                                        </div>
+                                        <div className="h-[300px] w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie
+                                                        data={Object.entries(profiles.reduce((acc: any, p) => {
+                                                            const r = p.role || 'Other';
+                                                            acc[r] = (acc[r] || 0) + 1;
+                                                            return acc;
+                                                        }, {})).map(([name, value]) => ({ name, value }))}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        innerRadius={60}
+                                                        outerRadius={100}
+                                                        paddingAngle={5}
+                                                        dataKey="value"
+                                                    >
+                                                        {Object.entries(profiles.reduce((acc: any, p) => {
+                                                            const r = p.role || 'Other';
+                                                            acc[r] = (acc[r] || 0) + 1;
+                                                            return acc;
+                                                        }, {})).map((_, index) => (
+                                                            <Cell key={`cell-${index}`} fill={[
+                                                                '#EAB308', '#3b82f6', '#10b981', '#f97316', '#a855f7', '#6366f1'
+                                                            ][index % 6]} stroke="none" />
+                                                        ))}
+                                                    </Pie>
+                                                    <ReTooltip 
+                                                        contentStyle={{ backgroundColor: '#111', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                                                        itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                                                    />
+                                                    <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '20px', textTransform: 'uppercase', letterSpacing: '1px' }} />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    {/* Revenue vs Free Conversion */}
+                                    <div className="bg-white/5 p-8 rounded-3xl border border-white/5 flex flex-col justify-center">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <h3 className="text-[0.65rem] uppercase tracking-[4px] text-primary">Platform Conversion</h3>
+                                            <Activity size={16} className="text-muted-foreground" />
+                                        </div>
+                                        <div className="space-y-8">
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-2">
+                                                    <span className="text-muted-foreground tracking-widest font-normal">PRO MEMBERSHIP RATE</span>
+                                                    <span className="text-white font-bold">{((profiles.filter(p => p.plan === 'pro').length / profiles.length) * 100).toFixed(1)}%</span>
+                                                </div>
+                                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-primary" style={{ width: `${(profiles.filter(p => p.plan === 'pro').length / profiles.length) * 100}%` }} />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
+                                                    <p className="text-[0.5rem] text-muted-foreground uppercase mb-1">Total Pros</p>
+                                                    <p className="text-2xl font-display text-primary">{profiles.filter(p => p.plan === 'pro').length}</p>
+                                                </div>
+                                                <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
+                                                    <p className="text-[0.5rem] text-muted-foreground uppercase mb-1">Total Free</p>
+                                                    <p className="text-2xl font-display text-white/50">{profiles.filter(p => p.plan !== 'pro').length}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Signup Growth Timeline */}
+                                <div className="bg-white/5 p-8 rounded-3xl border border-white/5 w-full">
+                                    <h3 className="text-[0.65rem] uppercase tracking-[4px] text-primary mb-8">Community Growth Activity (Daily Index)</h3>
+                                    <div className="h-[250px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={Object.entries(profiles.reduce((acc: any, p) => {
+                                                const d = new Date(p.created_at).toLocaleDateString();
+                                                acc[d] = (acc[d] || 0) + 1;
+                                                return acc;
+                                            }, {})).map(([name, value]) => ({ name, value })).slice(-15)}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                                <XAxis dataKey="name" fontSize={10} tick={{ fill: '#666' }} axisLine={false} tickLine={false} />
+                                                <YAxis fontSize={10} tick={{ fill: '#666' }} axisLine={false} tickLine={false} />
+                                                <ReTooltip 
+                                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                                    contentStyle={{ backgroundColor: '#111', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                                                />
+                                                <Bar dataKey="value" fill="#EAB308" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                <div className="bg-primary/5 p-8 rounded-[2rem] border border-primary/10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <TrendingUp className="text-primary" size={20} />
+                                        <h4 className="text-xs font-bold uppercase tracking-[2px] text-primary">Growth Insights</h4>
+                                    </div>
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[0.65rem] text-white/60 leading-relaxed uppercase tracking-wide">
+                                        <li className="flex gap-4">
+                                            <span className="text-primary text-lg">💡</span>
+                                            <p>Shortage Alert: {Object.entries(profiles.reduce((acc: any, p) => {
+                                                const r = p.role || 'Other';
+                                                acc[r] = (acc[r] || 0) + 1;
+                                                return acc;
+                                            }, {})).sort((a: any, b: any) => a[1] - b[1])[0]?.[0]} roles are underserved. Target social media campaigns for these profiles.</p>
+                                        </li>
+                                        <li className="flex gap-4">
+                                            <span className="text-primary text-lg">📈</span>
+                                            <p>Project Intensity: {projects.length > 0 ? (applications.length / projects.length).toFixed(1) : 0} apps/project. High engagement suggests expansion into more premium sectors.</p>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
+
                         <table className="w-full text-left">
-                            <thead className="bg-white/5 text-[0.6rem] uppercase tracking-widest text-muted-foreground">
-                                <tr>
-                                    <th className="px-10 py-6">Reference</th>
-                                    <th className="px-10 py-6">Contact & Location</th>
-                                    <th className="px-10 py-6">Plan / Status</th>
-                                    <th className="px-10 py-6">Actions</th>
-                                </tr>
-                            </thead>
+                            {activeTab !== 'metrics' && (
+                                <thead className="bg-white/5 text-[0.6rem] uppercase tracking-widest text-muted-foreground">
+                                    <tr>
+                                        <th className="px-10 py-6">Reference</th>
+                                        <th className="px-10 py-6">Contact & Location</th>
+                                        <th className="px-10 py-6">Plan / Status</th>
+                                        <th className="px-10 py-6">Actions</th>
+                                    </tr>
+                                </thead>
+                            )}
                             <tbody className="divide-y divide-white/5">
                                 {activeTab === 'talents' && filteredProfiles.map(p => (
                                     <tr key={p.id}>
@@ -466,6 +611,52 @@ export default function AdminPage() {
                                         </tr>
                                     );
                                 })}
+                                {activeTab === 'logs' && crashReports.map(log => (
+                                    <tr key={log.id} className="group hover:bg-white/[0.02] transition-colors border-b border-white/5 last:border-0">
+                                        <td className="px-10 py-6">
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                                                    <AlertCircle size={14} className="text-red-500" />
+                                                </div>
+                                                <div className="max-w-xl">
+                                                    <p className="text-xs font-mono text-red-400 break-words leading-relaxed">{log.error_message}</p>
+                                                    <p className="text-[0.55rem] text-muted-foreground mt-2 uppercase tracking-tighter opacity-40 font-bold">{log.url}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-10 py-6">
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-1.5 py-0.5 rounded bg-white/5 text-[0.5rem] text-white/70 uppercase tracking-widest border border-white/10">
+                                                        {log.user_agent?.includes('iPhone') ? 'iPhone' : log.user_agent?.includes('Android') ? 'Android' : 'Desktop'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[0.5rem] text-muted-foreground font-mono truncate max-w-[150px] opacity-60">{log.user_agent}</p>
+                                            </div>
+                                        </td>
+                                        <td className="px-10 py-6">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-xs text-white/50 font-medium">{new Date(log.created_at).toLocaleDateString()}</span>
+                                                <span className="text-[0.6rem] text-muted-foreground font-mono">{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-10 py-6">
+                                            <button 
+                                                onClick={async () => {
+                                                    const { error } = await supabase.from('crash_reports' as any).delete().eq('id', log.id);
+                                                    if (error) toast.error(error.message);
+                                                    else {
+                                                        toast.success("Log cleared");
+                                                        fetchAllData();
+                                                    }
+                                                }}
+                                                className="p-3 text-muted-foreground hover:text-red-500 transition-all rounded-xl hover:bg-red-500/5 outline-none"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
