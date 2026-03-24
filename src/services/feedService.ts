@@ -104,12 +104,17 @@ export const feedService = {
     },
 
     async addComment(photoUrl: string, userId: string, content: string, parentId: string | null = null) {
+        const trimmed = content.trim();
+        if (!trimmed) {
+            throw new Error("Comment cannot be empty");
+        }
+        
         const { data, error } = await supabase
             .from("photo_comments")
             .insert({ 
                 photo_url: photoUrl, 
                 user_id: userId, 
-                content: content.trim(),
+                content: trimmed,
                 parent_id: parentId 
             })
             .select()

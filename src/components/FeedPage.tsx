@@ -232,33 +232,29 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                 }));
             }
         } catch (err: any) {
-            toast.error(err.message || "Operation failed");
+            const msg = err.message || "";
+            if (!msg.includes("duplicate key")) {
+                toast.error("Operation failed");
+            }
         }
     };
 
     // ─── Comment handler ──────────────────────────────────────────────────────
     const handleDeleteComment = async (commentId: string, photoUrl: string) => {
-        confirmAction({
-            title: "Delete Comment",
-            description: "Are you sure you want to delete this comment? This action cannot be undone.",
-            variant: "destructive",
-            confirmLabel: "Delete",
-            onConfirm: async () => {
-                try {
-                    await feedService.deleteComment(commentId);
-                    setComments(prev => {
-                        if (!prev[photoUrl]) return prev;
-                        return {
-                            ...prev,
-                            [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
-                        };
-                    });
-                    toast.success("Comment deleted");
-                } catch (err: any) {
-                    toast.error(err.message || "Failed to delete comment");
-                }
-            }
-        });
+        // Optimistically remove comment from UI (optional for snappiness, but backend handles it fast enough anyway)
+        try {
+            await feedService.deleteComment(commentId);
+            setComments(prev => {
+                if (!prev[photoUrl]) return prev;
+                return {
+                    ...prev,
+                    [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
+                };
+            });
+            toast.success("Comment deleted");
+        } catch (err: any) {
+            toast.error("Failed to delete comment");
+        }
     };
 
     const handleComment = async (mediaUrl: string) => {
@@ -284,7 +280,7 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
             setReplyingTo(null);
             toast.success("Comment added!");
         } catch (err: any) {
-            toast.error(err.message || "Failed to post comment");
+            toast.error("Failed to post comment");
         } finally {
             setPostingComment(null);
         }
@@ -302,7 +298,7 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                 await feedService.unlikeComment(commentId, user.id);
                 setCommentLikes(prev => ({
                     ...prev,
-                    [commentId]: { count: Math.max(0, prev[commentId].count - 1), liked: false }
+                    [commentId]: { count: Math.max(0, (prev[commentId]?.count || 0) - 1), liked: false }
                 }));
             } else {
                 await feedService.likeComment(commentId, user.id);
@@ -312,7 +308,10 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                 }));
             }
         } catch (err: any) {
-            toast.error(err.message || "Operation failed");
+            const msg = err.message || "";
+            if (!msg.includes("duplicate key")) {
+                toast.error("Operation failed");
+            }
         }
     };
 
@@ -342,7 +341,10 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                 toast.success("Following!");
             }
         } catch (err: any) {
-            toast.error(err.message || "Failed to follow");
+            const msg = err.message || "";
+            if (!msg.includes("duplicate key")) {
+                toast.error("Failed to update follow status");
+            }
         }
     };
 
@@ -373,7 +375,10 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                 toast.success("Post saved successfully!");
             }
         } catch (err: any) {
-            toast.error(err.message || "Failed to save post");
+            const msg = err.message || "";
+            if (!msg.includes("duplicate key")) {
+                toast.error("Failed to update saved posts");
+            }
         }
     };
 
@@ -956,11 +961,12 @@ function FeedCard({
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="absolute inset-x-0 bottom-0 z-[100] bg-card/95 backdrop-blur-3xl rounded-t-[2.5rem] border-t border-white/10 flex flex-col h-[70%]"
                     >
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0 z-10">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-border flex-shrink-0 z-10">
                             <div className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary">Comments ({commentList.length})</div>
                             <button 
-                                onClick={(e) => { e.stopPropagation(); onToggleComments(); }} 
-                                className="p-2 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors relative z-20"
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleComments(); }} 
+                                className="p-2 hover:bg-secondary rounded-full text-muted-foreground hover:text-foreground transition-colors relative z-50 pointer-events-auto"
                             >
                                 <X size={20} />
                             </button>
@@ -1055,10 +1061,10 @@ function FeedCard({
 
                         <div className="p-6 border-t border-white/5 flex-shrink-0 bg-background/50">
                             <div className="relative">
-                                {replyingTo && (
+                                {replyingTo?.photoUrl === item.url && (
                                     <div className="absolute -top-10 left-3 flex items-center justify-between gap-4 bg-primary text-black px-4 py-1.5 rounded-full text-[0.65rem] uppercase tracking-widest font-bold shadow-lg shadow-primary/20">
                                         <span>Replying to {replyingTo.commenter}</span>
-                                        <button onClick={onCancelReply} className="hover:text-black/60 transition-colors bg-black/10 rounded-full p-0.5"><X size={12} /></button>
+                                        <button type="button" onClick={onCancelReply} className="hover:text-black/60 transition-colors bg-black/10 rounded-full p-0.5"><X size={12} /></button>
                                     </div>
                                 )}
                                 <input
@@ -1067,7 +1073,7 @@ function FeedCard({
                                     onChange={(e) => onCommentChange(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && !isPostingComment && onCommentSubmit()}
                                     placeholder={replyingTo ? `Replying to @${replyingTo.commenter}...` : "Speak your mind..."}
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-12 py-4 text-xs outline-none focus:border-primary transition-all text-white"
+                                    className="w-full bg-secondary/30 border border-border rounded-2xl pl-5 pr-12 py-4 text-xs outline-none focus:border-primary transition-all text-foreground placeholder:text-muted-foreground/50"
                                 />
                                 <button
                                     onClick={onCommentSubmit}
@@ -1213,7 +1219,7 @@ function PostModal({
                     {item.type === "photo" ? (
                         <img src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" alt="" />
                     ) : (
-                        <video src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" muted={isMuted} />
+                        <video src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" muted />
                     )}
                 </div>
 
@@ -1343,10 +1349,10 @@ function PostModal({
 
             {/* ── Comment Input (pinned to bottom) ── */}
             <div className="flex flex-col px-4 py-3 border-t border-border bg-card flex-shrink-0" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-                {replyingTo && (
+                {replyingTo?.photoUrl === item.url && (
                     <div className="flex items-center justify-between gap-4 bg-primary/10 text-primary px-3 py-1.5 rounded-t-xl text-[0.65rem] font-bold mb-2">
                         <span>Replying to {replyingTo.commenter}</span>
-                        <button onClick={onCancelReply} className="hover:text-primary/70 transition-colors bg-primary/20 rounded-full p-0.5"><X size={12} /></button>
+                        <button type="button" onClick={onCancelReply} className="hover:text-primary/70 transition-colors bg-primary/20 rounded-full p-0.5"><X size={12} /></button>
                     </div>
                 )}
                 <div className="flex items-center gap-2">
