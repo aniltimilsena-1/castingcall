@@ -26,7 +26,11 @@ import {
   X,
   UserCheck,
   CheckCircle2,
-  Crown
+  Crown,
+  Phone,
+  Video,
+  PhoneOff,
+  VideoOff
 } from "lucide-react";
 import ProfileDetailDialog from "./ProfileDetailDialog";
 import { type PageName } from "./AppDrawer";
@@ -96,6 +100,11 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [activeMenu, setActiveMenu] = useState<{ id: string, x: number, y: number } | null>(null);
   const [forwardingMessage, setForwardingMessage] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  // Audio/Video Call State
+  const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
+  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string } | null>(null);
+
   // Track IDs of messages we already inserted optimistically to skip the
   // realtime echo that would otherwise cause a duplicate.
   const sentMessageIds = useRef<Set<string>>(new Set());
@@ -252,6 +261,19 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           return next;
         });
       })
+      .on('broadcast', { event: 'call_signal' }, (payload) => {
+        const data = payload.payload;
+        if (data.targetId === user.id) {
+          if (data.action === 'call') {
+            setIncomingCall({ roomId: data.roomId, callerName: data.callerName, type: data.type, callerId: data.callerId });
+          } else if (data.action === 'accept') {
+            setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId });
+          } else if (data.action === 'decline' || data.action === 'end') {
+            setIncomingCall(null);
+            setActiveCall(null);
+          }
+        }
+      })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({ online_at: new Date().toISOString() });
@@ -377,7 +399,66 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     }
   }, [initialPartnerId, loadThread]);
 
+  const startCall = (type: 'video' | 'audio') => {
+    if (!selectedPartner || !partnerProfile || !user) return;
+    const roomId = `cc-${user.id}-${selectedPartner}-${Date.now()}`;
+    
+    setActiveCall({ roomId, type, partnerId: selectedPartner }); 
+    
+    supabase.channel('global-presence').send({
+      type: 'broadcast',
+      event: 'call_signal',
+      payload: {
+        targetId: selectedPartner,
+        callerId: user.id,
+        callerName: currentUserProfile?.name || 'User',
+        roomId,
+        type,
+        action: 'call'
+      }
+    });
+  };
 
+  const answerCall = () => {
+    if (!incomingCall || !user) return;
+    supabase.channel('global-presence').send({
+      type: 'broadcast',
+      event: 'call_signal',
+      payload: {
+        targetId: incomingCall.callerId,
+        roomId: incomingCall.roomId,
+        type: incomingCall.type,
+        action: 'accept'
+      }
+    });
+    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId });
+    setIncomingCall(null);
+  };
+
+  const rejectCall = () => {
+    if (!incomingCall || !user) return;
+    supabase.channel('global-presence').send({
+      type: 'broadcast',
+      event: 'call_signal',
+      payload: {
+        targetId: incomingCall.callerId,
+        action: 'decline'
+      }
+    });
+    setIncomingCall(null);
+  };
+
+  const endCall = () => {
+    if (!activeCall || !user) return;
+    if (activeCall.partnerId) {
+      supabase.channel('global-presence').send({
+        type: 'broadcast',
+        event: 'call_signal',
+        payload: { targetId: activeCall.partnerId, action: 'end' }
+      });
+    }
+    setActiveCall(null);
+  };
 
   const sendMessage = async () => {
     if (!user || !selectedPartner) return;
@@ -666,6 +747,14 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                   </div>
                   <div className="text-[10px] text-white/40 uppercase tracking-[0.2em]">Global Talent</div>
                 </div>
+              </div>
+              <div className="flex items-center gap-1 md:gap-2">
+                <button onClick={() => startCall('audio')} className="p-2.5 text-white/50 hover:bg-white/5 hover:text-white rounded-full transition-all" title="Audio Call">
+                  <Phone size={20} />
+                </button>
+                <button onClick={() => startCall('video')} className="p-2.5 text-white/50 hover:bg-white/5 hover:text-white rounded-full transition-all" title="Video Call">
+                  <Video size={20} />
+                </button>
               </div>
             </div>
             <div
@@ -963,6 +1052,58 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           </div>
         )}
       </AnimatePresence>
+
+      {/* Active Call UI */}
+      {activeCall && (
+        <div className="fixed inset-0 z-[400] bg-black flex flex-col items-center justify-center">
+          <iframe
+            allow="camera; microphone; fullscreen; display-capture; autoplay"
+            src={`https://meet.jit.si/${activeCall.roomId}#config.prejoinPageEnabled=false&userInfo.displayName="${encodeURIComponent(currentUserProfile?.name || user?.email || 'User')}"`}
+            style={{ width: '100%', height: '100%', border: 'none' }}
+          />
+          <button 
+            onClick={endCall}
+            className="absolute bottom-8 px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full shadow-lg shadow-red-500/20 active:scale-95 transition-all flex items-center gap-3"
+          >
+            <PhoneOff size={24} /> End Call
+          </button>
+        </div>
+      )}
+
+      {/* Incoming Call UI */}
+      <AnimatePresence>
+        {incomingCall && (
+          <motion.div 
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed top-8 left-1/2 -translate-x-1/2 z-[450] bg-[#2a2a2a] border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-6 min-w-[320px]"
+          >
+            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center animate-[pulse_2s_ease-in-out_infinite] border-4 border-primary/30">
+              {incomingCall.type === 'video' ? <Video size={40} className="text-primary animate-bounce" /> : <Phone size={40} className="text-primary animate-bounce" />}
+            </div>
+            <div className="text-center">
+              <h3 className="text-2xl text-white font-medium mb-1">{incomingCall.callerName}</h3>
+              <p className="text-sm text-primary uppercase tracking-widest font-bold">Incoming {incomingCall.type} call...</p>
+            </div>
+            <div className="flex items-center gap-4 w-full mt-2">
+              <button 
+                onClick={rejectCall}
+                className="flex-1 py-3.5 rounded-xl bg-red-500/20 text-red-500 font-bold uppercase tracking-wider text-sm hover:bg-red-500/30 transition-colors flex justify-center items-center gap-2"
+               >
+                <PhoneOff size={18} /> Decline
+              </button>
+              <button 
+                onClick={answerCall}
+                className="flex-1 py-3.5 rounded-xl bg-green-500 text-white font-bold uppercase tracking-wider text-sm hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all active:scale-95 flex justify-center items-center gap-2"
+               >
+                {incomingCall.type === 'video' ? <Video size={18} /> : <Phone size={18} />} Accept
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
