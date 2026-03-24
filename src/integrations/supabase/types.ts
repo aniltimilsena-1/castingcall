@@ -158,6 +158,42 @@ export type Database = {
         }
         Relationships: []
       }
+      crash_reports: {
+        Row: {
+          id: string
+          user_id: string | null
+          error_message: string
+          error_stack: string | null
+          component_stack: string | null
+          url: string | null
+          user_agent: string | null
+          created_at: string
+          metadata: Json | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          error_message: string
+          error_stack?: string | null
+          component_stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          created_at?: string
+          metadata?: Json | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          error_message?: string
+          error_stack?: string | null
+          component_stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          created_at?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           created_at: string

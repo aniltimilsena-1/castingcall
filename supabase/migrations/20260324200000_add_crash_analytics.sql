@@ -28,3 +28,16 @@ USING (
     WHERE user_id = auth.uid() AND role = 'Admin'
   )
 );
+
+-- Only Admins can DELETE reports
+CREATE POLICY "Telemetry: Delete crash reports"
+ON public.crash_reports FOR DELETE
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles 
+    WHERE user_id = auth.uid() AND role = 'Admin'
+  )
+);
+
+-- NOTE: Application layer must enforce rate limiting (max reports/session) 
+-- to mitigate anonymous flood/DoS attacks.

@@ -29,14 +29,22 @@ export class ErrorBoundary extends Component<Props, State> {
     this.reportCrash(error, errorInfo);
   }
 
+  private static reportCount = 0;
+  private static readonly MAX_REPORTS = 5;
+
   private async reportCrash(error: Error, errorInfo: ErrorInfo) {
+    if (ErrorBoundary.reportCount >= ErrorBoundary.MAX_REPORTS) return;
+    ErrorBoundary.reportCount++;
+
     try {
-      await (supabase.from('crash_reports' as any) as any).insert({
+      const sanitizedUrl = window.location.origin + window.location.pathname;
+      
+      await supabase.from('crash_reports').insert({
         user_id: this.props.userId || null,
         error_message: error.message || 'Unknown Error',
         error_stack: error.stack || null,
         component_stack: errorInfo.componentStack || null,
-        url: window.location.href,
+        url: sanitizedUrl,
         user_agent: navigator.userAgent,
         metadata: {
            screenWidth: window.innerWidth,

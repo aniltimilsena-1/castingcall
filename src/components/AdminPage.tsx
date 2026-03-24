@@ -358,15 +358,22 @@ export default function AdminPage() {
                                             <Activity size={16} className="text-muted-foreground" />
                                         </div>
                                         <div className="space-y-8">
-                                            <div>
-                                                <div className="flex justify-between text-xs mb-2">
-                                                    <span className="text-muted-foreground tracking-widest font-normal">PRO MEMBERSHIP RATE</span>
-                                                    <span className="text-white font-bold">{((profiles.filter(p => p.plan === 'pro').length / profiles.length) * 100).toFixed(1)}%</span>
-                                                </div>
-                                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-primary" style={{ width: `${(profiles.filter(p => p.plan === 'pro').length / profiles.length) * 100}%` }} />
-                                                </div>
-                                            </div>
+                                            {(() => {
+                                                const totalProfiles = profiles.length || 1;
+                                                const proCount = profiles.filter(p => p.plan === 'pro').length;
+                                                const proRate = (proCount / totalProfiles) * 100;
+                                                return (
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-2">
+                                                            <span className="text-muted-foreground tracking-widest font-normal">PRO MEMBERSHIP RATE</span>
+                                                            <span className="text-white font-bold">{proRate.toFixed(1)}%</span>
+                                                        </div>
+                                                        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-primary" style={{ width: `${proRate}%` }} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="p-4 bg-white/5 rounded-xl border border-white/5 text-center">
                                                     <p className="text-[0.5rem] text-muted-foreground uppercase mb-1">Total Pros</p>
@@ -388,9 +395,12 @@ export default function AdminPage() {
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={Object.entries(profiles.reduce((acc: any, p) => {
                                                 const d = new Date(p.created_at).toLocaleDateString();
-                                                acc[d] = (acc[d] || 0) + 1;
+                                                acc[d] = { count: (acc[d]?.count || 0) + 1, time: new Date(p.created_at).getTime() };
                                                 return acc;
-                                            }, {})).map(([name, value]) => ({ name, value })).slice(-15)}>
+                                            }, {}))
+                                            .sort((a: any, b: any) => a[1].time - b[1].time)
+                                            .map(([name, data]: any) => ({ name, value: data.count }))
+                                            .slice(-15)}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                                                 <XAxis dataKey="name" fontSize={10} tick={{ fill: '#666' }} axisLine={false} tickLine={false} />
                                                 <YAxis fontSize={10} tick={{ fill: '#666' }} axisLine={false} tickLine={false} />
@@ -642,13 +652,21 @@ export default function AdminPage() {
                                         </td>
                                         <td className="px-10 py-6">
                                             <button 
-                                                onClick={async () => {
-                                                    const { error } = await supabase.from('crash_reports' as any).delete().eq('id', log.id);
-                                                    if (error) toast.error(error.message);
-                                                    else {
-                                                        toast.success("Log cleared");
-                                                        fetchAllData();
-                                                    }
+                                                onClick={() => {
+                                                    confirmAction({
+                                                        title: "Confirm Log Clearance",
+                                                        description: "Are you sure you want to delete this technical diagnostic report?",
+                                                        variant: "destructive",
+                                                        confirmLabel: "Delete Log",
+                                                        onConfirm: async () => {
+                                                            const { error } = await supabase.from('crash_reports').delete().eq('id', log.id);
+                                                            if (error) toast.error(error.message);
+                                                            else {
+                                                                toast.success("Log cleared");
+                                                                fetchAllData();
+                                                            }
+                                                        }
+                                                    });
                                                 }}
                                                 className="p-3 text-muted-foreground hover:text-red-500 transition-all rounded-xl hover:bg-red-500/5 outline-none"
                                             >
