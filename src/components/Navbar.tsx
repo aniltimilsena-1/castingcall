@@ -101,7 +101,7 @@ export default function Navbar({
           <img
             src="/logo.png"
             alt="CaastingCall Logo"
-            className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
+            className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               e.currentTarget.parentElement!.innerHTML = '<span class="font-accent text-2xl text-primary tracking-tight">CaastingCall</span>';
