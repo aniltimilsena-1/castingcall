@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { followService, FollowProfile } from "@/services/followService";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users } from "lucide-react";
+import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users, ChevronDown } from "lucide-react";
 import { useVideo } from "@/contexts/VideoContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +93,20 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const [personalityTraits, setPersonalityTraits] = useState<string[]>([]);
   const [looksLike, setLooksLike] = useState<string[]>([]);
   const [newLooksLike, setNewLooksLike] = useState("");
+  const [expandedTagCategories, setExpandedTagCategories] = useState<string[]>(["moods"]);
+  const [expandedSkillCategories, setExpandedSkillCategories] = useState<string[]>(["acting (primary)"]);
+
+  const toggleTagCategory = (cat: string) => {
+    setExpandedTagCategories(prev => 
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
+  };
+
+  const toggleSkillCategory = (cat: string) => {
+    setExpandedSkillCategories(prev => 
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
+  };
   const [visualSearchKeywords, setVisualSearchKeywords] = useState("");
   const [saving, setSaving] = useState(false);
   const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
@@ -1044,57 +1058,108 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
           <div className="space-y-6">
             <div>
-              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Moods</label>
-              <div className="flex flex-wrap gap-1.5">
-                {RECOMMENDED_TAGS.Moods.map(t => {
-                  const isSelected = moodTags.includes(t.toLowerCase());
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => setMoodTags(isSelected ? moodTags.filter(x => x !== t.toLowerCase()) : [...moodTags, t.toLowerCase()])}
-                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
-                    >
-                      {t}
-                    </button>
-                  );
-                })}
-              </div>
+              <button 
+                onClick={() => toggleTagCategory('moods')}
+                className="w-full flex items-center justify-between py-2 text-[0.65rem] text-primary font-bold tracking-widest uppercase hover:opacity-80 transition-opacity"
+              >
+                Moods
+                <ChevronDown size={14} className={`transition-transform duration-300 ${expandedTagCategories.includes('moods') ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {expandedTagCategories.includes('moods') && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-wrap gap-1.5 pt-2 pb-4">
+                      {RECOMMENDED_TAGS.Moods.map(t => {
+                        const isSelected = moodTags.includes(t.toLowerCase());
+                        return (
+                          <button
+                            key={t}
+                            onClick={() => setMoodTags(isSelected ? moodTags.filter(x => x !== t.toLowerCase()) : [...moodTags, t.toLowerCase()])}
+                            className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
+                          >
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div>
-              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Styles</label>
-              <div className="flex flex-wrap gap-1.5">
-                {RECOMMENDED_TAGS.Styles.map(t => {
-                  const isSelected = styleTags.includes(t.toLowerCase());
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => setStyleTags(isSelected ? styleTags.filter(x => x !== t.toLowerCase()) : [...styleTags, t.toLowerCase()])}
-                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
-                    >
-                      {t}
-                    </button>
-                  );
-                })}
-              </div>
+              <button 
+                onClick={() => toggleTagCategory('styles')}
+                className="w-full flex items-center justify-between py-2 text-[0.65rem] text-primary font-bold tracking-widest uppercase hover:opacity-80 transition-opacity"
+              >
+                Styles
+                <ChevronDown size={14} className={`transition-transform duration-300 ${expandedTagCategories.includes('styles') ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {expandedTagCategories.includes('styles') && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-wrap gap-1.5 pt-2 pb-4">
+                      {RECOMMENDED_TAGS.Styles.map(t => {
+                        const isSelected = styleTags.includes(t.toLowerCase());
+                        return (
+                          <button
+                            key={t}
+                            onClick={() => setStyleTags(isSelected ? styleTags.filter(x => x !== t.toLowerCase()) : [...styleTags, t.toLowerCase()])}
+                            className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
+                          >
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div>
-              <label className="block text-[0.65rem] text-foreground/60 font-normal tracking-wider mb-2 uppercase">Personality</label>
-              <div className="flex flex-wrap gap-1.5">
-                {RECOMMENDED_TAGS.Personality.map(t => {
-                  const isSelected = personalityTraits.includes(t.toLowerCase());
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => setPersonalityTraits(isSelected ? personalityTraits.filter(x => x !== t.toLowerCase()) : [...personalityTraits, t.toLowerCase()])}
-                      className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
-                    >
-                      {t}
-                    </button>
-                  );
-                })}
-              </div>
+              <button 
+                onClick={() => toggleTagCategory('personality')}
+                className="w-full flex items-center justify-between py-2 text-[0.65rem] text-primary font-bold tracking-widest uppercase hover:opacity-80 transition-opacity"
+              >
+                Personality
+                <ChevronDown size={14} className={`transition-transform duration-300 ${expandedTagCategories.includes('personality') ? 'rotate-180' : ''}`} />
+              </button>
+              <AnimatePresence>
+                {expandedTagCategories.includes('personality') && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-wrap gap-1.5 pt-2 pb-4">
+                      {RECOMMENDED_TAGS.Personality.map(t => {
+                        const isSelected = personalityTraits.includes(t.toLowerCase());
+                        return (
+                          <button
+                            key={t}
+                            onClick={() => setPersonalityTraits(isSelected ? personalityTraits.filter(x => x !== t.toLowerCase()) : [...personalityTraits, t.toLowerCase()])}
+                            className={`px-3 py-1.5 rounded-lg text-[0.68rem] transition-all border ${isSelected ? "bg-primary/10 border-primary text-primary" : "bg-background border-border text-foreground/60 hover:border-primary/50"}`}
+                          >
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="pt-2">
@@ -1187,31 +1252,52 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
             <div className="space-y-5 bg-secondary/20 p-5 rounded-2xl border border-border/50">
               <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/60">Quick Add Skills</h4>
-              {Object.entries(RECOMMENDED_SKILLS).map(([category, categorySkills]) => (
-                <div key={category}>
-                  <div className="text-[0.7rem] font-normal text-primary/80 mb-2 flex items-center gap-2">
-                    <span className="w-1 h-1 rounded-full bg-primary/40" />
-                    {category}
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {categorySkills.map((s) => {
-                      const isSelected = skills.includes(s);
-                      return (
-                        <button
-                          key={s}
-                          onClick={() => isSelected ? removeSkill(s) : setSkills([...skills, s])}
-                          className={`px-3 py-1.5 rounded-lg text-[0.68rem] font-medium transition-all border ${isSelected
-                            ? "bg-primary/10 border-primary text-primary shadow-sm"
-                            : "bg-background border-border text-foreground/60 hover:border-primary/50 hover:text-primary"
-                            }`}
+              {Object.entries(RECOMMENDED_SKILLS).map(([category, categorySkills]) => {
+                const catKey = category.toLowerCase();
+                const isExpanded = expandedSkillCategories.includes(catKey);
+                return (
+                  <div key={category} className="border-b border-border/10 last:border-0 pb-2 mb-2">
+                    <button 
+                      onClick={() => toggleSkillCategory(catKey)}
+                      className="w-full flex items-center justify-between py-1.5 group"
+                    >
+                      <div className="text-[0.7rem] font-bold text-primary/80 flex items-center gap-2 group-hover:text-primary transition-colors uppercase tracking-widest">
+                        <span className={`w-1 h-1 rounded-full ${isExpanded ? 'bg-primary' : 'bg-primary/30'}`} />
+                        {category}
+                      </div>
+                      <ChevronDown size={14} className={`text-foreground/40 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-primary' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
                         >
-                          {s}
-                        </button>
-                      );
-                    })}
+                          <div className="flex flex-wrap gap-1.5 pt-2 pb-3">
+                            {categorySkills.map((s) => {
+                              const isSelected = skills.includes(s);
+                              return (
+                                <button
+                                  key={s}
+                                  onClick={() => isSelected ? removeSkill(s) : setSkills([...skills, s])}
+                                  className={`px-3 py-1.5 rounded-lg text-[0.68rem] font-medium transition-all border ${isSelected
+                                    ? "bg-primary/10 border-primary text-primary shadow-sm"
+                                    : "bg-background border-border text-foreground/60 hover:border-primary/50 hover:text-primary"
+                                    }`}
+                                >
+                                  {s}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
