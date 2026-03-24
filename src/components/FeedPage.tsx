@@ -635,7 +635,7 @@ function FeedCard({
     };
 
     const timeAgo = (date: string) => {
-        const sec = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+        const sec = Math.max(0, Math.floor((Date.now() - new Date(date).getTime()) / 1000));
         if (sec < 60) return `${sec}s ago`;
         if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
         if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
@@ -645,22 +645,32 @@ function FeedCard({
     return (
         <div ref={containerRef} className="h-full w-full relative bg-black flex flex-col items-center justify-center overflow-hidden">
             {/* ── Background Media ── */}
-            <div className="absolute inset-0 z-0 h-full w-full" onDoubleClick={handleDoubleTap}>
+            <div className="absolute inset-0 z-0 h-full w-full overflow-hidden" onDoubleClick={handleDoubleTap}>
+                {/* Background Blur Layer for Wide Screens */}
+                <div className="absolute inset-0 z-0 bg-stone-900 overflow-hidden">
+                    {item.type === "photo" ? (
+                        <img src={item.url} className="w-full h-full object-cover blur-[100px] opacity-20 scale-150" alt="" />
+                    ) : (
+                        <video src={item.url} className="w-full h-full object-cover blur-[100px] opacity-20 scale-150" muted />
+                    )}
+                </div>
+
                 {item.type === "photo" ? (
                     <img
                         src={item.url}
                         alt={item.caption || "Post"}
-                        className={`w-full h-full object-contain transition-all duration-700 ${!isUnlocked ? "blur-3xl opacity-50 scale-125" : ""}`}
+                        className={`relative z-10 w-full h-full object-contain transition-all duration-700 ${!isUnlocked ? "blur-3xl opacity-50 scale-125" : ""}`}
                     />
                 ) : (
                     <video
                         ref={videoRef}
                         src={item.url}
-                        className={`w-full h-full object-cover transition-all duration-700 ${!isUnlocked ? "blur-3xl opacity-50 scale-125" : ""}`}
+                        className={`relative z-10 w-full h-full object-contain transition-all duration-700 ${!isUnlocked ? "blur-3xl opacity-50 scale-125" : ""}`}
                         loop
                         muted
                         playsInline
-                        onClick={() => {
+                        onClick={(e) => {
+                            e.stopPropagation();
                             if (!isUnlocked) return;
                             if (videoRef.current) {
                                 if (isPlaying) { videoRef.current.pause(); setIsPlaying(false); }
@@ -874,9 +884,14 @@ function FeedCard({
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="absolute inset-x-0 bottom-0 z-[100] bg-card/95 backdrop-blur-3xl rounded-t-[2.5rem] border-t border-white/10 flex flex-col h-[70%]"
                     >
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0 z-10">
                             <div className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary">Comments ({commentList.length})</div>
-                            <button onClick={onToggleComments} className="p-2 hover:bg-white/5 rounded-full text-muted-foreground"><X size={20} /></button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); onToggleComments(); }} 
+                                className="p-2 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors relative z-20"
+                            >
+                                <X size={20} />
+                            </button>
                         </div>
 
                         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 custom-scrollbar">
@@ -894,7 +909,7 @@ function FeedCard({
                                     <div className="flex-1 group/comment">
                                         <div className="flex items-center justify-between mb-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-xs font-bold text-white uppercase tracking-wider">{c.commenter}</span>
+                                                <span className="text-xs font-bold text-foreground uppercase tracking-wider">{c.commenter}</span>
                                                 {(user?.id === c.user_id || currentUserProfile?.role === 'Admin') && (
                                                     <button
                                                         onClick={() => onDeleteComment(c.id)}
@@ -967,7 +982,7 @@ function PostModal({
     const [isPlaying, setIsPlaying] = useState(false);
 
     const timeAgo = (date: string) => {
-        const sec = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+        const sec = Math.max(0, Math.floor((Date.now() - new Date(date).getTime()) / 1000));
         if (sec < 60) return `${sec}s ago`;
         if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
         if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
@@ -1052,20 +1067,29 @@ function PostModal({
                 </div>
             </div>
 
-            {/* ── Media (full width) ── */}
-            <div className="bg-black flex-shrink-0">
+            {/* ── Media (full height or contain) ── */}
+            <div className="bg-black flex-1 flex items-center justify-center overflow-hidden relative">
+                {/* Background Blur for Post Modal */}
+                <div className="absolute inset-0 z-0">
+                    {item.type === "photo" ? (
+                        <img src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" alt="" />
+                    ) : (
+                        <video src={item.url} className="w-full h-full object-cover blur-3xl opacity-30 scale-125" muted />
+                    )}
+                </div>
+
                 {item.type === "photo" ? (
                     <img
                         src={item.url}
                         alt={item.caption || "Post"}
-                        className="w-full object-contain max-h-[55vh]"
+                        className="relative z-10 w-full h-full object-contain max-h-[70vh] md:max-h-full"
                     />
                 ) : (
-                    <div className="relative">
+                    <div className="relative z-10 w-full h-full flex items-center justify-center">
                         <video
                             ref={videoRef}
                             src={item.url}
-                            className="w-full max-h-[55vh] object-contain"
+                            className="w-full h-full object-contain max-h-[70vh] md:max-h-full"
                             loop playsInline
                             onClick={() => {
                                 if (videoRef.current) {
