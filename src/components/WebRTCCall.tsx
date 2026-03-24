@@ -22,13 +22,14 @@ export default function WebRTCCall({
   callType: 'video' | 'audio';
 }) {
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(callType === 'audio');
   const [streamReady, setStreamReady] = useState(false);
+  const [mediaError, setMediaError] = useState<string | null>(null);
 
   // 1. Boot up Camera/Audio immediately so user sees themselves ringing
   useEffect(() => {
@@ -43,6 +44,7 @@ export default function WebRTCCall({
       })
       .catch((err) => {
         console.error('Failed to get media devices', err);
+        setMediaError(err?.message || 'Failed to access camera/microphone. Please ensure browser permissions are granted.');
       });
 
     return () => {
@@ -62,6 +64,8 @@ export default function WebRTCCall({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:global.stun.twilio.com:3478' },
+        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
       ],
     });
     peerConnectionRef.current = pc;
@@ -76,7 +80,8 @@ export default function WebRTCCall({
     // Capture remote stream output
     pc.ontrack = (event) => {
       if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = event.streams[0];
+        const stream = event.streams && event.streams[0] ? event.streams[0] : new MediaStream([event.track]);
+        remoteVideoRef.current.srcObject = stream;
       }
     };
 
@@ -94,33 +99,49 @@ export default function WebRTCCall({
     channel
       .on('broadcast', { event: 'rtc_offer' }, async ({ payload }) => {
         if (payload.targetId !== currentUserId) return;
-        await pc.setRemoteDescription(new RTCSessionDescription(payload.offer));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        channel.send({
-          type: 'broadcast',
-          event: 'rtc_answer',
-          payload: { answer, targetId: payload.callerId },
-        });
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          channel.send({
+            type: 'broadcast',
+            event: 'rtc_answer',
+            payload: { answer, targetId: payload.callerId },
+          });
+        } catch (e) {
+          console.error("Error handling WebRTC Offer:", e);
+        }
       })
       .on('broadcast', { event: 'rtc_answer' }, async ({ payload }) => {
         if (payload.targetId !== currentUserId) return;
-        await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
+        } catch (e) {
+          console.error("Error handling WebRTC Answer:", e);
+        }
       })
       .on('broadcast', { event: 'rtc_ice' }, async ({ payload }) => {
         if (payload.targetId !== currentUserId) return;
-        await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+        } catch (e) {
+          console.error("Error adding remote ICE Candidate:", e);
+        }
       })
       .subscribe(async (status) => {
         // Only the caller throws the first pitch
         if (status === 'SUBSCRIBED' && isCaller) {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          channel.send({
-            type: 'broadcast',
-            event: 'rtc_offer',
-            payload: { offer, targetId, callerId: currentUserId },
-          });
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            channel.send({
+              type: 'broadcast',
+              event: 'rtc_offer',
+              payload: { offer, targetId, callerId: currentUserId },
+            });
+          } catch (e) {
+            console.error("Error dispatching original WebRTC Offer:", e);
+          }
         }
       });
 
@@ -144,13 +165,28 @@ export default function WebRTCCall({
     }
   };
 
+  if (mediaError) {
+    return (
+      <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+        <div className="bg-red-500/10 text-red-500 p-8 rounded-3xl border border-red-500/20 max-w-sm shadow-2xl">
+          <PhoneOff size={48} className="mx-auto mb-4 opacity-80" />
+          <h2 className="text-xl font-bold mb-3">Hardware Access Denied</h2>
+          <p className="text-sm opacity-80 mb-6 leading-relaxed">{mediaError}</p>
+          <button onClick={onEndCall} className="bg-red-500 text-white px-8 py-3 rounded-full font-bold w-full hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 active:scale-95">
+            Close Panel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[400] bg-[#111] flex flex-col items-center justify-center animate-in fade-in duration-300">
       
       {/* Remote UI Rendering */}
       {callType === 'video' ? (
         <video
-          ref={remoteVideoRef}
+          ref={remoteVideoRef as any}
           autoPlay
           playsInline
           className={`w-full h-full object-cover transition-opacity duration-700 ${isAccepted ? 'opacity-100' : 'opacity-0'}`}
@@ -159,10 +195,10 @@ export default function WebRTCCall({
         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1c1c1c] to-[#0a0a0a]">
           <div className="relative mb-8">
             <div className={`w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/20 ${isAccepted ? 'animate-[pulse_3s_ease-in-out_infinite]' : 'animate-bounce'}`}>
-              <div className="text-3xl text-primary font-bold uppercase">{partnerName[0]}</div>
+              <div className="text-3xl text-primary font-bold uppercase">{(partnerName || '?')[0]}</div>
             </div>
           </div>
-          <audio ref={remoteVideoRef} autoPlay />
+          <audio ref={remoteVideoRef as any} autoPlay />
         </div>
       )}
 

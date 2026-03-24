@@ -104,7 +104,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   
   // Audio/Video Call State
   const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
-  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string, isCaller?: boolean, isAccepted?: boolean } | null>(null);
+  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string, isCaller?: boolean, isAccepted?: boolean, callerName?: string } | null>(null);
 
   const incomingCallRef = useRef(incomingCall);
   const activeCallRef = useRef(activeCall);
@@ -481,7 +481,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         console.error("Answer call signal failed", err);
       }
     }
-    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true });
+    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true, callerName: incomingCall.callerName });
     setIncomingCall(null);
   };
 
@@ -1132,7 +1132,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           roomId={activeCall.roomId}
           targetId={activeCall.partnerId || 'unknown'}
           currentUserId={user.id}
-          partnerName={partnerProfile?.name || incomingCall?.callerName || 'User'}
+          partnerName={partnerProfile?.name || activeCall.callerName || incomingCall?.callerName || 'User'}
           callType={activeCall.type}
           onEndCall={endCall}
         />
