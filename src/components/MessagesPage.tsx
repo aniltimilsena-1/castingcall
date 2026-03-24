@@ -263,6 +263,49 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     };
   }, [user]);
 
+  // Keep track of the current selected partner safely for the realtime listener
+  const selectedPartnerRef = useRef(selectedPartner);
+  useEffect(() => {
+    selectedPartnerRef.current = selectedPartner;
+  }, [selectedPartner]);
+
+  // Robust polling mechanism as a fallback for when Supabase Realtime is dropping events or not properly configured
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      loadConversations();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [user, loadConversations]);
+
+  useEffect(() => {
+    if (!user || !selectedPartner) return;
+    const interval = setInterval(async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("*")
+        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedPartner}),and(sender_id.eq.${selectedPartner},receiver_id.eq.${user.id})`)
+        .order("created_at", { ascending: true });
+        
+      if (data) {
+        setThread((prev) => {
+          // Skip if we are holding optimistic messages (prevent flash/tearing)
+          if (prev.some(m => m.id.toString().startsWith('optimistic-'))) return prev;
+          
+          const prevStr = prev.map(m => m.id).join(',');
+          const dataStr = data.map(m => m.id).join(',');
+          if (prevStr !== dataStr || JSON.stringify(prev) !== JSON.stringify(data)) {
+            // Mark read safely
+            void supabase.from("messages").update({ is_read: true }).eq("sender_id", selectedPartner).eq("receiver_id", user.id).eq("is_read", false);
+            return data;
+          }
+          return prev;
+        });
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [user, selectedPartner]);
+
   useEffect(() => {
     if (!user) return;
 
@@ -283,14 +326,16 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           // Only process if the user is a participant
           if (msg.sender_id !== user.id && msg.receiver_id !== user.id) return;
 
+          const activePartner = selectedPartnerRef.current; // access without dependency array changes
+
           if (eventType === 'INSERT') {
             // If it's the current active chat
-            if (selectedPartner === msg.sender_id || selectedPartner === msg.receiver_id) {
+            if (activePartner === msg.sender_id || activePartner === msg.receiver_id) {
               setThread(prev => {
                 if (prev.some(m => m.id === msg.id)) return prev;
                 // Replace optimistic matches
                 const optIndex = prev.findIndex(m => 
-                  m.id.startsWith('optimistic-') && 
+                  m.id.toString().startsWith('optimistic-') && 
                   m.content === msg.content && 
                   m.sender_id === msg.sender_id
                 );
@@ -303,12 +348,12 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
               });
               
               // Mark as read if receiving from partner
-              if (msg.receiver_id === user.id && selectedPartner === msg.sender_id) {
+              if (msg.receiver_id === user.id && activePartner === msg.sender_id) {
                 void supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
               }
             }
           } else if (eventType === 'UPDATE') {
-            if (selectedPartner === msg.sender_id || selectedPartner === msg.receiver_id) {
+            if (activePartner === msg.sender_id || activePartner === msg.receiver_id) {
               setThread(prev => prev.map(m => m.id === msg.id ? msg : m));
             }
           } else if (eventType === 'DELETE') {
@@ -324,7 +369,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     return () => {
       supabase.removeChannel(messageChannel);
     };
-  }, [user, selectedPartner, loadConversations]);
+  }, [user, loadConversations]);
 
   useEffect(() => {
     if (initialPartnerId) {
