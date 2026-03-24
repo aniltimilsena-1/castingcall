@@ -32,7 +32,7 @@ export function ConfirmationDialog({
   variant = "default",
 }: ConfirmationDialogProps) {
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <AlertDialog open={isOpen}>
       <AlertDialogContent className="rounded-[2rem] border-white/10 bg-black/90 backdrop-blur-2xl text-white shadow-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="font-display text-2xl text-primary">{title}</AlertDialogTitle>

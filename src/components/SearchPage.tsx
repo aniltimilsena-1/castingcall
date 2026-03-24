@@ -37,7 +37,6 @@ interface SearchPageProps {
 
 export default function SearchPage({ query, role, initialType = "talents", onBack, onTypeChange, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
   const { user, profile: currentUserProfile } = useAuth();
-  const { confirm: confirmAction } = useConfirmation();
   const [searchType, setSearchType] = useState<"talents" | "projects">(initialType);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback, useRef } from "react";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 
 interface ConfirmOptions {
@@ -29,20 +29,33 @@ export const ConfirmationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
 
+  const optionsRef = useRef<ConfirmOptions | null>(null);
+  
   const confirm = useCallback((newOptions: ConfirmOptions) => {
+    optionsRef.current = newOptions;
     setOptions(newOptions);
     setIsOpen(true);
   }, []);
 
   const handleClose = useCallback(() => {
     setIsOpen(false);
-    options?.onCancel?.();
-  }, [options]);
+    optionsRef.current?.onCancel?.();
+    // Delay clearing options to allow Dialog exit animation
+    setTimeout(() => {
+      setOptions(null);
+      optionsRef.current = null;
+    }, 400);
+  }, []);
 
   const handleConfirm = useCallback(() => {
     setIsOpen(false);
-    options?.onConfirm?.();
-  }, [options]);
+    optionsRef.current?.onConfirm?.();
+    // Delay clearing options to allow Dialog exit animation
+    setTimeout(() => {
+      setOptions(null);
+      optionsRef.current = null;
+    }, 400);
+  }, []);
 
   return (
     <ConfirmationContext.Provider value={{ confirm }}>

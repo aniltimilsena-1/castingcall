@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
 export type PageName =
@@ -16,6 +17,7 @@ interface AppDrawerProps {
 
 export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps) {
   const { user, profile, loading, isPremium, signOut } = useAuth();
+  const { t } = useTranslation();
 
   const initials = loading 
     ? "" 
@@ -74,7 +76,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           </div>
           <div className="min-w-0">
             <div className="font-display text-lg text-foreground font-bold leading-tight truncate">
-              {loading ? "Syncing..." : (profile?.name || (user ? "Account" : "Guest"))}
+              {loading ? t('settings.profile.processing') : (profile?.name || (user ? "Account" : "Guest"))}
             </div>
             <div className="text-[0.7rem] text-primary/80 dark:text-primary font-bold uppercase tracking-[0.12em] mt-1 truncate">
               {loading ? "Please wait" : (profile?.role || (user ? "Member" : "Not signed in"))}
@@ -85,10 +87,10 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
         {/* ── Scrollable Nav Items ── */}
         <div className="flex-1 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
           <Section label="Explore">
-            <Item onClick={() => go("home")}>Home</Item>
+            <Item onClick={() => go("home")}>{t('nav.feed')}</Item>
             <Item onClick={() => go("search", { searchType: "projects" })}>Casting Calls</Item>
             <Item onClick={() => go("search", { searchType: "talents" })}>Actors</Item>
-            <Item onClick={() => go("feed")}>Feed</Item>
+            <Item onClick={() => go("feed")}>{t('nav.feed')}</Item>
           </Section>
           <Hr />
           <Section label="Workspace">
@@ -97,7 +99,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           </Section>
           <Hr />
           <Section label="Account">
-            <Item onClick={() => go("profile")}>My Profile</Item>
+            <Item onClick={() => go("profile")}>{t('nav.profile')}</Item>
             {!isPremium && <Item onClick={() => go("premium")}>Premium Upgrade</Item>}
             <Item onClick={() => go("notifications")}>Notifications</Item>
             <Item onClick={() => go("messages")}>Messages</Item>
@@ -109,7 +111,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
                 <span className="text-primary/80 dark:text-primary font-normal">Admin Panel</span>
               </Item>
             )}
-            <Item onClick={() => go("settings")}>Settings</Item>
+            <Item onClick={() => go("settings")}>{t('nav.settings')}</Item>
             <Item onClick={() => go("saved")}>Saved Talents</Item>
           </Section>
           <Hr />
@@ -126,7 +128,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
               onClick={handleLogout}
               className="w-full border-[1.5px] border-border rounded-lg text-destructive font-body font-normal text-sm py-3 text-center hover:bg-destructive/10 hover:border-destructive transition-colors"
             >
-              Log Out
+              {t('nav.logout')}
             </button>
           </div>
         )}

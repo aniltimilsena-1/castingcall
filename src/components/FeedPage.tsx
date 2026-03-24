@@ -230,10 +230,13 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
             onConfirm: async () => {
                 try {
                     await feedService.deleteComment(commentId);
-                    setComments(prev => ({
-                        ...prev,
-                        [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
-                    }));
+                    setComments(prev => {
+                        if (!prev[photoUrl]) return prev;
+                        return {
+                            ...prev,
+                            [photoUrl]: prev[photoUrl].filter(c => c.id !== commentId)
+                        };
+                    });
                     toast.success("Comment deleted");
                 } catch (err: any) {
                     toast.error(err.message || "Failed to delete comment");

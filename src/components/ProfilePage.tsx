@@ -8,6 +8,9 @@ import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles
 import { useVideo } from "@/contexts/VideoContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Badge } from "@/components/ui/badge";
+import { settingsService, UserSettings } from "@/services/settingsService";
+import ImageWithProtection from "@/components/ui/ImageWithProtection";
+import { ShieldAlert, Ban, UserX } from "lucide-react";
 
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
 const GENDERS = ["Male", "Female", "Non-binary", "Other", "Prefer not to say"];
@@ -86,6 +89,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   const [newLooksLike, setNewLooksLike] = useState("");
   const [visualSearchKeywords, setVisualSearchKeywords] = useState("");
   const [saving, setSaving] = useState(false);
+  const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   // Follow counts & list modal
   const [followCounts, setFollowCounts] = useState({ followers: 0, following: 0 });
@@ -162,8 +167,16 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
       fetchCaptions();
       fetchProducts();
+
+      // Load settings
+      settingsService.getSettings(profile.user_id).then(setUserSettings);
+      
+      // Check if blocked (if viewing someone else)
+      if (user && user.id !== profile.user_id) {
+        settingsService.isBlocked(user.id, profile.user_id).then(setIsBlocked);
+      }
     }
-  }, [profile]);
+  }, [profile, user]);
 
   if (!user) return <div className="min-h-screen flex items-center justify-center text-foreground/60 font-medium">Please sign in to view your profile.</div>;
   if (loading) return (
@@ -290,6 +303,26 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <Share2 size={15} />
               Share Link
             </button>
+            {user && profile && user.id !== profile.user_id && (
+              <button
+                onClick={async () => {
+                  confirmAction({
+                    title: isBlocked ? "Unblock User" : "Block User",
+                    description: `Are you sure you want to ${isBlocked ? 'unblock' : 'block'} ${profile.name}? They will no longer be able to message you or see your content.`,
+                    variant: "destructive",
+                    onConfirm: async () => {
+                      await settingsService.toggleBlock(user.id, profile.user_id);
+                      setIsBlocked(!isBlocked);
+                      toast.success(isBlocked ? "User unblocked" : "User blocked");
+                    }
+                  });
+                }}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all border ${isBlocked ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-secondary border-border hover:border-red-500 hover:text-red-500 text-foreground/70'}`}
+              >
+                {isBlocked ? <ShieldAlert size={15} /> : <Ban size={15} />}
+                {isBlocked ? "Unblock" : "Block"}
+              </button>
+            )}
             <button
               onClick={() => setIsEditing(true)}
               className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-foreground/70 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
@@ -354,6 +387,11 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               {isPremium && (
                 <span className="bg-amber-500/10 text-amber-500 border border-amber-500/30 px-3 py-1 rounded-full text-[0.6rem] font-normal tracking-widest uppercase flex items-center gap-1.5 mt-1">
                   <Crown size={11} strokeWidth={3} /> {profile?.role === 'Admin' ? 'ADMIN PRO' : 'PRO Member'}
+                </span>
+              )}
+              {userSettings?.advanced.openToCollaboration && (
+                <span className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[0.6rem] font-bold tracking-widest uppercase flex items-center gap-1.5 mt-1">
+                  <Sparkles size={11} /> Open to Collaboration
                 </span>
               )}
             </div>
@@ -470,7 +508,13 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {((profile as any)?.photos || []).map((url: string, i: number) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border">
-                  <img src={url} alt={`Portfolio ${i + 1}`} className="w-full h-full object-cover" />
+                  <ImageWithProtection 
+                    src={url} 
+                    alt={`Portfolio ${i + 1}`} 
+                    className="w-full h-full"
+                    watermark={userSettings?.protection.watermark}
+                    preventDownload={userSettings?.protection.preventDownload}
+                  />
                 </div>
               ))}
             </div>

@@ -155,23 +155,40 @@ export default function AdminPage() {
     const handleDeleteUser = async (profileId: string, isInternalId = false) => {
         confirmAction({
             title: "Delete User Account",
-            description: "Are you sure you want to delete this user account and profile? This action is permanent.",
+            description: "Are you sure you want to delete this user account and all associated data? This action is permanent.",
             variant: "destructive",
-            confirmLabel: "Delete Account",
+            confirmLabel: "Delete Everything",
             onConfirm: async () => {
                 try {
+                    // To "give all access" and ensure deletion works, we should attempt to clean up related data
+                    // that might have foreign key constraints if CASCADE is not set.
+                    const userId = isInternalId 
+                        ? (profiles.find(p => p.id === profileId)?.user_id) 
+                        : profileId;
+
+                    if (userId) {
+                        // Cleanup related records first to ensure the profile can be deleted
+                        await Promise.all([
+                            supabase.from("projects").delete().eq("user_id", userId),
+                            supabase.from("applications").delete().eq("applicant_id", userId),
+                            supabase.from("photo_captions").delete().eq("user_id", userId),
+                            supabase.from("notifications").delete().eq("user_id", userId),
+                            supabase.from("payment_verifications").delete().eq("user_id", userId)
+                        ]);
+                    }
+
                     const { error } = isInternalId 
                         ? await supabase.from("profiles").delete().eq("id", profileId)
                         : await supabase.from("profiles").delete().eq("user_id", profileId);
 
                     if (error) throw error;
                     
-                    toast.success('Profile removed');
+                    toast.success('User and all associated data removed');
                     fetchAllData();
                 } catch (err: unknown) {
                     const errorMessage = err instanceof Error ? err.message : String(err);
                     console.error("Delete user error:", err);
-                    toast.error("Failed to delete user profile: " + errorMessage);
+                    toast.error("Deletion failed: " + errorMessage);
                 }
             }
         });
@@ -235,13 +252,13 @@ export default function AdminPage() {
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-                    <StatsCard icon={<Globe className="text-blue-500" size={20} />} label="Market Scope" value="Global" trend="" color="blue" />
-                    <StatsCard icon={<Users size={20} />} label="Total Talents" value={profiles.length.toString()} trend="" color="primary" />
-                    <StatsCard icon={<DollarSign size={20} />} label="Total Revenue (USD)" value={`$${usdRevenue}`} trend="" color="green" />
-                    <StatsCard icon={<DollarSign size={20} />} label="Total Revenue (NPR)" value={`Rs.${nprRevenue}`} trend="" color="amber" />
+                    <StatsCard icon={<Globe className="text-blue-400" size={20} />} label="Market Scope" value="Global" trend="" color="blue" />
+                    <StatsCard icon={<Users className="text-primary" size={20} />} label="Total Talents" value={profiles.length.toString()} trend="" color="primary" />
+                    <StatsCard icon={<DollarSign className="text-green-400" size={20} />} label="Total Revenue (USD)" value={`$${usdRevenue}`} trend="" color="green" />
+                    <StatsCard icon={<DollarSign className="text-amber-400" size={20} />} label="Total Revenue (NPR)" value={`Rs.${nprRevenue}`} trend="" color="amber" />
                 </div>
 
-                <div className="bg-card/20 backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden">
+                <div className="bg-[#0a0a0a] backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden">
                     <div className="p-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-white/5">
                         <h2 className="text-2xl font-display text-white uppercase">{activeTab} Management</h2>
                         <div className="relative w-full lg:w-96">
@@ -291,7 +308,7 @@ export default function AdminPage() {
                                                         <MoreVertical size={18} />
                                                     </button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-52 bg-card border-border p-1.5 shadow-2xl z-[50]">
+                                                <DropdownMenuContent align="end" className="w-52 bg-[#121212] border-white/10 p-1.5 shadow-2xl z-[50] text-white">
                                                     <DropdownMenuItem 
                                                         onClick={async () => {
                                                             const newPlan = p.plan === 'pro' ? 'free' : 'pro';
@@ -303,7 +320,7 @@ export default function AdminPage() {
                                                                 fetchAllData();
                                                             }
                                                         }}
-                                                        className={`flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-xs ${p.plan === 'pro' ? 'text-amber-500 bg-amber-500/5' : 'text-foreground hover:bg-primary/10'}`}
+                                                        className={`flex items-center gap-3 px-3.5 py-3 rounded-xl cursor-pointer text-xs ${p.plan === 'pro' ? 'text-amber-500 bg-amber-500/5' : 'text-white hover:bg-white/5'}`}
                                                     >
                                                         <Crown size={18} />
                                                         <span className="font-medium">{p.plan === 'pro' ? 'Downgrade to FREE' : 'Upgrade to PRO'}</span>
@@ -444,9 +461,9 @@ export default function AdminPage() {
 
 function StatsCard({ icon, label, value, trend, color: _color }: { icon: React.ReactNode; label: string; value: string; trend: string; color: string }) {
     return (
-        <div className="bg-card/30 border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden">
+        <div className="bg-[#0e0e0e] border border-white/5 p-8 rounded-[2.5rem] relative overflow-hidden">
             <div className="flex items-center justify-between mb-8">{icon} <span className="text-[0.6rem] text-green-400 tracking-widest">{trend}</span></div>
-            <p className="text-muted-foreground/40 text-[0.6rem] uppercase tracking-widest mb-2">{label}</p>
+            <p className="text-white/40 text-[0.6rem] uppercase tracking-widest mb-2">{label}</p>
             <p className="text-4xl font-display text-white">{value}</p>
         </div>
     );

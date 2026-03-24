@@ -5,6 +5,7 @@ import { profileService } from "@/services/profileService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Home, Sparkles, Search, User } from "lucide-react";
+import { useTranslation } from "@/contexts/LanguageContext";
 import Navbar from "@/components/Navbar";
 import AppDrawer, { PageName } from "@/components/AppDrawer";
 import HomePage from "@/components/HomePage";
@@ -29,6 +30,7 @@ const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "mess
 
 const Index = () => {
   const { user, profile: currentUserProfile, loading } = useAuth();
+  const { t } = useTranslation();
   const params = useParams();
   const { id } = params;
   const routerNavigate = useNavigate();
@@ -340,10 +342,10 @@ const Index = () => {
       {page !== 'messages' && page !== 'feed' && (
         <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
           {([
-            { id: "home", label: "Home", icon: Home },
-            { id: "feed", label: "Feed", icon: Sparkles },
-            { id: "search", label: "Explore", icon: Search },
-            { id: "profile", label: "Profile", icon: User },
+            { id: "home", label: t('nav.feed'), icon: Home },
+            { id: "feed", label: t('nav.feed'), icon: Sparkles },
+            { id: "search", label: t('nav.projects'), icon: Search },
+            { id: "profile", label: t('nav.profile'), icon: User },
           ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
             <button
               key={id}

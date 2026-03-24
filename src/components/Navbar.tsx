@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { PageName } from "./AppDrawer";
 
 interface NavbarProps {
@@ -24,6 +25,7 @@ export default function Navbar({
 }: NavbarProps) {
   const { user, profile } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
@@ -114,7 +116,7 @@ export default function Navbar({
             <Search className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t('nav.projects') + "..."}
               className="bg-transparent border-none outline-none text-foreground font-body text-xs w-full placeholder:text-muted-foreground/50"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
@@ -196,7 +198,7 @@ export default function Navbar({
           <input
             type="search"
             enterKeyHint="search"
-            placeholder="Search..."
+            placeholder={t('nav.projects') + "..."}
             className="bg-transparent border-none outline-none text-foreground font-body text-xs w-full placeholder:text-muted-foreground/50"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}

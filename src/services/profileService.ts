@@ -35,7 +35,7 @@ export const profileService = {
     },
 
     async getFeaturedProfiles() {
-        let q = supabase.from("profiles").select("*").eq("plan", "pro");
+        const q = supabase.from("profiles").select("*").eq("plan", "pro");
         const { data, error } = await q.order("created_at", { ascending: false });
         if (error) throw error;
         return data;
@@ -109,11 +109,13 @@ export const profileService = {
     },
 
     async getDigitalProducts(talentId: string) {
-        const { data, error } = await (supabase
-            .from("digital_products")
+        // Separate out to avoid deep instantiation error
+        const query = supabase
+            .from("digital_products" as any)
             .select("*")
             .eq("seller_id", talentId)
-            .eq("is_active", true) as any);
+            .eq("is_active", true);
+        const { data, error } = await (query as any);
         if (error) throw error;
         return data || [];
     },

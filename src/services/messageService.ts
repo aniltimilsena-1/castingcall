@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { settingsService } from "./settingsService";
 
 export const messageService = {
     async getMessages(userId: string) {
@@ -25,6 +26,18 @@ export const messageService = {
     },
 
     async sendMessage(senderId: string, receiverId: string, content: string, fileUrl?: string, fileType?: 'image' | 'video' | 'file') {
+        // 1. Check if recipient has blocked sender
+        const isBlocked = await settingsService.isBlocked(receiverId, senderId);
+        if (isBlocked) {
+            throw new Error("You cannot send messages to this user.");
+        }
+
+        // 2. Check if recipient allows messaging (Permissions)
+        const recipientSettings = await settingsService.getSettings(receiverId);
+        if (recipientSettings.visibility.messaging === "No one") {
+            throw new Error("This user has disabled direct messaging.");
+        }
+
         const { data, error } = await supabase
             .from("messages")
             .insert({
@@ -38,6 +51,22 @@ export const messageService = {
             .single();
 
         if (error) throw error;
+
+        // 3. Auto-Response Logic (only if NOT an auto-response itself)
+        if (!content.includes("[Auto-Response]") && recipientSettings.communication.autoResponse) {
+            try {
+               await supabase
+                .from("messages")
+                .insert({
+                    sender_id: receiverId,
+                    receiver_id: senderId,
+                    content: `${recipientSettings.communication.autoResponse} [Auto-Response]`,
+                });
+            } catch (err) {
+                console.error("Auto-response failed:", err);
+            }
+        }
+
         return data;
     },
 

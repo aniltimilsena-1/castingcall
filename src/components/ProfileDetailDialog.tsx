@@ -7,9 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical, UserCheck, Users } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical, UserCheck, Users, Ban, ShieldAlert } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
+import { settingsService, UserSettings } from "@/services/settingsService";
+import ImageWithProtection from "./ui/ImageWithProtection";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +52,7 @@ export default function ProfileDetailDialog({
     const [isMessaging, setIsMessaging] = useState(false);
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
+    const [isAccessDenied, setIsAccessDenied] = useState(false);
 
     const [userProjects, setUserProjects] = useState<any[]>([]);
     const [isInviting, setIsInviting] = useState(false);
@@ -61,6 +64,8 @@ export default function ProfileDetailDialog({
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [digitalProducts, setDigitalProducts] = useState<any[]>([]);
     const [loadingMonetization, setLoadingMonetization] = useState(false);
+    const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+    const [isBlocked, setIsBlocked] = useState(false);
 
     const [paymentModal, setPaymentModal] = useState<{
         open: boolean;
@@ -126,6 +131,21 @@ export default function ProfileDetailDialog({
             if (user?.id && user.id !== profile.user_id) {
                 const following = await followService.isFollowing(user.id, profile.user_id);
                 setIsFollowingProfile(following);
+                const blocked = await settingsService.isBlocked(user.id, profile.user_id);
+                setIsBlocked(blocked);
+            }
+            const settings = await settingsService.getSettings(profile.user_id);
+            setUserSettings(settings);
+            
+            // Check if current user is allowed to view this profile
+            if (user?.id === profile.user_id) {
+                setIsAccessDenied(false);
+            } else if (settings.visibility.profile === "No one") {
+                setIsAccessDenied(true);
+            } else if (settings.visibility.profile === "Verified" && !currentUserProfile?.is_verified) {
+                setIsAccessDenied(true);
+            } else {
+                setIsAccessDenied(false);
             }
         };
         loadFollowData();
@@ -305,18 +325,42 @@ export default function ProfileDetailDialog({
                         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
                     >
                         <div className="p-5 md:p-8">
-                            {!showFullProfile ? (
+                            {isAccessDenied ? (
+                                <div className="h-[60vh] flex flex-col items-center justify-center text-center space-y-6">
+                                    <div className="w-24 h-24 rounded-full bg-secondary flex items-center justify-center text-muted-foreground">
+                                        <Lock size={40} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-display text-2xl text-foreground">Private Profile</h3>
+                                        <p className="text-muted-foreground text-sm max-w-xs mx-auto mt-2">
+                                            This user has restricted their profile visibility. You do not have permission to view their details.
+                                        </p>
+                                    </div>
+                                    <button 
+                                        onClick={() => onOpenChange(false)}
+                                        className="bg-secondary text-foreground px-8 py-3 rounded-xl font-bold text-xs border border-border"
+                                    >
+                                        Close Profile
+                                    </button>
+                                </div>
+                            ) : !showFullProfile ? (
                                 /* Mini Profile View */
                                 <div className="space-y-8">
                                     <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
                                         <div className="flex flex-col items-center gap-3 flex-shrink-0">
                                             <div className="w-28 h-28 md:w-40 md:h-40 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-4xl md:text-5xl text-primary shadow-xl shadow-primary/10 overflow-hidden relative">
                                                 {profile?.photo_url ? (
-                                                    <img src={profile.photo_url} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                                                    <ImageWithProtection 
+                                                        src={profile.photo_url} 
+                                                        alt="Profile" 
+                                                        className="w-full h-full rounded-full"
+                                                        watermark={userSettings?.protection.watermark}
+                                                        preventDownload={userSettings?.protection.preventDownload}
+                                                    />
                                                 ) : (
                                                     (profile?.name || "U")[0].toUpperCase()
                                                 )}
-                                                {isOnline && (
+                                                {isOnline && userSettings?.visibility.onlineStatus !== false && (
                                                     <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-[3px] border-secondary rounded-full z-20 shadow-glow shadow-green-500/50" title="Online" />
                                                 )}
                                             </div>
@@ -337,6 +381,11 @@ export default function ProfileDetailDialog({
                                                 {profile?.experience_years !== null && (
                                                     <span className="text-xs font-medium px-3 py-1 bg-secondary border border-border rounded-full text-muted-foreground">
                                                         ⭐ {profile?.experience_years}y Experience
+                                                    </span>
+                                                )}
+                                                {userSettings?.advanced.openToCollaboration && (
+                                                    <span className="text-xs font-bold px-3 py-1 bg-primary text-black rounded-full flex items-center gap-1.5 shadow-lg shadow-primary/20">
+                                                        <Sparkles size={11} fill="currentColor" /> Open to Collaboration
                                                     </span>
                                                 )}
                                             </div>
@@ -363,17 +412,37 @@ export default function ProfileDetailDialog({
                                             </div>
 
                                             {/* ── Follow counts ── */}
-                                            <div className="flex items-center gap-6 mb-6">
-                                                <button onClick={() => openFollowModal("followers")} className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity">
-                                                    <span className="text-xl font-display text-foreground">{followCounts.followers.toLocaleString()}</span>
-                                                    <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
-                                                </button>
-                                                <div className="w-px h-8 bg-border" />
-                                                <button onClick={() => openFollowModal("following")} className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity">
-                                                    <span className="text-xl font-display text-foreground">{followCounts.following.toLocaleString()}</span>
-                                                    <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Following</span>
-                                                </button>
-                                            </div>
+                                            {userSettings?.visibility.showConnections !== "No one" && (
+                                                <div className="flex items-center gap-6 mb-6">
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (userSettings?.visibility.showConnections === "Followers" && !isFollowingProfile && user?.id !== profile.user_id) {
+                                                                toast.error("You must follow this user to see their connections.");
+                                                                return;
+                                                            }
+                                                            openFollowModal("followers");
+                                                        }} 
+                                                        className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity"
+                                                    >
+                                                        <span className="text-xl font-display text-foreground">{followCounts.followers.toLocaleString()}</span>
+                                                        <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
+                                                    </button>
+                                                    <div className="w-px h-8 bg-border" />
+                                                    <button 
+                                                        onClick={() => {
+                                                            if (userSettings?.visibility.showConnections === "Followers" && !isFollowingProfile && user?.id !== profile.user_id) {
+                                                                toast.error("You must follow this user to see their connections.");
+                                                                return;
+                                                            }
+                                                            openFollowModal("following");
+                                                        }} 
+                                                        className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity"
+                                                    >
+                                                        <span className="text-xl font-display text-foreground">{followCounts.following.toLocaleString()}</span>
+                                                        <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Following</span>
+                                                    </button>
+                                                </div>
+                                            )}
 
                                             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                                                 <button
@@ -446,6 +515,20 @@ export default function ProfileDetailDialog({
                                                                 <Share2 size={16} />
                                                                 <span className="font-medium">Share Profile</span>
                                                             </DropdownMenuItem>
+
+                                                            {user?.id !== profile.user_id && (
+                                                                <DropdownMenuItem
+                                                                    onClick={async () => {
+                                                                        const blocked = await settingsService.toggleBlock(user.id, profile.user_id);
+                                                                        setIsBlocked(blocked);
+                                                                        toast.success(blocked ? "User blocked" : "User unblocked");
+                                                                    }}
+                                                                    className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-xs ${isBlocked ? 'text-red-500 bg-red-500/5 hover:bg-red-500/10' : 'text-foreground hover:bg-red-500/10'}`}
+                                                                >
+                                                                    {isBlocked ? <ShieldAlert size={16} /> : <Ban size={16} />}
+                                                                    <span className="font-medium">{isBlocked ? "Unblock User" : "Block User"}</span>
+                                                                </DropdownMenuItem>
+                                                            )}
 
                                                             {user?.id !== profile.user_id && userProjects.length > 0 && (
                                                                 <DropdownMenuItem
@@ -591,7 +674,13 @@ export default function ProfileDetailDialog({
                                             <div className="flex flex-col items-center gap-4">
                                                 <div className="aspect-square w-full rounded-2xl bg-secondary border-2 border-primary overflow-hidden shadow-2xl">
                                                     {profile?.photo_url ? (
-                                                        <img src={profile.photo_url} alt="Profile" className="w-full h-full object-cover" />
+                                                        <ImageWithProtection 
+                                                            src={profile.photo_url} 
+                                                            alt="Profile" 
+                                                            className="w-full h-full"
+                                                            watermark={userSettings?.protection.watermark}
+                                                            preventDownload={userSettings?.protection.preventDownload}
+                                                        />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center font-display text-7xl text-primary">
                                                             {(profile?.name || "U")[0].toUpperCase()}
@@ -639,7 +728,13 @@ export default function ProfileDetailDialog({
                                                     {(profile as any)?.photos?.length > 0 ? (
                                                         (profile as any).photos.map((url: string, i: number) => (
                                                             <div key={i} onClick={() => { setViewingPhoto(url); trackPortfolioInteraction(url); }} className="aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition-colors cursor-pointer group relative">
-                                                                <img src={url} alt={`Gallery ${i}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                                <ImageWithProtection 
+                                                                    src={url} 
+                                                                    alt={`Gallery ${i}`} 
+                                                                    className="w-full h-full group-hover:scale-110 transition-transform duration-500"
+                                                                    watermark={userSettings?.protection.watermark}
+                                                                    preventDownload={userSettings?.protection.preventDownload}
+                                                                />
                                                             </div>
                                                         ))
                                                     ) : (
@@ -714,7 +809,17 @@ export default function ProfileDetailDialog({
                                                     <Detail label="FULL NAME" value={profile?.name} />
                                                     <Detail label="PRIMARY ROLE" value={profile?.role} />
                                                     <Detail label="LOCATION" value={profile?.location} />
-                                                    <Detail label="EMAIL" value={profile?.email} />
+                                                    {userSettings?.visibility.showSocialLinks !== false && (
+                                                       <Detail label="PORTFOLIO" value={profile?.portfolio_url} isLink />
+                                                    )}
+                                                    <Detail 
+                                                        label="EMAIL" 
+                                                        value={
+                                                            (userSettings?.visibility.showContactOnlyOnAccepted && !alreadyAppliedOrInvited.includes('any')) // Simplified check, ideally needs specific 'accepted' check
+                                                            ? "••••••••@••••.••• (Hidden)"
+                                                            : profile?.email
+                                                        } 
+                                                    />
                                                 </div>
                                                 <div className="pt-6 border-t border-border/20">
                                                     <Detail label="BIO" value={profile?.bio || "No professional summary provided."} fullWidth />
