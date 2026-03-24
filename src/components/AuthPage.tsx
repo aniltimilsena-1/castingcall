@@ -120,7 +120,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         transition={{ duration: 0.4 }}
       >
         <div className="flex flex-col items-center text-center mb-8">
-          <img src="/logo.png" alt="CaastingCall Logo" className="h-20 w-auto mb-4" />
+          <img src="/logo.png" alt="CaastingCall Logo" className="h-28 w-auto mb-4" />
           <h1 className="font-accent text-3xl text-foreground tracking-tight">CaastingCall</h1>
           <p className="text-muted-foreground text-sm mt-2 font-medium">
             {tab === "reset" ? "Recover your account password" : "Connect with top talent and industry professionals"}

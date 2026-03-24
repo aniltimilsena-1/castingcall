@@ -90,12 +90,21 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
           if (query) {
             q = q.or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%,requirements.ilike.%${query}%`);
           }
-          const { data } = await q;
+          const { data, error } = await q;
+          if (error) throw error;
           setProjectResults(data || []);
         }
-      } catch (err) {
-        console.error("Search error:", err);
-        toast.error("Failed to load search results.");
+      } catch (err: any) {
+        console.error("Search error details:", err);
+        if (err.message?.toLowerCase().includes("jwt expired")) {
+          console.warn("JWT expired detected. Refreshing session...");
+          supabase.auth.signOut().then(() => {
+            // Success call to signOut will update AuthContext and trigger this effect again via currentUserProfile dependency
+            toast.info("Session refreshed. Resuming search...");
+          });
+        } else {
+          toast.error(`Failed to load search results: ${err.message || 'Unknown error'}`);
+        }
       } finally {
         setLoading(false);
         setIsScanning(false);
@@ -129,9 +138,13 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
           isTrending: true,
           isAdmin: currentUserProfile?.role === 'Admin'
         });
-        setTrendingResults(data.slice(0, 6) as Profile[]);
-      } catch (err) {
+        setTrendingResults((data || []).slice(0, 6) as Profile[]);
+      } catch (err: any) {
         console.error("Trending fetch error:", err);
+        if (err.message?.toLowerCase().includes("jwt expired")) {
+          supabase.auth.signOut();
+        }
+        setTrendingResults([]);
       }
     };
     fetchTrending();
@@ -648,19 +661,19 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
           )}
         </div>
       </div>
-      <div className="p-10">
-        <h4 className="font-display text-3xl text-foreground mb-4 group-hover:text-primary transition-colors leading-tight">{project.title}</h4>
-        <div className="flex flex-wrap items-center gap-6 text-[0.65rem] text-foreground/60 mb-8 font-bold uppercase tracking-[2px]">
-          <span className="flex items-center gap-2.5"><MapPin size={16} className="text-primary" /> {project.location || 'Remote'}</span>
-          <span className="flex items-center gap-2.5"><DollarSign size={16} className="text-primary" /> {project.salary_range || 'Competitive'}</span>
+      <div className="p-6">
+        <h4 className="font-display text-xl text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">{project.title}</h4>
+        <div className="flex flex-wrap items-center gap-4 text-[0.6rem] text-foreground/60 mb-5 font-bold uppercase tracking-[1.5px]">
+          <span className="flex items-center gap-2"><MapPin size={14} className="text-primary" /> {project.location || 'Remote'}</span>
+          <span className="flex items-center gap-2"><DollarSign size={14} className="text-primary" /> {project.salary_range || 'Competitive'}</span>
         </div>
-        <p className="text-sm text-foreground/60 line-clamp-2 mb-8 leading-relaxed font-body">
+        <p className="text-sm text-foreground/60 line-clamp-2 mb-6 leading-relaxed font-body">
           {project.description || "No detailed description provided for this casting call."}
         </p>
 
         {!applied && (
-          <div className="mb-8">
-            <label className="block text-[0.65rem] font-normal tracking-[2px] uppercase text-primary mb-3">
+          <div className="mb-6">
+            <label className="block text-[0.6rem] font-normal tracking-[2px] uppercase text-primary mb-2">
               Upload Video Audition (Self-Tape)
             </label>
             <div className="relative">
@@ -700,17 +713,17 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
         )}
 
         {applied ? (
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               disabled
-              className="flex-1 py-5 rounded-2xl text-[0.7rem] font-bold uppercase tracking-[3px] bg-green-500/10 text-green-600 border-2 border-green-500/20 cursor-default"
+              className="flex-1 py-3.5 rounded-xl text-[0.65rem] font-bold uppercase tracking-[2px] bg-green-500/10 text-green-600 border-2 border-green-500/20 cursor-default"
             >
               Application Sent
             </button>
             <button
               onClick={handleCancelApply}
               disabled={loading}
-              className="px-6 py-5 rounded-2xl text-[0.7rem] font-bold uppercase tracking-[2px] bg-red-500/10 text-red-500 border-2 border-red-500/20 hover:bg-red-500 hover:text-white transition-all active:scale-95"
+              className="px-5 py-3.5 rounded-xl text-[0.65rem] font-bold uppercase tracking-[2px] bg-red-500/10 text-red-500 border-2 border-red-500/20 hover:bg-red-500 hover:text-white transition-all active:scale-95"
               title="Cancel Application"
             >
               Cancel
@@ -720,9 +733,9 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
           <button
             onClick={handleApply}
             disabled={loading}
-            className="w-full py-5 rounded-2xl text-[0.7rem] font-bold uppercase tracking-[3px] transition-all shadow-xl bg-secondary text-secondary-foreground border-2 border-border group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground active:scale-95"
+            className="w-full py-3.5 rounded-xl text-[0.65rem] font-bold uppercase tracking-[2px] transition-all shadow-xl bg-secondary text-secondary-foreground border-2 border-border group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground active:scale-95"
           >
-            {uploadingVideo ? 'Uploading Self-Tape...' : loading ? 'Submitting...' : 'Apply for this role'}
+            {uploadingVideo ? 'Uploading self-tape...' : loading ? 'Submitting...' : 'Apply for this role'}
           </button>
         )}
       </div>

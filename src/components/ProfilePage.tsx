@@ -1068,6 +1068,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <AnimatePresence>
                 {expandedTagCategories.includes('moods') && (
                   <motion.div 
+                    key="moods"
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -1103,6 +1104,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <AnimatePresence>
                 {expandedTagCategories.includes('styles') && (
                   <motion.div 
+                    key="styles"
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -1138,6 +1140,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <AnimatePresence>
                 {expandedTagCategories.includes('personality') && (
                   <motion.div 
+                    key="personality"
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
@@ -1270,6 +1273,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                     <AnimatePresence>
                       {isExpanded && (
                         <motion.div
+                          key={catKey}
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}

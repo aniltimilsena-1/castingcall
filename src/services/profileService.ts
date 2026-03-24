@@ -64,7 +64,6 @@ export const profileService = {
         }
 
         if (params.query) {
-            // Logic for UUID vs Keyword search
             const trimmed = params.query.trim();
             const profileUrlMatch = trimmed.match(/\/profile\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
             const uuidFromQuery = profileUrlMatch ? profileUrlMatch[1] : (
@@ -74,21 +73,22 @@ export const profileService = {
             if (uuidFromQuery) {
                 q = q.or(`id.eq.${uuidFromQuery},user_id.eq.${uuidFromQuery}`);
             } else {
-                q = q.or(`name.ilike.%${params.query}%,role.ilike.%${params.query}%,bio.ilike.%${params.query}%`);
-
-                if (params.moods?.length) q = q.overlaps('mood_tags', params.moods.map(m => m.toLowerCase()));
-                if (params.styles?.length) q = q.overlaps('style_tags', params.styles.map(s => s.toLowerCase()));
-                if (params.traits?.length) q = q.overlaps('personality_traits', params.traits.map(t => t.toLowerCase()));
+                q = q.or(`name.ilike.%${params.query}%,role.ilike.%${params.query}%,bio.ilike.%${params.query}%,visual_search_keywords.ilike.%${params.query}%`);
             }
         }
 
-        if (params.looksLike) {
-            q = q.overlaps('looks_like', [params.looksLike]);
-        }
+        // Apply filters independently of query
+        if (params.moods?.length) q = q.overlaps('mood_tags', params.moods.map(m => m.toLowerCase()));
+        if (params.styles?.length) q = q.overlaps('style_tags', params.styles.map(s => s.toLowerCase()));
+        if (params.traits?.length) q = q.overlaps('personality_traits', params.traits.map(t => t.toLowerCase()));
+        if (params.looksLike) q = q.overlaps('looks_like', [params.looksLike.toLowerCase()]);
 
         const { data, error } = await q;
-        if (error) throw error;
-        return data;
+        if (error) {
+            console.error("Supabase search error:", error);
+            throw error;
+        }
+        return data || [];
     },
 
     async trackProfileView(profileId: string, viewerId?: string) {

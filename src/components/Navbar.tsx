@@ -1,4 +1,4 @@
-import { Search, Moon, Sun, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase, Home } from "lucide-react";
+import { Search, Moon, Sun, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -90,25 +90,24 @@ export default function Navbar({
   return (
     <nav className="sticky top-0 glass z-[100] border-b border-foreground/5 shadow-2xl shadow-black/5 dark:shadow-black/20">
       <div className="flex items-center justify-between px-4 md:px-8 h-20 max-w-[2000px] mx-auto">
-        {/* Logo */}
-        <button onClick={onLogoClick} className="flex items-center group flex-shrink-0">
+        <button 
+          onClick={onLogoClick} 
+          className={`relative group flex items-center flex-shrink-0 transition-all duration-700 p-2 rounded-[1.8rem] ${activePage === 'home' ? 'bg-primary/10 shadow-[0_0_40px_rgba(212,175,55,0.15)] scale-105 border-[1.5px] border-primary/20' : 'hover:bg-foreground/5 dark:hover:bg-white/5 border-[1.5px] border-transparent'}`}
+          title="Home"
+        >
+          {activePage === 'home' && (
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(212,175,55,1)] animate-in fade-in duration-500" />
+          )}
           <img
             src="/logo.png"
             alt="CaastingCall Logo"
-            className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               e.currentTarget.parentElement!.innerHTML = '<span class="font-accent text-2xl text-primary tracking-tight">CaastingCall</span>';
             }}
           />
         </button>
-
-        {/* Center Links - Horizontal Scroll on Tablet/Mobile, Flex on Desktop */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 mask-fade-right lg:mask-none group/nav">
-          <button onClick={() => onNavigate("home")} className={navItemClass("home")} title="Home">
-            <Home size={14} />
-          </button>
-        </div>
 
         {/* Right Section */}
         <div className="flex items-center gap-2 lg:gap-4">

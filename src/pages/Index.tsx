@@ -342,24 +342,13 @@ const Index = () => {
       {page !== 'messages' && page !== 'feed' && (
         <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
           {([
-            { id: "home", label: t('nav.home'), icon: Home },
             { id: "feed", label: t('nav.feed'), icon: Sparkles },
             { id: "search", label: t('nav.search'), icon: Search },
             { id: "profile", label: t('nav.profile'), icon: User },
           ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => {
-                if (id === 'home' && page === 'home') {
-                  const now = Date.now();
-                  if (now - lastHomeClickRef.current < 300) {
-                    window.location.reload();
-                    return;
-                  }
-                  lastHomeClickRef.current = now;
-                }
-                navigate(id);
-              }}
+              onClick={() => navigate(id)}
               className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/70"
                 }`}
             >
