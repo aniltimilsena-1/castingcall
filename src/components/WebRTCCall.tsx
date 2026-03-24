@@ -60,14 +60,27 @@ export default function WebRTCCall({
     if (!streamReady || !isAccepted) return;
 
     const channel = supabase.channel(`webrtc-${roomId}`);
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:global.stun.twilio.com:3478' },
+
+    const iceServers: RTCIceServer[] = [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:global.stun.twilio.com:3478' },
+    ];
+
+    const turnUrl = import.meta.env.VITE_TURN_URL;
+    const turnUser = import.meta.env.VITE_TURN_USER;
+    const turnPass = import.meta.env.VITE_TURN_PASS;
+
+    if (turnUrl && turnUser && turnPass) {
+      iceServers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
+    } else if (import.meta.env.DEV) {
+      // Insecure generic relay strictly gated for local development testing only
+      iceServers.push(
         { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      ],
-    });
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+      );
+    }
+
+    const pc = new RTCPeerConnection({ iceServers });
     peerConnectionRef.current = pc;
 
     // Pipe in our local hardware stream
