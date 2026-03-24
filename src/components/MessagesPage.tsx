@@ -109,6 +109,12 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   // realtime echo that would otherwise cause a duplicate.
   const sentMessageIds = useRef<Set<string>>(new Set());
 
+  // Keep a stable ref of the thread for safely making background comparisons
+  const threadRef = useRef<Message[]>(thread);
+  useEffect(() => {
+    threadRef.current = thread;
+  }, [thread]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -121,9 +127,9 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
 
   const EMOJIS = ["😀", "😂", "🤣", "😍", "🥰", "😎", "🔥", "💯", "✨", "👍", "❤️", "✅"];
 
-  const loadConversations = useCallback(async () => {
+  const loadConversations = useCallback(async (silent = false) => {
     if (!user) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     try {
       const { data: messages } = await supabase.from("messages").select("*").or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`).order("created_at", { ascending: false });
       if (!messages) { setLoading(false); return; }
@@ -164,7 +170,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [user]);
 
@@ -295,7 +301,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(() => {
-      loadConversations();
+      void loadConversations(true);
     }, 5000);
     return () => clearInterval(interval);
   }, [user, loadConversations]);
@@ -310,19 +316,28 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         .order("created_at", { ascending: true });
         
       if (data) {
-        setThread((prev) => {
-          // Skip if we are holding optimistic messages (prevent flash/tearing)
-          if (prev.some(m => m.id.toString().startsWith('optimistic-'))) return prev;
-          
-          const prevStr = prev.map(m => m.id).join(',');
-          const dataStr = data.map(m => m.id).join(',');
-          if (prevStr !== dataStr || JSON.stringify(prev) !== JSON.stringify(data)) {
-            // Mark read safely
-            void supabase.from("messages").update({ is_read: true }).eq("sender_id", selectedPartner).eq("receiver_id", user.id).eq("is_read", false);
-            return data;
+        const prev = threadRef.current;
+        // Skip if we are holding optimistic messages (prevent flash/tearing)
+        if (prev.some(m => m.id.toString().startsWith('optimistic-'))) return;
+        
+        const prevStr = prev.map(m => m.id).join(',');
+        const dataStr = data.map(m => m.id).join(',');
+        
+        let changed = false;
+        if (prevStr !== dataStr || JSON.stringify(prev) !== JSON.stringify(data)) {
+          setThread(data);
+          changed = true;
+        }
+
+        if (changed) {
+          try {
+            // Mark read safely outside the React state setter to maintain purity
+            const { error } = await supabase.from("messages").update({ is_read: true }).eq("sender_id", selectedPartner).eq("receiver_id", user.id).eq("is_read", false);
+            if (error) console.error("Error marking messages as read in polling:", error);
+          } catch (e) {
+            console.error("Failed to execute background read update:", e);
           }
-          return prev;
-        });
+        }
       }
     }, 3000);
     return () => clearInterval(interval);
