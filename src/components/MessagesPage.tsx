@@ -33,6 +33,7 @@ import {
   VideoOff
 } from "lucide-react";
 import ProfileDetailDialog from "./ProfileDetailDialog";
+import WebRTCCall from "./WebRTCCall";
 import { type PageName } from "./AppDrawer";
 import { type Profile } from "@/services/profileService";
 
@@ -103,7 +104,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   
   // Audio/Video Call State
   const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
-  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string } | null>(null);
+  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string, isCaller?: boolean, isAccepted?: boolean } | null>(null);
 
   const incomingCallRef = useRef(incomingCall);
   const activeCallRef = useRef(activeCall);
@@ -285,7 +286,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
             setIncomingCall({ roomId: data.roomId, callerName: data.callerName, type: data.type, callerId: data.callerId });
           } else if (data.action === 'accept') {
             if (currentActive && currentActive.partnerId === data.callerId) {
-              setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId });
+              setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId, isCaller: currentActive.isCaller, isAccepted: true });
             }
           } else if (data.action === 'decline' || data.action === 'end') {
             if (currentIncoming && currentIncoming.callerId === data.callerId) {
@@ -438,7 +439,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     if (activeCallRef.current || incomingCallRef.current) return;
     
     const roomId = `cc-${user.id}-${selectedPartner}-${Date.now()}`;
-    setActiveCall({ roomId, type, partnerId: selectedPartner }); 
+    setActiveCall({ roomId, type, partnerId: selectedPartner, isCaller: true, isAccepted: false }); 
     
     if (globalPresenceChannelRef.current) {
       try {
@@ -480,7 +481,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         console.error("Answer call signal failed", err);
       }
     }
-    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId });
+    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true });
     setIncomingCall(null);
   };
 
@@ -1123,21 +1124,18 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         )}
       </AnimatePresence>
 
-      {/* Active Call UI */}
-      {activeCall && (
-        <div className="fixed inset-0 z-[400] bg-black flex flex-col items-center justify-center">
-          <iframe
-            allow="camera; microphone; fullscreen; display-capture; autoplay"
-            src={`https://meet.jit.si/${encodeURIComponent(activeCall.roomId)}#config.prejoinPageEnabled=false&userInfo.displayName=${encodeURIComponent(currentUserProfile?.name || user?.email || 'User')}`}
-            style={{ width: '100%', height: '100%', border: 'none' }}
-          />
-          <button 
-            onClick={endCall}
-            className="absolute bottom-8 px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-full shadow-lg shadow-red-500/20 active:scale-95 transition-all flex items-center gap-3"
-          >
-            <PhoneOff size={24} /> End Call
-          </button>
-        </div>
+      {/* Active WebRTC Call UI */}
+      {activeCall && user && (
+        <WebRTCCall
+          isCaller={!!activeCall.isCaller}
+          isAccepted={!!activeCall.isAccepted}
+          roomId={activeCall.roomId}
+          targetId={activeCall.partnerId || 'unknown'}
+          currentUserId={user.id}
+          partnerName={partnerProfile?.name || incomingCall?.callerName || 'User'}
+          callType={activeCall.type}
+          onEndCall={endCall}
+        />
       )}
 
       {/* Incoming Call UI */}
