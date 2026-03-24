@@ -221,6 +221,12 @@ const Index = () => {
         try {
           const data = await profileService.getProfileById(id);
           if (data) {
+            // EXCLUDE ADMIN PROFILES FROM PUBLIC VIEW
+            if (data.role === 'Admin' && currentUserProfile?.role !== 'Admin' && data.user_id !== user?.id) {
+                toast.error("This profile is private");
+                routerNavigate("/");
+                return;
+            }
             setSelectedProfileForDialog(data);
             setProfileDialogOpen(true);
           } else {

@@ -35,7 +35,10 @@ export const profileService = {
     },
 
     async getFeaturedProfiles() {
-        const q = supabase.from("profiles").select("*").eq("plan", "pro");
+        const q = supabase.from("profiles")
+            .select("*")
+            .eq("plan", "pro")
+            .neq("role", "Admin");
         const { data, error } = await q.order("created_at", { ascending: false });
         if (error) throw error;
         return data;
@@ -52,6 +55,10 @@ export const profileService = {
         looksLike?: string;
     }) {
         let q = supabase.from("profiles").select("*");
+
+        if (!params.isAdmin) {
+            q = q.neq("role", "Admin");
+        }
 
         if (params.isTrending) {
             q = q.order('trending_score', { ascending: false });

@@ -5,6 +5,7 @@ export const feedService = {
         const { data: profiles, error } = await supabase
             .from("profiles")
             .select("id, user_id, name, photo_url, role, plan, photos, created_at")
+            .neq("role", "Admin")
             .order("created_at", { ascending: false });
         
         if (error) throw error;
@@ -15,7 +16,8 @@ export const feedService = {
         try {
             const { data: videoProfiles } = await supabase
                 .from("profiles")
-                .select("user_id, videos");
+                .select("user_id, videos")
+                .neq("role", "Admin");
 
             const videoMap: Record<string, string[]> = {};
             (videoProfiles || []).forEach((p: any) => {
