@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PhoneOff, Mic, MicOff, Video, VideoOff } from 'lucide-react';
+import { PhoneOff, Mic, MicOff, Video, VideoOff, Monitor, MonitorOff, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function WebRTCCall({
@@ -31,6 +31,8 @@ export default function WebRTCCall({
   const [streamReady, setStreamReady] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
   // 1. Boot up Camera/Audio immediately so user sees themselves ringing
   useEffect(() => {
@@ -218,6 +220,108 @@ export default function WebRTCCall({
     }
   };
 
+  const toggleScreenShare = async () => {
+    if (!peerConnectionRef.current) return;
+    
+    try {
+      if (!isScreenSharing) {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        
+        // Replace track in peer connection
+        const senders = peerConnectionRef.current.getSenders();
+        const sender = senders.find(s => s.track?.kind === 'video');
+        if (sender) {
+          await sender.replaceTrack(screenTrack);
+        }
+        
+        // Update local preview
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = screenStream;
+        }
+        
+        // Handle when user stops sharing via browser UI
+        screenTrack.onended = () => {
+          stopScreenShare();
+        };
+        
+        setIsScreenSharing(true);
+      } else {
+        await stopScreenShare();
+      }
+    } catch (err) {
+      console.error("Screen share error:", err);
+    }
+  };
+
+  const stopScreenShare = async () => {
+    if (!peerConnectionRef.current) return;
+    
+    try {
+      const cameraStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode }, 
+        audio: true 
+      });
+      const cameraTrack = cameraStream.getVideoTracks()[0];
+      
+      const senders = peerConnectionRef.current.getSenders();
+      const sender = senders.find(s => s.track?.kind === 'video');
+      if (sender) {
+        await sender.replaceTrack(cameraTrack);
+      }
+      
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = cameraStream;
+      }
+      
+      // Stop the previous hardware tracks
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(t => t.stop());
+      }
+      localStreamRef.current = cameraStream;
+      
+      setIsScreenSharing(false);
+    } catch (err) {
+      console.error("Stop screen share error:", err);
+    }
+  };
+
+  const flipCamera = async () => {
+    if (callType !== 'video' || isScreenSharing) return;
+    
+    const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(newFacingMode);
+    
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: newFacingMode }, 
+        audio: true 
+      });
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      
+      if (peerConnectionRef.current) {
+        const senders = peerConnectionRef.current.getSenders();
+        const sender = senders.find(s => s.track?.kind === 'video');
+        if (sender) {
+          await sender.replaceTrack(newVideoTrack);
+        }
+      }
+      
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = newStream;
+      }
+      
+      if (localStreamRef.current) {
+        localStreamRef.current.getVideoTracks().forEach(t => t.stop());
+      }
+      
+      // Keep existing audio tracks if they are fine, or replace entire stream
+      localStreamRef.current = newStream;
+    } catch (err) {
+      console.error("Flip camera error:", err);
+    }
+  };
+
   if (mediaError) {
     return (
       <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
@@ -284,12 +388,31 @@ export default function WebRTCCall({
         </button>
 
         {callType === 'video' && (
-          <button
-            onClick={toggleVideo}
-            className={`p-3.5 rounded-full transition-all active:scale-95 ${isVideoOff ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30' : 'bg-white/10 text-white hover:bg-white/20'}`}
-          >
-            {isVideoOff ? <VideoOff size={22} /> : <Video size={22} />}
-          </button>
+          <>
+            <button
+              onClick={toggleVideo}
+              className={`p-3.5 rounded-full transition-all active:scale-95 ${isVideoOff ? 'bg-red-500/20 text-red-500 hover:bg-red-500/30' : 'bg-white/10 text-white hover:bg-white/20'}`}
+              title={isVideoOff ? "Turn Video On" : "Turn Video Off"}
+            >
+              {isVideoOff ? <VideoOff size={22} /> : <Video size={22} />}
+            </button>
+
+            <button
+              onClick={toggleScreenShare}
+              className={`p-3.5 rounded-full transition-all active:scale-95 ${isScreenSharing ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'bg-white/10 text-white hover:bg-white/20'}`}
+              title={isScreenSharing ? "Stop Sharing" : "Share Screen"}
+            >
+              {isScreenSharing ? <MonitorOff size={22} /> : <Monitor size={22} />}
+            </button>
+
+            <button
+              onClick={flipCamera}
+              className="p-3.5 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all active:scale-95"
+              title="Flip Camera"
+            >
+              <RefreshCw size={22} className={facingMode === 'environment' ? 'rotate-180 transition-transform' : 'transition-transform'} />
+            </button>
+          </>
         )}
 
         <button
