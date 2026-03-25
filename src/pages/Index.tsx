@@ -605,39 +605,66 @@ const Index = () => {
         </div>
       )}
 
-      {/* Global Incoming Call Alert */}
+      {/* Global Incoming Call Full Screen Overlay */}
       <AnimatePresence>
         {incomingCall && (
-          <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[500] pointer-events-auto">
-            <motion.div 
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -50 }}
-                className="bg-[#2a2a2a] border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-6 min-w-[320px] backdrop-blur-xl"
-            >
-                <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center animate-[pulse_2s_ease-in-out_infinite] border-4 border-primary/30">
-                    {incomingCall.type === 'video' ? <Video size={36} className="text-primary animate-bounce text-yellow-400" /> : <Phone size={36} className="text-primary animate-bounce text-yellow-400" />}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[600] flex flex-col items-center justify-between p-12 bg-[#111]/90 backdrop-blur-3xl pointer-events-auto"
+          >
+            {/* Background decorative elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary rounded-full blur-[120px] animate-pulse" />
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center gap-12 relative z-10 w-full">
+              <div className="relative">
+                <div className="w-32 h-32 md:w-48 md:h-48 bg-primary/10 rounded-full flex items-center justify-center border-4 border-primary/20 animate-[pulse_2s_ease-in-out_infinite]">
+                  <span className="text-5xl md:text-7xl text-primary font-black uppercase tracking-widest">
+                    {(incomingCall.callerName || '?')[0]}
+                  </span>
                 </div>
-                <div className="text-center">
-                    <h3 className="text-xl text-white font-medium mb-1">{incomingCall.callerName}</h3>
-                    <p className="text-[10px] text-primary uppercase tracking-[0.3em] font-black">{incomingCall.type} Call...</p>
+                {/* Floating particles or rings */}
+                <div className="absolute inset-x-0 -bottom-8 flex justify-center">
+                    <div className="bg-primary/20 px-4 py-1 rounded-full border border-primary/30 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+                        <span className="text-[10px] text-primary font-black uppercase tracking-[0.2em]">Incoming...</span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-4 w-full mt-2">
-                    <button 
-                      onClick={rejectCall}
-                      className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-500 font-bold uppercase tracking-widest text-[10px] hover:bg-red-500/30 transition-colors flex justify-center items-center gap-2"
-                     >
-                      <PhoneOff size={14} /> Decline
-                    </button>
-                    <button 
-                      onClick={answerCall}
-                      className="flex-1 py-3 rounded-xl bg-green-500 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all active:scale-95 flex justify-center items-center gap-2"
-                     >
-                      {incomingCall.type === 'video' ? <Video size={14} /> : <Phone size={14} />} Accept
-                    </button>
+              </div>
+
+              <div className="text-center">
+                <h3 className="text-4xl md:text-6xl text-white font-display mb-4 tracking-tight">{incomingCall.callerName}</h3>
+                <p className="text-md text-primary/80 uppercase tracking-[0.4em] font-black">{incomingCall.type} Call Inbound</p>
+              </div>
+            </div>
+
+            <div className="w-full max-w-sm flex items-center gap-8 relative z-10 mb-12">
+              <button 
+                onClick={rejectCall}
+                className="flex-1 group flex flex-col items-center gap-4 transition-all active:scale-90"
+              >
+                <div className="w-20 h-20 rounded-full bg-red-500/10 border-2 border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-2xl shadow-red-500/20">
+                    <PhoneOff size={32} />
                 </div>
-            </motion.div>
-          </div>
+                <span className="text-[10px] text-white/40 font-black uppercase tracking-widest group-hover:text-red-500 transition-colors">Decline</span>
+              </button>
+
+              <button 
+                onClick={answerCall}
+                className="flex-1 group flex flex-col items-center gap-4 transition-all active:scale-90"
+              >
+                <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center text-white hover:bg-green-600 transition-all shadow-[0_0_50px_rgba(34,197,94,0.4)] relative">
+                    {incomingCall.type === 'video' ? <Video size={40} /> : <Phone size={40} />}
+                    {/* Ripple effect */}
+                    <div className="absolute inset-0 rounded-full animate-ping bg-green-500/40 pointer-events-none" />
+                </div>
+                <span className="text-[10px] text-white/80 font-black uppercase tracking-widest group-hover:text-green-500 transition-colors">Accept</span>
+              </button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
