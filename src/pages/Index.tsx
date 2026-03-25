@@ -4,7 +4,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { profileService } from "@/services/profileService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Home, Sparkles, Search, User } from "lucide-react";
+import { 
+  Home, 
+  Sparkles, 
+  Search, 
+  User, 
+  Video, 
+  Phone, 
+  PhoneOff, 
+  VideoOff, 
+  X 
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import WebRTCCall from "@/components/WebRTCCall";
 import { useTranslation } from "@/contexts/LanguageContext";
 import Navbar from "@/components/Navbar";
 import AppDrawer, { PageName } from "@/components/AppDrawer";
@@ -49,6 +61,16 @@ const Index = () => {
   const [projectFormInitiallyOpen, setProjectFormInitiallyOpen] = useState(false);
   const [homeRefreshKey, setHomeRefreshKey] = useState(0);
   const lastHomeClickRef = useRef<number>(0);
+  
+  // Audio/Video Call Global State
+  const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
+  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string, isCaller?: boolean, isAccepted?: boolean, callerName?: string } | null>(null);
+  const globalPresenceChannelRef = useRef<any>(null);
+
+  const incomingCallRef = useRef(incomingCall);
+  const activeCallRef = useRef(activeCall);
+  useEffect(() => { incomingCallRef.current = incomingCall; }, [incomingCall]);
+  useEffect(() => { activeCallRef.current = activeCall; }, [activeCall]);
 
   useEffect(() => {
     if (!user) return;
@@ -62,7 +84,8 @@ const Index = () => {
     };
     fetchSaved();
 
-    // Global Presence Tracking
+    // Global Presence & Signaling Tracking
+    console.log("Subscribing to global-signaling for user:", user.id);
     const channel = supabase.channel('global-presence', {
       config: { presence: { key: user.id } }
     });
@@ -72,13 +95,7 @@ const Index = () => {
         const state = channel.presenceState();
         const onlineIds = new Set<string>();
         Object.keys(state).forEach(key => onlineIds.add(key));
-        
-        setOnlineUsers(prev => {
-          if (prev.size === onlineIds.size && [...onlineIds].every(id => prev.has(id))) {
-            return prev;
-          }
-          return onlineIds;
-        });
+        setOnlineUsers(onlineIds);
       })
       .on('presence', { event: 'join' }, ({ key }) => {
         setOnlineUsers(prev => {
@@ -96,16 +113,103 @@ const Index = () => {
           return next;
         });
       })
+      .on('broadcast', { event: 'call_signal' }, (payload) => {
+        const data = payload.payload;
+        console.log("Global received call_signal:", data.action, "from", data.callerName);
+        
+        if (data.targetId === user.id) {
+          const currentActive = activeCallRef.current;
+          const currentIncoming = incomingCallRef.current;
+
+          if (data.action === 'call') {
+            if (currentActive || currentIncoming) return; 
+            setIncomingCall({ roomId: data.roomId, callerName: data.callerName, type: data.type, callerId: data.callerId });
+          } else if (data.action === 'accept') {
+            if (currentActive && currentActive.partnerId === data.callerId) {
+              setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId, isCaller: currentActive.isCaller, isAccepted: true });
+            }
+          } else if (data.action === 'decline' || data.action === 'end') {
+            if (currentIncoming && currentIncoming.callerId === data.callerId) setIncomingCall(null);
+            if (currentActive && currentActive.partnerId === data.callerId) setActiveCall(null);
+          }
+        }
+      })
       .subscribe(async (status) => {
+        console.log("Global signal sub status:", status);
         if (status === 'SUBSCRIBED') {
-          await channel.track({ online_at: new Date().toISOString() });
+          globalPresenceChannelRef.current = channel;
+          await channel.track({ online_at: new Date().toISOString(), name: currentUserProfile?.name });
         }
       });
 
     return () => {
+      globalPresenceChannelRef.current = null;
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, currentUserProfile?.name]);
+
+  const startCall = async (targetId: string, partnerName: string, type: 'video' | 'audio') => {
+    if (!user || activeCallRef.current || incomingCallRef.current || !globalPresenceChannelRef.current) return;
+    
+    const roomId = `cc-${user.id}-${targetId}-${Date.now()}`;
+    setActiveCall({ roomId, type, partnerId: targetId, isCaller: true, isAccepted: false, callerName: partnerName });
+    
+    await globalPresenceChannelRef.current.send({
+      type: 'broadcast',
+      event: 'call_signal',
+      payload: {
+        targetId,
+        callerId: user.id,
+        callerName: currentUserProfile?.name || 'User',
+        roomId,
+        type,
+        action: 'call'
+      }
+    });
+  };
+
+  const answerCall = async () => {
+    if (!incomingCall || !user || !globalPresenceChannelRef.current) return;
+    
+    await globalPresenceChannelRef.current.send({
+      type: 'broadcast',
+      event: 'call_signal',
+      payload: {
+        targetId: incomingCall.callerId,
+        callerId: user.id,
+        roomId: incomingCall.roomId,
+        type: incomingCall.type,
+        action: 'accept'
+      }
+    });
+    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true, callerName: incomingCall.callerName });
+    setIncomingCall(null);
+  };
+
+  const rejectCall = async () => {
+    if (!incomingCall || !user || !globalPresenceChannelRef.current) return;
+    await globalPresenceChannelRef.current.send({
+      type: 'broadcast',
+      event: 'call_signal',
+      payload: { targetId: incomingCall.callerId, callerId: user.id, action: 'decline' }
+    });
+    setIncomingCall(null);
+  };
+
+  const endCall = async () => {
+    if (!activeCall || !user || !globalPresenceChannelRef.current) {
+        if (activeCall) setActiveCall(null);
+        return;
+    }
+    if (activeCall.partnerId) {
+      await globalPresenceChannelRef.current.send({
+        type: 'broadcast',
+        event: 'call_signal',
+        payload: { targetId: activeCall.partnerId, callerId: user.id, action: 'end' }
+      });
+    }
+    setActiveCall(null);
+  };
 
   const toggleSave = async (e: React.MouseEvent, profileId: string) => {
     e.stopPropagation();
@@ -324,7 +428,17 @@ const Index = () => {
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />}
         {page === "projects" && <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
-        {page === "messages" && <MessagesPage onNavigate={navigate} initialPartnerId={activeMessagePartnerId} />}
+        {page === "messages" && (
+          <MessagesPage 
+            onNavigate={navigate} 
+            initialPartnerId={activeMessagePartnerId} 
+            onlineUsers={onlineUsers}
+            incomingCall={incomingCall}
+            activeCall={activeCall}
+            onStartCall={startCall}
+            onEndCall={endCall}
+          />
+        )}
         {page === "settings" && <SettingsPage />}
         {page === "saved" && <SavedTalentsPage />}
         {page === "analytics" && <AnalyticsPage />}
@@ -397,6 +511,58 @@ const Index = () => {
         currentUserProfile={currentUserProfile}
       />
       <PiPPlayer />
+
+      {/* Global Real-time WebRTC Signaling UI Overlay */}
+      {activeCall && user && (
+        <div className="fixed inset-0 z-[450]">
+          <WebRTCCall
+            isCaller={!!activeCall.isCaller}
+            isAccepted={!!activeCall.isAccepted}
+            roomId={activeCall.roomId}
+            targetId={activeCall.partnerId || 'unknown'}
+            currentUserId={user.id}
+            partnerName={activeCall.callerName || 'User'}
+            callType={activeCall.type}
+            onEndCall={endCall}
+          />
+        </div>
+      )}
+
+      {/* Global Incoming Call Alert */}
+      <AnimatePresence>
+        {incomingCall && (
+          <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[500] pointer-events-auto">
+            <motion.div 
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                className="bg-[#2a2a2a] border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-6 min-w-[320px] backdrop-blur-xl"
+            >
+                <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center animate-[pulse_2s_ease-in-out_infinite] border-4 border-primary/30">
+                    {incomingCall.type === 'video' ? <Video size={36} className="text-primary animate-bounce text-yellow-400" /> : <Phone size={36} className="text-primary animate-bounce text-yellow-400" />}
+                </div>
+                <div className="text-center">
+                    <h3 className="text-xl text-white font-medium mb-1">{incomingCall.callerName}</h3>
+                    <p className="text-[10px] text-primary uppercase tracking-[0.3em] font-black">{incomingCall.type} Call...</p>
+                </div>
+                <div className="flex items-center gap-4 w-full mt-2">
+                    <button 
+                      onClick={rejectCall}
+                      className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-500 font-bold uppercase tracking-widest text-[10px] hover:bg-red-500/30 transition-colors flex justify-center items-center gap-2"
+                     >
+                      <PhoneOff size={14} /> Decline
+                    </button>
+                    <button 
+                      onClick={answerCall}
+                      className="flex-1 py-3 rounded-xl bg-green-500 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all active:scale-95 flex justify-center items-center gap-2"
+                     >
+                      {incomingCall.type === 'video' ? <Video size={14} /> : <Phone size={14} />} Accept
+                    </button>
+                </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -74,9 +74,22 @@ interface Conversation {
 interface MessagesPageProps {
   onNavigate?: (page: PageName) => void;
   initialPartnerId?: string | null;
+  onlineUsers: Set<string>;
+  incomingCall: any;
+  activeCall: any;
+  onStartCall: (targetId: string, partnerName: string, type: 'video' | 'audio') => void;
+  onEndCall: () => void;
 }
 
-export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesPageProps) {
+export default function MessagesPage({ 
+  onNavigate, 
+  initialPartnerId,
+  onlineUsers,
+  incomingCall,
+  activeCall,
+  onStartCall,
+  onEndCall
+}: MessagesPageProps) {
   const { user, profile: currentUserProfile, isPremium } = useAuth();
   const { confirm: confirmAction } = useConfirmation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -92,7 +105,6 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [searchTerm, setSearchTerm] = useState("");
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
   const [isNepal, setIsNepal] = useState<boolean | null>(null);
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null);
   const [pendingFileType, setPendingFileType] = useState<'image' | 'video' | null>(null);
@@ -102,16 +114,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   const [forwardingMessage, setForwardingMessage] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   
-  // Audio/Video Call State
-  const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
-  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string, isCaller?: boolean, isAccepted?: boolean, callerName?: string } | null>(null);
-
-  const incomingCallRef = useRef(incomingCall);
-  const activeCallRef = useRef(activeCall);
   const globalPresenceChannelRef = useRef<any>(null);
-
-  useEffect(() => { incomingCallRef.current = incomingCall; }, [incomingCall]);
-  useEffect(() => { activeCallRef.current = activeCall; }, [activeCall]);
 
   // Track IDs of messages we already inserted optimistically to skip the
   // realtime echo that would otherwise cause a duplicate.
@@ -124,10 +127,17 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
   }, [thread]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollRef.current && thread.length > 0) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 300;
+      const lastMessage = thread[thread.length - 1];
+      const sentByMe = lastMessage?.sender_id === user?.id;
+
+      if (isNearBottom || sentByMe) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
     }
-  }, [thread]);
+  }, [thread, user?.id]);
 
   useEffect(() => {
     fetch("https://ipapi.co/json/").then(r => r.json()).then(d => setIsNepal(d.country_code === "NP")).catch(() => setIsNepal(false));
@@ -189,8 +199,11 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     setPartnerProfile(p as Profile | null);
     const { data } = await supabase.from("messages").select("*").or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`).order("created_at", { ascending: true });
     setThread(data || []);
-    await supabase.from("messages").update({ is_read: true }).eq("sender_id", partnerId).eq("receiver_id", user.id);
-  }, [user]);
+    const { error: readError } = await supabase.from("messages").update({ is_read: true }).eq("sender_id", partnerId).eq("receiver_id", user.id).eq("is_read", false);
+    if (!readError) {
+      void loadConversations(true);
+    }
+  }, [user, loadConversations]);
 
   const openProfile = async (id: string) => {
     const { data, error } = await supabase.from("profiles").select("*").eq("user_id", id).single();
@@ -241,75 +254,11 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     fetchSaved();
   }, [user, loadConversations]);
 
+  // Signaling and Presence are now handled in Index.tsx and passed as props
+  // We keep this empty or remove it.
   useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase.channel('global-presence', {
-      config: {
-        presence: {
-          key: user.id,
-        },
-      },
-    });
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        const onlineIds = new Set<string>();
-        Object.keys(state).forEach((key) => {
-          onlineIds.add(key);
-        });
-        setOnlineUsers(onlineIds);
-      })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        setOnlineUsers((prev) => {
-          const next = new Set(prev);
-          next.add(key);
-          return next;
-        });
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        setOnlineUsers((prev) => {
-          const next = new Set(prev);
-          next.delete(key);
-          return next;
-        });
-      })
-      .on('broadcast', { event: 'call_signal' }, (payload) => {
-        const data = payload.payload;
-        if (data.targetId === user.id) {
-          const currentActive = activeCallRef.current;
-          const currentIncoming = incomingCallRef.current;
-
-          if (data.action === 'call') {
-            if (currentActive || currentIncoming) return; // Prevent spam/simultaneous calls
-            setIncomingCall({ roomId: data.roomId, callerName: data.callerName, type: data.type, callerId: data.callerId });
-          } else if (data.action === 'accept') {
-            if (currentActive && currentActive.partnerId === data.callerId) {
-              setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId, isCaller: currentActive.isCaller, isAccepted: true });
-            }
-          } else if (data.action === 'decline' || data.action === 'end') {
-            if (currentIncoming && currentIncoming.callerId === data.callerId) {
-              setIncomingCall(null);
-            }
-            if (currentActive && currentActive.partnerId === data.callerId) {
-              setActiveCall(null);
-            }
-          }
-        }
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          globalPresenceChannelRef.current = channel;
-          await channel.track({ online_at: new Date().toISOString() });
-        }
-      });
-
-    return () => {
-      globalPresenceChannelRef.current = null;
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
+    console.log("MessagesPage mounted. onlineUsers count:", onlineUsers.size);
+  }, [onlineUsers.size]);
 
   // Keep track of the current selected partner safely for the realtime listener
   const selectedPartnerRef = useRef(selectedPartner);
@@ -367,12 +316,13 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     if (!user) return;
 
     // ── Single Robust Real-time Channel for ALL Messages ──────────────────
+    console.log("Setting up real-time message subscription for user:", user.id);
     const messageChannel = supabase
       .channel(`user-messages-${user.id}`)
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to INSERT, UPDATE, DELETE
+          event: '*', 
           schema: 'public',
           table: 'messages',
         },
@@ -380,22 +330,26 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
           const { eventType, new: newMsg, old: oldMsg } = payload;
           const msg = (newMsg || oldMsg) as Message;
 
+          console.log("Real-time message event:", eventType, msg.id);
+
           // Only process if the user is a participant
           if (msg.sender_id !== user.id && msg.receiver_id !== user.id) return;
 
-          const activePartner = selectedPartnerRef.current; // access without dependency array changes
+          const activePartner = selectedPartnerRef.current; 
 
           if (eventType === 'INSERT') {
-            // If it's the current active chat
             if (activePartner === msg.sender_id || activePartner === msg.receiver_id) {
               setThread(prev => {
+                // If it's already there (optimistic match), skip
                 if (prev.some(m => m.id === msg.id)) return prev;
-                // Replace optimistic matches
+                
+                // Replace optimistic matches even more strictly
                 const optIndex = prev.findIndex(m => 
                   m.id.toString().startsWith('optimistic-') && 
-                  m.content === msg.content && 
+                  (m.content === msg.content || m.created_at === msg.created_at) && 
                   m.sender_id === msg.sender_id
                 );
+                
                 if (optIndex !== -1) {
                   const nt = [...prev];
                   nt[optIndex] = msg;
@@ -404,7 +358,6 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 return [...prev, msg];
               });
               
-              // Mark as read if receiving from partner
               if (msg.receiver_id === user.id && activePartner === msg.sender_id) {
                 void supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
               }
@@ -417,13 +370,15 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
             setThread(prev => prev.filter(m => m.id !== msg.id));
           }
 
-          // Always refresh the conversation list on any change
-          void loadConversations();
+          void loadConversations(true); // silent refresh
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Real-time message channel status:", status);
+      });
 
     return () => {
+      console.log("Cleaning up message channel");
       supabase.removeChannel(messageChannel);
     };
   }, [user, loadConversations]);
@@ -434,92 +389,15 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     }
   }, [initialPartnerId, loadThread]);
 
-  const startCall = async (type: 'video' | 'audio') => {
-    if (!selectedPartner || !partnerProfile || !user) return;
-    if (activeCallRef.current || incomingCallRef.current) return;
-    
-    const roomId = `cc-${user.id}-${selectedPartner}-${Date.now()}`;
-    setActiveCall({ roomId, type, partnerId: selectedPartner, isCaller: true, isAccepted: false }); 
-    
-    if (globalPresenceChannelRef.current) {
-      try {
-        await globalPresenceChannelRef.current.send({
-          type: 'broadcast',
-          event: 'call_signal',
-          payload: {
-            targetId: selectedPartner,
-            callerId: user.id,
-            callerName: currentUserProfile?.name || 'User',
-            roomId,
-            type,
-            action: 'call'
-          }
-        });
-      } catch (err) {
-        console.error("Start call signal failed", err);
-      }
-    }
+  const startCall = (type: 'video' | 'audio') => {
+    if (!selectedPartner || !partnerProfile) return;
+    onStartCall(selectedPartner, partnerProfile.name || 'User', type);
   };
-
-  const answerCall = async () => {
-    if (!incomingCall || !user) return;
-    
-    if (globalPresenceChannelRef.current) {
-      try {
-        await globalPresenceChannelRef.current.send({
-          type: 'broadcast',
-          event: 'call_signal',
-          payload: {
-            targetId: incomingCall.callerId,
-            callerId: user.id, // Explicitly include callerId for standard reference
-            roomId: incomingCall.roomId,
-            type: incomingCall.type,
-            action: 'accept'
-          }
-        });
-      } catch (err) {
-        console.error("Answer call signal failed", err);
-      }
-    }
-    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true, callerName: incomingCall.callerName });
-    setIncomingCall(null);
-  };
-
-  const rejectCall = async () => {
-    if (!incomingCall || !user) return;
-    if (globalPresenceChannelRef.current) {
-      try {
-        await globalPresenceChannelRef.current.send({
-          type: 'broadcast',
-          event: 'call_signal',
-          payload: {
-            targetId: incomingCall.callerId,
-            callerId: user.id,
-            action: 'decline'
-          }
-        });
-      } catch (err) {
-        console.error("Reject call signal failed", err);
-      }
-    }
-    setIncomingCall(null);
-  };
-
-  const endCall = async () => {
-    if (!activeCall || !user) return;
-    if (activeCall.partnerId && globalPresenceChannelRef.current) {
-      try {
-        await globalPresenceChannelRef.current.send({
-          type: 'broadcast',
-          event: 'call_signal',
-          payload: { targetId: activeCall.partnerId, callerId: user.id, action: 'end' }
-        });
-      } catch (err) {
-        console.error("End call signal failed", err);
-      }
-    }
-    setActiveCall(null);
-  };
+  
+  // Call answering logic is moved to Index.tsx
+  const answerCall = () => {};
+  const rejectCall = () => {};
+  const endCall = () => { onEndCall(); };
 
   const sendMessage = async () => {
     if (!user || !selectedPartner) return;
@@ -673,8 +551,21 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
     setUploading(true);
     const fileToUpload = pendingFile;
     const type = pendingFileType;
-
-    cancelPendingFile(); // Clear preview immediately
+    const preview = pendingPreviewUrl;
+    
+    // Create optimistic message
+    const optimisticId = `optimistic-${Date.now()}`;
+    const optimistic: Message = {
+      id: optimisticId,
+      sender_id: user.id,
+      receiver_id: selectedPartner,
+      content: type === 'image' ? `[IMAGE]:${preview}` : `[VIDEO]:${preview}`,
+      is_read: false,
+      created_at: new Date().toISOString()
+    };
+    
+    setThread(prev => [...prev, optimistic]);
+    cancelPendingFile(); // Clear state, but keep publicUrl/preview ref locally
 
     const path = `${user.id}/messages/${Date.now()}.${fileToUpload.name.split('.').pop()}`;
 
@@ -685,17 +576,22 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
       const content = type === 'image' ? `[IMAGE]:${publicUrl}` : `[VIDEO]:${publicUrl}`;
 
-      const { error: msgError } = await supabase.from("messages").insert({
+      const { error: msgError, data: msgData } = await supabase.from("messages").insert({
         sender_id: user.id,
         receiver_id: selectedPartner,
         content
-      });
+      }).select().single();
+      
       if (msgError) throw msgError;
 
-      loadThread(selectedPartner);
+      sentMessageIds.current.add(msgData.id);
+      setThread(prev => prev.map(m => m.id === optimisticId ? msgData : m));
+      void loadConversations(true);
     } catch (err: any) {
       console.error("Upload error:", err);
       toast.error(err.message || "Upload failed");
+      // Remove optimistic row on failure
+      setThread(prev => prev.filter(m => m.id !== optimisticId));
     } finally {
       setUploading(false);
     }
@@ -800,10 +696,8 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                 <div>
                   <div className="text-white font-medium flex items-center gap-2">
                     {partnerProfile?.name}
-                    {onlineUsers.has(selectedPartner) ? (
-                      <span className="text-[0.6rem] bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded-md uppercase tracking-wider font-bold">Online</span>
-                    ) : (
-                      <span className="text-[0.6rem] bg-white/5 text-white/40 px-1.5 py-0.5 rounded-md uppercase tracking-wider">Offline</span>
+                    {onlineUsers.has(selectedPartner) && (
+                      <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                     )}
                   </div>
                   <div className="text-[10px] text-white/40 uppercase tracking-[0.2em]">Global Talent</div>
@@ -876,6 +770,15 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
                               target.style.opacity = '1';
                               const parent = target.parentElement;
                               if (parent) parent.classList.remove('bg-white/5');
+                              
+                              if (scrollRef.current) {
+                                const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+                                // Auto scroll if we are within roughly two full heights of the bottom
+                                const isNearBottom = (scrollHeight - scrollTop - clientHeight) < 600;
+                                if (isNearBottom) {
+                                  scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                                }
+                              }
                             }}
                             onError={(e) => {
                               console.error("Image load error for message:", m.id);
@@ -1124,53 +1027,7 @@ export default function MessagesPage({ onNavigate, initialPartnerId }: MessagesP
         )}
       </AnimatePresence>
 
-      {/* Active WebRTC Call UI */}
-      {activeCall && user && (
-        <WebRTCCall
-          isCaller={!!activeCall.isCaller}
-          isAccepted={!!activeCall.isAccepted}
-          roomId={activeCall.roomId}
-          targetId={activeCall.partnerId || 'unknown'}
-          currentUserId={user.id}
-          partnerName={partnerProfile?.name || activeCall.callerName || incomingCall?.callerName || 'User'}
-          callType={activeCall.type}
-          onEndCall={endCall}
-        />
-      )}
-
-      {/* Incoming Call UI */}
-      <AnimatePresence>
-        {incomingCall && (
-          <motion.div 
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed top-8 left-1/2 -translate-x-1/2 z-[450] bg-[#2a2a2a] border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-6 min-w-[320px]"
-          >
-            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center animate-[pulse_2s_ease-in-out_infinite] border-4 border-primary/30">
-              {incomingCall.type === 'video' ? <Video size={40} className="text-primary animate-bounce" /> : <Phone size={40} className="text-primary animate-bounce" />}
-            </div>
-            <div className="text-center">
-              <h3 className="text-2xl text-white font-medium mb-1">{incomingCall.callerName}</h3>
-              <p className="text-sm text-primary uppercase tracking-widest font-bold">Incoming {incomingCall.type} call...</p>
-            </div>
-            <div className="flex items-center gap-4 w-full mt-2">
-              <button 
-                onClick={rejectCall}
-                className="flex-1 py-3.5 rounded-xl bg-red-500/20 text-red-500 font-bold uppercase tracking-wider text-sm hover:bg-red-500/30 transition-colors flex justify-center items-center gap-2"
-               >
-                <PhoneOff size={18} /> Decline
-              </button>
-              <button 
-                onClick={answerCall}
-                className="flex-1 py-3.5 rounded-xl bg-green-500 text-white font-bold uppercase tracking-wider text-sm hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all active:scale-95 flex justify-center items-center gap-2"
-               >
-                {incomingCall.type === 'video' ? <Video size={18} /> : <Phone size={18} />} Accept
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* WebRTCCall and IncomingCall UI are now rendered globally by Index.tsx */}
 
     </div>
   );
