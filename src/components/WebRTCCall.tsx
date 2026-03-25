@@ -25,6 +25,7 @@ export default function WebRTCCall({
   const remoteVideoRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const channelRef = useRef<any>(null);
 
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(callType === 'audio');
@@ -66,6 +67,7 @@ export default function WebRTCCall({
 
     const iceCandidateQueue: RTCIceCandidateInit[] = [];
     const channel = supabase.channel(`webrtc-${roomId}`);
+    channelRef.current = channel;
 
     const iceServers: RTCIceServer[] = [
       { urls: 'stun:stun.l.google.com:19302' },
@@ -193,8 +195,12 @@ export default function WebRTCCall({
       });
 
     return () => {
+      // PC should be closed properly
       pc.close();
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [streamReady, isAccepted, roomId, targetId, currentUserId, isCaller]);
 
@@ -227,19 +233,14 @@ export default function WebRTCCall({
       localStreamRef.current.getVideoTracks().forEach((t) => (t.enabled = isVideoOff));
       setIsVideoOff(newState);
       
-      // Broadcast state to remote peer via the existing effect's channel logic or a dedicated thin broadcast
-      // Instead of creating a new channel, we'll try to find a way to reuse or just use a one-off channel cleaned up immediately
-      const tempChannel = supabase.channel(`webrtc-ctrl-${roomId}-${Date.now()}`);
-      tempChannel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await tempChannel.send({
-            type: 'broadcast',
-            event: 'rtc_camera_toggle',
-            payload: { isVideoOff: newState, targetId },
-          });
-          supabase.removeChannel(tempChannel);
-        }
-      });
+      // Broadcast state to remote peer via the existing channelRef
+      if (channelRef.current) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'rtc_camera_toggle',
+          payload: { isVideoOff: newState, targetId },
+        });
+      }
     }
   };
 

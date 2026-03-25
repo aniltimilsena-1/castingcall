@@ -3,5 +3,6 @@
     <string name="app_name">Casting Call</string>
     <string name="title_activity_main">Casting Call</string>
     <string name="package_name">me.castingcall.app</string>
-    <string name="custom_url_scheme">me.castingcall.app</string>
+    <string name="custom_url_scheme">castingcallapp</string>
+    <string name="web_content">Web Content</string>
 </resources>

@@ -158,7 +158,7 @@ export default function PaymentUpgradeDialog({
                                 <button
                                     onClick={handleStripeSimulate}
                                     disabled={uploading}
-                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                                 >
                                     {uploading ? 'Processing Secure Connection...' : `Confirm & Pay $${currency === 'NPR' ? (amount / 135).toFixed(2) : amount} (USD Equivalent)`}
                                 </button>
@@ -170,13 +170,15 @@ export default function PaymentUpgradeDialog({
                             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
                                 <div className="bg-secondary p-6 rounded-2xl border border-border space-y-6">
                                     <div className="flex justify-center">
-                                        <div className="w-40 h-40 bg-white p-2 rounded-xl ring-1 ring-black/5 flex items-center justify-center">
+                                        <div className="w-40 h-40 bg-card p-2 rounded-xl ring-1 ring-border flex items-center justify-center">
                                             <QRCodeSVG 
                                                 value="CastingHubGlobal" 
                                                 size={144}
                                                 level="M"
                                                 includeMargin={false}
                                                 aria-label="Casting Hub Global QR Code"
+                                                fgColor="currentColor"
+                                                className="text-foreground"
                                             />
                                         </div>
                                     </div>

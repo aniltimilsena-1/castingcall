@@ -12,7 +12,7 @@ import {
 
 const faqs = [
   { q: "How do I create a casting call?", a: "Go to My Projects and click 'New Project'. Fill in the details about your casting requirements and set the status to 'Active' when ready." },
-  { q: "How do I find talent?", a: "Use the search bar or browse by category on the home page. You can save profiles and posts to your Saved Items list available in the side menu." },
+  { q: "How do I find talent?", a: "Use the search bar or browse by category on the home page. You can save profiles and posts to your Saved Items available in the drawer menu." },
   { q: "Is CaastingCall free to use?", a: "Yes! Basic features are free. We may offer premium features in the future for professional users." },
   { q: "How do I message someone?", a: "Go to Messages from the drawer menu. You can start a conversation with any registered user on the platform." },
   { q: "How do I update my profile?", a: "Navigate to My Profile or Settings from the drawer menu to update your name, role, bio, location, and other details." },

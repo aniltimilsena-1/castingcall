@@ -14,17 +14,17 @@ export const feedService = {
     },
 
     async getVideoMap() {
-        // Redundant as getFeedData now pulls videos directly into items
-        return {};
+        console.error("getVideoMap is deprecated and no longer supported. Use getFeedData instead.");
+        throw new Error("getVideoMap DEPRECATED");
     },
 
-    async getCaptionMap() {
+    async getCaptionMap(limit = 400) {
         try {
             const { data: captionRows, error } = await supabase
                 .from("photo_captions")
                 .select("*")
                 .order("created_at", { ascending: false })
-                .limit(400);
+                .limit(limit);
 
             if (error) {
                 console.warn("Caption fetch error:", error.message);
@@ -178,5 +178,16 @@ export const feedService = {
             console.error("Unsave post error:", err);
             throw err;
         }
+    },
+
+    async getPostsByUrls(urls: string[]) {
+        if (!urls || urls.length === 0) return [];
+        const { data: profiles, error } = await supabase
+            .from("profiles")
+            .select("id, user_id, name, photo_url, role, plan, photos, videos, created_at")
+            .or(`photos.ov.{${urls.join(',')}},videos.ov.{${urls.join(',')}}`);
+        
+        if (error) throw error;
+        return profiles;
     }
 };

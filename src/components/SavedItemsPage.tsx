@@ -41,11 +41,9 @@ export default function SavedItemsPage() {
             // Fetch Saved Posts URLS
             const savedUrls = await feedService.getSavedPostUrls(user!.id);
             if (savedUrls.length > 0) {
-                // We need to find the posts. We'll fetch the feed and filter.
-                // In a real app, feedService might have getPostsByUrls
-                const allProfiles = await feedService.getFeedData(100);
+                const results = await feedService.getPostsByUrls(savedUrls);
                 const items: FeedItem[] = [];
-                (allProfiles || []).forEach((p: any) => {
+                (results || []).forEach((p: any) => {
                     const photos = p.photos || [];
                     const videos = p.videos || [];
                     [...photos, ...videos].forEach(url => {
@@ -61,7 +59,7 @@ export default function SavedItemsPage() {
                                     role: p.role || "Member",
                                     plan: p.plan
                                 },
-                                caption: null, // we can fetch captions if needed
+                                caption: null,
                                 isPremium: false,
                                 price: 0,
                                 isUnlocked: true,
@@ -114,14 +112,31 @@ export default function SavedItemsPage() {
             const commenterProfiles = await feedService.getCommenters(uniqueCommenters);
 
             setPostLikes({ [post.url]: { count: likes.length, liked: likes.some(l => l.user_id === user?.id) } });
-            setPostComments({ [post.url]: comments.map(c => {
+            
+            const commentsWithMetadata = comments.map(c => {
                 const prof = commenterProfiles.find(p => p.user_id === c.user_id);
                 return {
                     ...c,
                     commenter: prof?.name || "Member",
                     commenter_photo: prof?.photo_url || null
                 } as Comment;
-            }) });
+            });
+            setPostComments({ [post.url]: commentsWithMetadata });
+
+            // Build comment likes map
+            const commentIds = comments.map(c => c.id);
+            if (commentIds.length > 0) {
+                const cLikes = await feedService.getCommentLikes(commentIds);
+                const cLikesMap: Record<string, { count: number; liked: boolean }> = {};
+                commentIds.forEach(id => {
+                    const relevant = cLikes.filter(cl => cl.comment_id === id);
+                    cLikesMap[id] = {
+                        count: relevant.length,
+                        liked: relevant.some(rl => rl.user_id === user?.id)
+                    };
+                });
+                setCommentLikes(cLikesMap);
+            }
         } catch (err) {
             console.error("Error loading post details:", err);
         }
@@ -157,8 +172,13 @@ export default function SavedItemsPage() {
             }
         } else {
             // Fallback: Copy to clipboard
-            navigator.clipboard.writeText(shareData.url);
-            toast.success("Link copied to clipboard!");
+            try {
+                await navigator.clipboard.writeText(shareData.url);
+                toast.success("Link copied to clipboard!");
+            } catch (err) {
+                console.error("Clipboard copy failed", err);
+                toast.error("Failed to copy link");
+            }
         }
     };
 
@@ -223,7 +243,7 @@ export default function SavedItemsPage() {
                                                     <img src={talent.photo_url} className="w-full h-full object-cover" alt="" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-xl font-bold text-primary/50">
-                                                        {talent.name?.[0].toUpperCase()}
+                                                        {(talent.name?.[0] || talent.email?.[0] || "?").toUpperCase()}
                                                     </div>
                                                 )}
                                             </div>
@@ -290,7 +310,10 @@ export default function SavedItemsPage() {
                         isMuted={isMuted}
                         onToggleMute={() => setIsMuted(!isMuted)}
                         onLikeComment={(cid) => toast.info("Coming soon in saved items")}
-                        onReply={(cid, name) => setReplyingTo({ id: cid, commenter: name, photoUrl: selectedPost.url })}
+                        onReply={(cid, name) => {
+                            const comment = postComments[selectedPost.url]?.find(c => c.id === cid);
+                            setReplyingTo({ id: cid, commenter: name, photoUrl: comment?.commenter_photo || selectedPost.url });
+                        }}
                         onCancelReply={() => setReplyingTo(null)}
                         commentValue={commentValue}
                         isPostingComment={isPostingComment}

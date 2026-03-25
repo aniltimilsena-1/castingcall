@@ -44,16 +44,21 @@ export const messageService = {
             throw new Error("This user has disabled direct messaging.");
         }
 
+        const payload: any = {
+            sender_id: senderId,
+            receiver_id: receiverId,
+            content: content.trim(),
+            file_url: fileUrl,
+            file_type: fileType,
+        };
+        
+        if (replyToId) {
+            payload.reply_to_id = replyToId;
+        }
+
         const { data, error } = await supabase
             .from("messages")
-            .insert({
-                sender_id: senderId,
-                receiver_id: receiverId,
-                content: content.trim(),
-                file_url: fileUrl,
-                file_type: fileType,
-                reply_to_id: replyToId
-            } as any)
+            .insert(payload)
             .select()
             .single();
 

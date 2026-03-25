@@ -264,7 +264,7 @@ export default function PostModal({
             {/* Comment Input */}
             <div className="flex flex-col px-4 py-3 border-t border-border bg-card flex-shrink-0" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
                 <AnimatePresence>
-                    {replyingTo?.photoUrl === item.url && (
+                    {replyingTo && (
                         <motion.div 
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}

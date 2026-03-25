@@ -13,7 +13,7 @@ export interface FeedItem {
     isPremium: boolean;
     price: number;
     isUnlocked: boolean;
-    createdAt?: string; // Add this
+    createdAt?: string;
 }
 
 export interface Comment {

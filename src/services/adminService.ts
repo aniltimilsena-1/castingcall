@@ -2,12 +2,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const adminService = {
     async getAllAdminData() {
-        const fetchTable = async (table: string, query: string = "*", order: { column: string, ascending: boolean } = { column: "created_at", ascending: false }): Promise<any[]> => {
+        const fetchTable = async (table: string, query: string = "*", options: { order?: { column: string, ascending: boolean }, limit?: number } = {}): Promise<any[]> => {
+            const { order = { column: "created_at", ascending: false }, limit } = options;
             try {
-                const { data, error } = await (supabase
-                    .from(table as any) as any)
-                    .select(query)
-                    .order(order.column, { ascending: order.ascending });
+                let q = (supabase.from(table as any) as any).select(query).order(order.column, { ascending: order.ascending });
+                if (limit) q = q.limit(limit);
+                
+                const { data, error } = await q;
                 if (error) {
                     console.warn(`Admin fetch error for table ${table}:`, error.message);
                     return [];
@@ -20,25 +21,25 @@ export const adminService = {
         };
 
         const [profiles, projects, feedItems, applications, schedules, finances, verifications, crashReports] = await Promise.all([
-            fetchTable("profiles", "*", { column: "created_at", ascending: false }),
-            fetchTable("projects", "*", { column: "created_at", ascending: false }),
-            fetchTable("photo_captions"),
-            fetchTable("applications", "*, projects:project_id(title)"),
-            fetchTable("audition_slots", "*, projects:project_id(title)", { column: "start_time", ascending: true }),
-            fetchTable("transactions"),
-            fetchTable("payment_verifications"),
-            fetchTable("crash_reports" as any)
+            fetchTable("profiles", "*", { limit: 100 }),
+            fetchTable("projects", "*", { limit: 50 }),
+            fetchTable("photo_captions", "*", { limit: 200 }),
+            fetchTable("applications", "*, projects:project_id(title)", { limit: 100 }),
+            fetchTable("audition_slots", "*, projects:project_id(title)", { order: { column: "start_time", ascending: true }, limit: 50 }),
+            fetchTable("transactions", "*", { limit: 100 }),
+            fetchTable("payment_verifications", "*", { limit: 50 }),
+            fetchTable("crash_reports" as any, "*", { limit: 50 })
         ]);
 
         return {
-            profiles: (profiles || []).slice(0, 100),
-            projects: (projects || []).slice(0, 50),
-            feedItems: (feedItems || []).slice(0, 200),
-            applications: (applications || []).slice(0, 100),
-            schedules: (schedules || []).slice(0, 50),
-            finances: (finances || []).slice(0, 100),
-            verifications: (verifications || []).slice(0, 50),
-            crashReports: (crashReports || []).slice(0, 50)
+            profiles,
+            projects,
+            feedItems,
+            applications,
+            schedules,
+            finances,
+            verifications,
+            crashReports
         };
     },
 
