@@ -56,7 +56,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
   const [isTrending, setIsTrending] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [visualSearchMode, setVisualSearchMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const moods = ['Energetic', 'Dark', 'Calm', 'Mysterious', 'Happy', 'Emotional', 'Professional'];
   const styles = ['Luxury', 'Street', 'Vintage', 'Modern', 'Minimalist', 'Commercial', 'Editorial'];
@@ -67,9 +66,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       // Avoid flickering if we're already loading the exact same query
       setLoading(true);
       try {
-        if (looksLikeQuery || visualSearchMode) {
-          setIsLoading(true);
-        }
 
         if (searchType === "talents") {
           const trimmedQuery = query?.trim() || "";
@@ -107,7 +103,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         }
       } finally {
         setLoading(false);
-        setIsLoading(false);
       }
     };
     search();

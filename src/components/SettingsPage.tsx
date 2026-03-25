@@ -106,8 +106,10 @@ export default function SettingsPage() {
       setOldPassword("");
       setNewPassword("");
       if (isRecovering) {
-        // Force refresh to clear recovery state
-        window.location.reload();
+        // Force refresh to clear recovery state after toast is visible
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to update password");

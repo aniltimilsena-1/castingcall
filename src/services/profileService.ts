@@ -55,7 +55,7 @@ export const profileService = {
         looksLike?: string;
     }) {
         // Optimize: Only fetch fields needed for the search list to reduce payload size
-        let q = supabase.from("profiles").select("id, user_id, name, photo_url, role, plan, location, experience_years, trending_score, bio, mood_tags, style_tags, is_verified, created_at");
+        let q = supabase.from("profiles").select("id, user_id, name, photo_url, role, plan, location, experience_years, trending_score, bio, mood_tags, style_tags, is_verified, created_at, personality_traits, looks_like, visual_search_keywords");
 
         if (!params.isAdmin) {
             q = q.neq("role", "Admin");

@@ -34,7 +34,12 @@ BEGIN
         input_name,
         NEW.email,
         input_role
-    );
+    )
+    ON CONFLICT (user_id) 
+    DO UPDATE SET 
+        name = EXCLUDED.name,
+        email = EXCLUDED.email,
+        role = EXCLUDED.role;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, extensions;

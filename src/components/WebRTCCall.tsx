@@ -100,15 +100,12 @@ export default function WebRTCCall({
       setRemoteStream(stream);
     };
 
-    // Effect to keep ref.srcObject in sync with remoteStream state
-    const syncRemoteStream = () => {
-      if (remoteVideoRef.current && remoteStream) {
-        remoteVideoRef.current.srcObject = remoteStream;
+    pc.oniceconnectionstatechange = () => {
+      console.log("WebRTC: ICE connection state:", pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+        console.warn("WebRTC: Connection interrupted. Attempting to maintain...");
       }
     };
-    
-    // We call this every time the stream or ref might have changed
-    syncRemoteStream();
 
     // Broadcast our network routes (ICE)
     pc.onicecandidate = (event) => {
@@ -135,7 +132,7 @@ export default function WebRTCCall({
           });
           // Process any ICE candidates that arrived before description was set
           iceCandidateQueue.forEach(async (c) => {
-            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) { }
           });
         } catch (e) {
           console.error("Error handling WebRTC Offer:", e);
@@ -147,7 +144,7 @@ export default function WebRTCCall({
           await pc.setRemoteDescription(new RTCSessionDescription(payload.answer));
           // Process any ICE candidates that arrived before description was set
           iceCandidateQueue.forEach(async (c) => {
-            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) { }
           });
         } catch (e) {
           console.error("Error handling WebRTC Answer:", e);
@@ -189,7 +186,23 @@ export default function WebRTCCall({
       pc.close();
       supabase.removeChannel(channel);
     };
-  }, [streamReady, isAccepted, roomId, targetId, currentUserId, isCaller, remoteStream]);
+  }, [streamReady, isAccepted, roomId, targetId, currentUserId, isCaller]);
+
+  // Separate effect to keep the remote video/audio element synchronized with the remoteStream state
+  // to avoid re-triggering the entire peer connection logic and causing resets.
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      console.log("WebRTC: Attaching remote stream to media element");
+      remoteVideoRef.current.srcObject = remoteStream;
+      
+      // Attempt to force play if not playing automatically
+      if (remoteVideoRef.current instanceof HTMLVideoElement || remoteVideoRef.current instanceof HTMLAudioElement) {
+        remoteVideoRef.current.play().catch(e => {
+            console.warn("WebRTC: Remote stream playback blocked by browser:", e);
+        });
+      }
+    }
+  }, [remoteStream, isAccepted, callType]);
 
   const toggleMute = () => {
     if (localStreamRef.current) {
@@ -222,7 +235,7 @@ export default function WebRTCCall({
 
   return (
     <div className="fixed inset-0 z-[400] bg-[#111] flex flex-col items-center justify-center animate-in fade-in duration-300">
-      
+
       {/* Remote UI Rendering */}
       {callType === 'video' ? (
         <video
@@ -238,7 +251,7 @@ export default function WebRTCCall({
               <div className="text-3xl text-primary font-bold uppercase">{(partnerName || '?')[0]}</div>
             </div>
           </div>
-          <audio ref={remoteVideoRef as any} autoPlay />
+          <audio ref={remoteVideoRef as any} autoPlay playsInline />
         </div>
       )}
 
