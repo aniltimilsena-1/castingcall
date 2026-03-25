@@ -18,19 +18,20 @@ import {
   Download,
   ArrowUpRight,
   ChevronLeft,
-  MoreVertical,
-  Copy,
+  Phone,
+  PhoneOff,
+  Video,
+  VideoOff,
   Pin,
   Forward,
+  Info,
+  MoreVertical,
+  Copy,
   CornerUpLeft,
   X,
   UserCheck,
   CheckCircle2,
-  Crown,
-  Phone,
-  Video,
-  PhoneOff,
-  VideoOff
+  Crown
 } from "lucide-react";
 import ProfileDetailDialog from "./ProfileDetailDialog";
 import WebRTCCall from "./WebRTCCall";
@@ -760,10 +761,23 @@ export default function MessagesPage({
                             setActiveMenu({ id: m.id, x: e.clientX, y: e.clientY });
                           }}
                           className={`rounded-2xl overflow-hidden cursor-pointer transition-all active:scale-[0.98] relative ${
-                            isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg"
+                            m.content.startsWith('[CALL]:') ? "" : (isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg")
                           }`}
                         >
-                          {m.content.startsWith('[IMAGE]:') ? (
+                          {m.content.startsWith('[CALL]:') ? (
+                            <div className={`flex items-center gap-3 px-5 py-3 ${isMine ? "bg-primary/20 text-primary border-primary/30" : "bg-white/10 text-white border-white/10"} rounded-2xl border shadow-lg backdrop-blur-sm`}>
+                              <div className={`p-2 rounded-full ${isMine ? "bg-primary/30" : "bg-white/10"}`}>
+                                {m.content.includes('Missed') ? <PhoneOff size={18} /> : 
+                                 (m.content.includes('Video') ? <Video size={18} /> : <Phone size={18} />)}
+                              </div>
+                              <div className="flex flex-col">
+                                  <span className="font-bold text-xs uppercase tracking-tighter">{m.content.replace('[CALL]:', '').split(' (')[0]}</span>
+                                  {m.content.includes('(') && (
+                                     <span className="text-[10px] opacity-60 font-medium">{m.content.split('(')[1].replace(')', '')}</span>
+                                  )}
+                              </div>
+                            </div>
+                          ) : m.content.startsWith('[IMAGE]:') ? (
                         <div className="relative group/img bg-white/5 min-w-[200px] min-h-[150px] flex items-center justify-center">
                           <img
                             key={`${m.id}-img`}

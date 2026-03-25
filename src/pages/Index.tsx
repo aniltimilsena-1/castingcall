@@ -64,7 +64,7 @@ const Index = () => {
   
   // Audio/Video Call Global State
   const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
-  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string, isCaller?: boolean, isAccepted?: boolean, callerName?: string } | null>(null);
+  const [activeCall, setActiveCall] = useState<{ roomId: string, type: 'video' | 'audio', partnerId?: string, isCaller?: boolean, isAccepted?: boolean, callerName?: string, startTime?: number } | null>(null);
   const globalPresenceChannelRef = useRef<any>(null);
 
   const incomingCallRef = useRef(incomingCall);
@@ -162,7 +162,7 @@ const Index = () => {
             setIncomingCall({ roomId: data.roomId, callerName: data.callerName, type: data.type, callerId: data.callerId });
           } else if (data.action === 'accept') {
             if (currentActive && currentActive.partnerId === data.callerId) {
-              setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId, isCaller: currentActive.isCaller, isAccepted: true });
+              setActiveCall({ roomId: data.roomId, type: data.type, partnerId: data.callerId, isCaller: currentActive.isCaller, isAccepted: true, startTime: Date.now() });
             }
           } else if (data.action === 'decline' || data.action === 'end') {
             if (currentIncoming && currentIncoming.callerId === data.callerId) setIncomingCall(null);
@@ -234,7 +234,7 @@ const Index = () => {
         action: 'accept'
       }
     });
-    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true, callerName: incomingCall.callerName });
+    setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true, callerName: incomingCall.callerName, startTime: Date.now() });
     setIncomingCall(null);
     if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
   };
@@ -255,6 +255,25 @@ const Index = () => {
         return;
     }
     if (activeCall.partnerId) {
+      if (activeCall.startTime) {
+        const durationSeconds = Math.floor((Date.now() - activeCall.startTime) / 1000);
+        const durationStr = durationSeconds < 60 ? `${durationSeconds}s` : `${Math.floor(durationSeconds/60)}m ${durationSeconds%60}s`;
+        
+        // Log to Call History
+        await supabase.from("messages").insert({
+          sender_id: user.id,
+          receiver_id: activeCall.partnerId,
+          content: `[CALL]:${activeCall.type === 'video' ? 'Video' : 'Audio'} Call Ended (${durationStr})`
+        });
+      } else if (activeCall.isCaller) {
+        // Log as Missed Call
+        await supabase.from("messages").insert({
+          sender_id: user.id,
+          receiver_id: activeCall.partnerId,
+          content: `[CALL]:Missed ${activeCall.type === 'video' ? 'Video' : 'Audio'} Call`
+        });
+      }
+
       try {
         await globalPresenceChannelRef.current.send({
           type: 'broadcast',

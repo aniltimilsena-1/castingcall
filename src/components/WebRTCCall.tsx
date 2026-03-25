@@ -30,6 +30,7 @@ export default function WebRTCCall({
   const [isVideoOff, setIsVideoOff] = useState(callType === 'audio');
   const [streamReady, setStreamReady] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   // 1. Boot up Camera/Audio immediately so user sees themselves ringing
   useEffect(() => {
@@ -93,11 +94,21 @@ export default function WebRTCCall({
 
     // Capture remote stream output
     pc.ontrack = (event) => {
-      if (remoteVideoRef.current) {
-        const stream = event.streams && event.streams[0] ? event.streams[0] : new MediaStream([event.track]);
-        remoteVideoRef.current.srcObject = stream;
+      console.log("WebRTC: Remote track received:", event.track.kind);
+      // Ensure we have a stream object
+      const stream = event.streams && event.streams[0] ? event.streams[0] : new MediaStream([event.track]);
+      setRemoteStream(stream);
+    };
+
+    // Effect to keep ref.srcObject in sync with remoteStream state
+    const syncRemoteStream = () => {
+      if (remoteVideoRef.current && remoteStream) {
+        remoteVideoRef.current.srcObject = remoteStream;
       }
     };
+    
+    // We call this every time the stream or ref might have changed
+    syncRemoteStream();
 
     // Broadcast our network routes (ICE)
     pc.onicecandidate = (event) => {
@@ -178,7 +189,7 @@ export default function WebRTCCall({
       pc.close();
       supabase.removeChannel(channel);
     };
-  }, [streamReady, isAccepted, roomId, targetId, currentUserId, isCaller]);
+  }, [streamReady, isAccepted, roomId, targetId, currentUserId, isCaller, remoteStream]);
 
   const toggleMute = () => {
     if (localStreamRef.current) {
