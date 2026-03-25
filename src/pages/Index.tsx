@@ -230,10 +230,32 @@ const Index = () => {
       )
       .subscribe();
 
+    // Global Follow Notifications
+    const followSub = supabase
+      .channel('global-follow-notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'follows' },
+        (payload: any) => {
+          const follow = payload.new;
+          if (follow.following_id === user.id) {
+             toast("New Follow", {
+               description: "Someone started following you!",
+               action: {
+                 label: "View",
+                 onClick: () => navigate('profile')
+               },
+             });
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       globalPresenceChannelRef.current = null;
       supabase.removeChannel(channel);
       supabase.removeChannel(messageSub);
+      supabase.removeChannel(followSub);
     };
   }, [user]);
 
