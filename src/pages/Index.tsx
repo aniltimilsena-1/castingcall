@@ -69,8 +69,12 @@ const Index = () => {
 
   const incomingCallRef = useRef(incomingCall);
   const activeCallRef = useRef(activeCall);
+  const callTimeoutRef = useRef<any>(null);
+  const currentUserNameRef = useRef(currentUserProfile?.name);
+
   useEffect(() => { incomingCallRef.current = incomingCall; }, [incomingCall]);
   useEffect(() => { activeCallRef.current = activeCall; }, [activeCall]);
+  useEffect(() => { currentUserNameRef.current = currentUserProfile?.name; }, [currentUserProfile?.name]);
 
   useEffect(() => {
     if (!user) return;
@@ -138,7 +142,7 @@ const Index = () => {
         console.log("Global signal sub status:", status);
         if (status === 'SUBSCRIBED') {
           globalPresenceChannelRef.current = channel;
-          await channel.track({ online_at: new Date().toISOString(), name: currentUserProfile?.name });
+          await channel.track({ online_at: new Date().toISOString(), name: currentUserNameRef.current });
         }
       });
 
@@ -146,7 +150,7 @@ const Index = () => {
       globalPresenceChannelRef.current = null;
       supabase.removeChannel(channel);
     };
-  }, [user, currentUserProfile?.name]);
+  }, [user]);
 
   const startCall = async (targetId: string, partnerName: string, type: 'video' | 'audio') => {
     if (!user || activeCallRef.current || incomingCallRef.current || !globalPresenceChannelRef.current) return;
@@ -154,18 +158,34 @@ const Index = () => {
     const roomId = `cc-${user.id}-${targetId}-${Date.now()}`;
     setActiveCall({ roomId, type, partnerId: targetId, isCaller: true, isAccepted: false, callerName: partnerName });
     
-    await globalPresenceChannelRef.current.send({
-      type: 'broadcast',
-      event: 'call_signal',
-      payload: {
-        targetId,
-        callerId: user.id,
-        callerName: currentUserProfile?.name || 'User',
-        roomId,
-        type,
-        action: 'call'
+    // Start unanswered call timeout (30 seconds)
+    if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
+    callTimeoutRef.current = setTimeout(() => {
+      if (activeCallRef.current && !activeCallRef.current.isAccepted) {
+        toast.info("Call unanswered");
+        endCall();
       }
-    });
+    }, 30000);
+
+    try {
+      await globalPresenceChannelRef.current.send({
+        type: 'broadcast',
+        event: 'call_signal',
+        payload: {
+          targetId,
+          callerId: user.id,
+          callerName: currentUserNameRef.current || 'User',
+          roomId,
+          type,
+          action: 'call'
+        }
+      });
+    } catch (err) {
+      console.error("Failed to send call signal:", err);
+      toast.error("Could not initiate call. Please try again.");
+      setActiveCall(null);
+      if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
+    }
   };
 
   const answerCall = async () => {
@@ -184,6 +204,7 @@ const Index = () => {
     });
     setActiveCall({ roomId: incomingCall.roomId, type: incomingCall.type, partnerId: incomingCall.callerId, isCaller: false, isAccepted: true, callerName: incomingCall.callerName });
     setIncomingCall(null);
+    if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
   };
 
   const rejectCall = async () => {
@@ -202,13 +223,18 @@ const Index = () => {
         return;
     }
     if (activeCall.partnerId) {
-      await globalPresenceChannelRef.current.send({
-        type: 'broadcast',
-        event: 'call_signal',
-        payload: { targetId: activeCall.partnerId, callerId: user.id, action: 'end' }
-      });
+      try {
+        await globalPresenceChannelRef.current.send({
+          type: 'broadcast',
+          event: 'call_signal',
+          payload: { targetId: activeCall.partnerId, callerId: user.id, action: 'end' }
+        });
+      } catch (e) {
+        console.error("Failed to send end call signal:", e);
+      }
     }
     setActiveCall(null);
+    if (callTimeoutRef.current) clearTimeout(callTimeoutRef.current);
   };
 
   const toggleSave = async (e: React.MouseEvent, profileId: string) => {
@@ -513,13 +539,13 @@ const Index = () => {
       <PiPPlayer />
 
       {/* Global Real-time WebRTC Signaling UI Overlay */}
-      {activeCall && user && (
+      {activeCall && activeCall.partnerId && user && (
         <div className="fixed inset-0 z-[450]">
           <WebRTCCall
             isCaller={!!activeCall.isCaller}
             isAccepted={!!activeCall.isAccepted}
             roomId={activeCall.roomId}
-            targetId={activeCall.partnerId || 'unknown'}
+            targetId={activeCall.partnerId}
             currentUserId={user.id}
             partnerName={activeCall.callerName || 'User'}
             callType={activeCall.type}

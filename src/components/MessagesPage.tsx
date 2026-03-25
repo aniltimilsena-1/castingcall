@@ -346,7 +346,7 @@ export default function MessagesPage({
                 // Replace optimistic matches even more strictly
                 const optIndex = prev.findIndex(m => 
                   m.id.toString().startsWith('optimistic-') && 
-                  (m.content === msg.content || m.created_at === msg.created_at) && 
+                  m.content === msg.content && 
                   m.sender_id === msg.sender_id
                 );
                 
@@ -539,8 +539,8 @@ export default function MessagesPage({
     setPendingPreviewUrl(url);
   };
 
-  const cancelPendingFile = () => {
-    if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+  const cancelPendingFile = (revoke = true) => {
+    if (revoke && pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
     setPendingFile(null);
     setPendingPreviewUrl(null);
     setPendingFileType(null);
@@ -565,7 +565,7 @@ export default function MessagesPage({
     };
     
     setThread(prev => [...prev, optimistic]);
-    cancelPendingFile(); // Clear state, but keep publicUrl/preview ref locally
+    cancelPendingFile(false); // Clear input state, but defer revocation until swap
 
     const path = `${user.id}/messages/${Date.now()}.${fileToUpload.name.split('.').pop()}`;
 
@@ -585,13 +585,18 @@ export default function MessagesPage({
       if (msgError) throw msgError;
 
       sentMessageIds.current.add(msgData.id);
-      setThread(prev => prev.map(m => m.id === optimisticId ? msgData : m));
+      setThread(prev => {
+        const nt = prev.map(m => m.id === optimisticId ? msgData : m);
+        if (preview) URL.revokeObjectURL(preview); // Deferred revocation
+        return nt;
+      });
       void loadConversations(true);
     } catch (err: any) {
       console.error("Upload error:", err);
       toast.error(err.message || "Upload failed");
-      // Remove optimistic row on failure
+      // Remove optimistic row on failure and clean up blob
       setThread(prev => prev.filter(m => m.id !== optimisticId));
+      if (preview) URL.revokeObjectURL(preview);
     } finally {
       setUploading(false);
     }
