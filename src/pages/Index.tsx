@@ -80,15 +80,20 @@ const Index = () => {
   
   // Call Sound Effects Logic
   useEffect(() => {
-    if (!dialToneRef.current) dialToneRef.current = new Audio("https://www.soundjay.com/phone/phone-ringing-01.wav");
-    if (!ringToneRef.current) ringToneRef.current = new Audio("https://www.soundjay.com/phone/telephone-ring-03a.wav");
+    if (!dialToneRef.current) {
+      dialToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/1352/1352-preview.mp3");
+      dialToneRef.current.loop = true;
+    }
+    if (!ringToneRef.current) {
+      ringToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/1356/1356-preview.mp3");
+      ringToneRef.current.loop = true;
+    }
     
-    dialToneRef.current.loop = true;
-    ringToneRef.current.loop = true;
-
     // Handle Dial Tone (Caller)
     if (activeCall && activeCall.isCaller && !activeCall.isAccepted) {
-      dialToneRef.current.play().catch(e => console.warn("Audio play blocked", e));
+      dialToneRef.current.play().catch(e => {
+        console.warn("Audio play blocked for dial tone. Waiting for user interaction.", e);
+      });
     } else {
       dialToneRef.current.pause();
       dialToneRef.current.currentTime = 0;
@@ -96,7 +101,9 @@ const Index = () => {
 
     // Handle Ring Tone (Recipient)
     if (incomingCall) {
-      ringToneRef.current.play().catch(e => console.warn("Audio play blocked", e));
+      ringToneRef.current.play().catch(e => {
+        console.warn("Audio play blocked for ring tone. Waiting for user interaction.", e);
+      });
     } else {
       ringToneRef.current.pause();
       ringToneRef.current.currentTime = 0;
@@ -107,6 +114,26 @@ const Index = () => {
       ringToneRef.current?.pause();
     };
   }, [activeCall?.isAccepted, activeCall?.isCaller, incomingCall]);
+
+  // Unlock Audio on first interaction
+  useEffect(() => {
+    const unlock = () => {
+        if (dialToneRef.current) dialToneRef.current.load();
+        if (ringToneRef.current) ringToneRef.current.load();
+        // Also try to play/pause immediately to satisfy some browsers
+        dialToneRef.current?.play().then(() => dialToneRef.current?.pause()).catch(() => {});
+        ringToneRef.current?.play().then(() => ringToneRef.current?.pause()).catch(() => {});
+        
+        window.removeEventListener('click', unlock);
+        window.removeEventListener('touchstart', unlock);
+    };
+    window.addEventListener('click', unlock);
+    window.addEventListener('touchstart', unlock);
+    return () => {
+        window.removeEventListener('click', unlock);
+        window.removeEventListener('touchstart', unlock);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
