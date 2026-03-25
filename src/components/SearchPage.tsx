@@ -56,7 +56,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
   const [isTrending, setIsTrending] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [visualSearchMode, setVisualSearchMode] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const moods = ['Energetic', 'Dark', 'Calm', 'Mysterious', 'Happy', 'Emotional', 'Professional'];
   const styles = ['Luxury', 'Street', 'Vintage', 'Modern', 'Minimalist', 'Commercial', 'Editorial'];
@@ -68,7 +68,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       setLoading(true);
       try {
         if (looksLikeQuery || visualSearchMode) {
-          setIsScanning(true);
+          setIsLoading(true);
         }
 
         if (searchType === "talents") {
@@ -107,7 +107,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         }
       } finally {
         setLoading(false);
-        setIsScanning(false);
+        setIsLoading(false);
       }
     };
     search();
@@ -380,7 +380,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       {loading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-6">
           <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Scanning Talent Database...</p>
+          <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Loading Talents...</p>
         </div>
       ) : searchType === "talents" ? (
         results.length === 0 ? (

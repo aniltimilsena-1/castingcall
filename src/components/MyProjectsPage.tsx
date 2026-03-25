@@ -547,7 +547,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                   {applicantsLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                       <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                      <p className="text-xs font-normal tracking-[3px] uppercase text-muted-foreground">Accessing Project Database...</p>
+                      <p className="text-xs font-normal tracking-[3px] uppercase text-muted-foreground">Loading Projects...</p>
                     </div>
                   ) : applicants.length === 0 ? (
                     <div className="text-center py-20">

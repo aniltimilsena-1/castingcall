@@ -259,7 +259,7 @@ export default function AdminPage() {
         return (
             <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-6">
                 <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Syncing Command Center...</p>
+                <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Loading Command Center...</p>
             </div>
         );
     }

@@ -54,7 +54,8 @@ export const profileService = {
         traits?: string[];
         looksLike?: string;
     }) {
-        let q = supabase.from("profiles").select("*");
+        // Optimize: Only fetch fields needed for the search list to reduce payload size
+        let q = supabase.from("profiles").select("id, user_id, name, photo_url, role, plan, location, experience_years, trending_score, bio, mood_tags, style_tags, is_verified, created_at");
 
         if (!params.isAdmin) {
             q = q.neq("role", "Admin");
@@ -65,6 +66,9 @@ export const profileService = {
         } else {
             q = q.order('plan', { ascending: false });
         }
+
+        // Add a reasonable limit for performance
+        q = q.limit(50);
 
         if (params.role) {
             q = q.eq("role", params.role);

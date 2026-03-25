@@ -102,9 +102,13 @@ export default function SettingsPage() {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
 
-      toast.success("Password updated successfully!");
+      toast.success(isRecovering ? "New password set successfully! 🎉" : "Password updated successfully!");
       setOldPassword("");
       setNewPassword("");
+      if (isRecovering) {
+        // Force refresh to clear recovery state
+        window.location.reload();
+      }
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Failed to update password");
     } finally {
@@ -126,7 +130,7 @@ export default function SettingsPage() {
         <p className="text-muted-foreground text-sm font-normal">{t('settings.subtitle')}</p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-8">
+      <Tabs defaultValue={isRecovering ? "security" : "profile"} className="space-y-8">
         <TabsList className="bg-card border border-border p-1 rounded-2xl w-full grid grid-cols-4 h-auto overflow-x-auto overflow-y-hidden">
           <TabsTrigger value="profile" className="rounded-xl py-3 text-[0.6rem] md:text-[0.65rem] uppercase tracking-widest font-bold flex gap-2">
             <User size={14} /> {t('settings.tabs.profile')}
