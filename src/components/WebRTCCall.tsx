@@ -33,6 +33,8 @@ export default function WebRTCCall({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [remoteVideoOff, setRemoteVideoOff] = useState(false);
+  const [isMobile] = useState(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
 
   // 1. Boot up Camera/Audio immediately so user sees themselves ringing
   useEffect(() => {
@@ -164,6 +166,10 @@ export default function WebRTCCall({
           console.error("Error adding remote ICE Candidate:", e);
         }
       })
+      .on('broadcast', { event: 'rtc_camera_toggle' }, ({ payload }) => {
+        if (payload.targetId !== currentUserId) return;
+        setRemoteVideoOff(payload.isVideoOff);
+      })
       .subscribe(async (status) => {
         // Only the caller throws the first pitch
         if (status === 'SUBSCRIBED' && isCaller) {
@@ -215,8 +221,19 @@ export default function WebRTCCall({
 
   const toggleVideo = () => {
     if (localStreamRef.current && callType === 'video') {
+      const newState = !isVideoOff;
       localStreamRef.current.getVideoTracks().forEach((t) => (t.enabled = isVideoOff));
-      setIsVideoOff(!isVideoOff);
+      setIsVideoOff(newState);
+      
+      // Broadcast state to remote peer
+      if (peerConnectionRef.current) {
+        const channel = supabase.channel(`webrtc-${roomId}`);
+        channel.send({
+          type: 'broadcast',
+          event: 'rtc_camera_toggle',
+          payload: { isVideoOff: newState, targetId },
+        });
+      }
     }
   };
 
@@ -342,12 +359,22 @@ export default function WebRTCCall({
 
       {/* Remote UI Rendering */}
       {callType === 'video' ? (
-        <video
-          ref={remoteVideoRef as any}
-          autoPlay
-          playsInline
-          className={`w-full h-full object-cover transition-opacity duration-700 ${isAccepted ? 'opacity-100' : 'opacity-0'}`}
-        />
+        <div className="relative w-full h-full">
+          <video
+            ref={remoteVideoRef as any}
+            autoPlay
+            playsInline
+            className={`w-full h-full object-cover transition-opacity duration-700 ${isAccepted && !remoteVideoOff ? 'opacity-100' : 'opacity-0'}`}
+          />
+          {(remoteVideoOff || !isAccepted) && isAccepted && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#111]">
+               <div className="w-40 h-40 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/20 animate-pulse">
+                <div className="text-5xl text-primary font-bold uppercase">{(partnerName || '?')[0]}</div>
+              </div>
+              <p className="mt-6 text-muted-foreground text-sm tracking-widest uppercase">Camera Off</p>
+            </div>
+          )}
+        </div>
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#1c1c1c] to-[#0a0a0a]">
           <div className="relative mb-8">
@@ -368,14 +395,23 @@ export default function WebRTCCall({
       )}
 
       {/* Local Floating Picture-in-Picture */}
-      {callType === 'video' && !isVideoOff && (
-        <video
-          ref={localVideoRef}
-          autoPlay
-          playsInline
-          muted
-          className={`absolute top-6 right-6 w-28 h-40 md:w-36 md:h-56 bg-zinc-900 object-cover rounded-2xl shadow-2xl border border-white/10 z-30 transition-all duration-500`}
-        />
+      {callType === 'video' && (
+        <div className="absolute top-6 right-6 w-28 h-40 md:w-36 md:h-56 bg-zinc-900 rounded-2xl shadow-2xl border border-white/10 z-30 overflow-hidden">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className={`w-full h-full object-cover transition-opacity duration-500 ${!isVideoOff ? 'opacity-100' : 'opacity-0'}`}
+          />
+          {isVideoOff && (
+            <div className="absolute inset-0 flex items-center justify-center bg-[#151515]">
+               <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
+                <div className="text-white/50 font-bold uppercase text-xs">You</div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Call Controls */}
@@ -397,13 +433,15 @@ export default function WebRTCCall({
               {isVideoOff ? <VideoOff size={22} /> : <Video size={22} />}
             </button>
 
-            <button
-              onClick={toggleScreenShare}
-              className={`p-3.5 rounded-full transition-all active:scale-95 ${isScreenSharing ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'bg-white/10 text-white hover:bg-white/20'}`}
-              title={isScreenSharing ? "Stop Sharing" : "Share Screen"}
-            >
-              {isScreenSharing ? <MonitorOff size={22} /> : <Monitor size={22} />}
-            </button>
+            {!isMobile && (
+              <button
+                onClick={toggleScreenShare}
+                className={`p-3.5 rounded-full transition-all active:scale-95 ${isScreenSharing ? 'bg-primary/20 text-primary hover:bg-primary/30' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                title={isScreenSharing ? "Stop Sharing" : "Share Screen"}
+              >
+                {isScreenSharing ? <MonitorOff size={22} /> : <Monitor size={22} />}
+              </button>
+            )}
 
             <button
               onClick={flipCamera}
