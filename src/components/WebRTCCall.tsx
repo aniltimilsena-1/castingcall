@@ -138,6 +138,7 @@ export default function WebRTCCall({
           iceCandidateQueue.forEach(async (c) => {
             try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) { }
           });
+          iceCandidateQueue.length = 0; // Clear the queue after processing
         } catch (e) {
           console.error("Error handling WebRTC Offer:", e);
         }
@@ -150,6 +151,7 @@ export default function WebRTCCall({
           iceCandidateQueue.forEach(async (c) => {
             try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) { }
           });
+          iceCandidateQueue.length = 0; // Clear the queue after processing
         } catch (e) {
           console.error("Error handling WebRTC Answer:", e);
         }
@@ -225,15 +227,19 @@ export default function WebRTCCall({
       localStreamRef.current.getVideoTracks().forEach((t) => (t.enabled = isVideoOff));
       setIsVideoOff(newState);
       
-      // Broadcast state to remote peer
-      if (peerConnectionRef.current) {
-        const channel = supabase.channel(`webrtc-${roomId}`);
-        channel.send({
-          type: 'broadcast',
-          event: 'rtc_camera_toggle',
-          payload: { isVideoOff: newState, targetId },
-        });
-      }
+      // Broadcast state to remote peer via the existing effect's channel logic or a dedicated thin broadcast
+      // Instead of creating a new channel, we'll try to find a way to reuse or just use a one-off channel cleaned up immediately
+      const tempChannel = supabase.channel(`webrtc-ctrl-${roomId}-${Date.now()}`);
+      tempChannel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await tempChannel.send({
+            type: 'broadcast',
+            event: 'rtc_camera_toggle',
+            payload: { isVideoOff: newState, targetId },
+          });
+          supabase.removeChannel(tempChannel);
+        }
+      });
     }
   };
 
@@ -262,6 +268,10 @@ export default function WebRTCCall({
           stopScreenShare();
         };
         
+        // Respect current mute state on the new stream if we were using audio from it
+        // Note: Screen share usually doesn't include audio unless requested, 
+        // but we want to ensure our mic track is still in the PC and respected.
+        
         setIsScreenSharing(true);
       } else {
         await stopScreenShare();
@@ -286,6 +296,10 @@ export default function WebRTCCall({
       if (sender) {
         await sender.replaceTrack(cameraTrack);
       }
+      
+      // Ensure the new camera stream track respects the current UI mute/video toggle state
+      cameraStream.getVideoTracks().forEach(t => t.enabled = !isVideoOff);
+      cameraStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
       
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = cameraStream;
@@ -323,6 +337,10 @@ export default function WebRTCCall({
           await sender.replaceTrack(newVideoTrack);
         }
       }
+      
+      // Respect current state
+      newStream.getVideoTracks().forEach(t => t.enabled = !isVideoOff);
+      newStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
       
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = newStream;

@@ -482,7 +482,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 "{profile.bio}"
               </p>
             ) : (
-              <p className="text-foreground/60/40 text-sm italic">No bio added yet. Click Edit Profile to add one.</p>
+              <p className="text-foreground/40 text-sm italic">No bio added yet. Click Edit Profile to add one.</p>
             )}
           </div>
         </div>

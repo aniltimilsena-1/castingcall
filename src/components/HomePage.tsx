@@ -41,7 +41,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const data = await profileService.getFeaturedProfiles(currentUserProfile?.role === 'Admin');
+        const data = await profileService.getFeaturedProfiles();
         setFeatured(data.slice(0, 4));
       } catch (err) {
         console.error("Failed to load featured talents");
@@ -49,8 +49,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
     };
     const fetchRecentProjects = async () => {
       try {
-        const data = await adminService.getAllAdminData();
-        setRecentProjects(data.projects.slice(0, 3));
+        const data = await adminService.getRecentProjects(3);
+        setRecentProjects(data);
       } catch (err) {
         console.error("Failed to load recent projects");
       }
@@ -88,6 +88,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             src="/hero-bg.png"
             alt="Cinematic Background"
             className="w-full h-full object-cover"
+            onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&q=80"; }}
           />
         </motion.div>
 

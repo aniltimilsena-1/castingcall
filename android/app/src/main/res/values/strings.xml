@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Casting Call</string>
+    <string name="title_activity_main">Casting Call</string>
+    <string name="package_name">me.castingcall.app</string>
+    <string name="custom_url_scheme">me.castingcall.app</string>
+</resources>

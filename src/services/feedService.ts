@@ -1,39 +1,30 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const feedService = {
-    async getFeedData() {
+    async getFeedData(limit = 40) {
         const { data: profiles, error } = await supabase
             .from("profiles")
-            .select("id, user_id, name, photo_url, role, plan, photos, created_at")
+            .select("id, user_id, name, photo_url, role, plan, photos, videos, created_at")
             .neq("role", "Admin")
-            .order("created_at", { ascending: false });
+            .order("created_at", { ascending: false })
+            .limit(limit);
         
         if (error) throw error;
         return profiles;
     },
 
     async getVideoMap() {
-        try {
-            const { data: videoProfiles } = await supabase
-                .from("profiles")
-                .select("user_id, videos")
-                .neq("role", "Admin");
-
-            const videoMap: Record<string, string[]> = {};
-            (videoProfiles || []).forEach((p: any) => {
-                if (p.videos?.length) videoMap[p.user_id] = p.videos;
-            });
-            return videoMap;
-        } catch (_) {
-            return {};
-        }
+        // Redundant as getFeedData now pulls videos directly into items
+        return {};
     },
 
     async getCaptionMap() {
         try {
             const { data: captionRows, error } = await supabase
                 .from("photo_captions")
-                .select("*");
+                .select("*")
+                .order("created_at", { ascending: false })
+                .limit(400);
 
             if (error) {
                 console.warn("Caption fetch error:", error.message);

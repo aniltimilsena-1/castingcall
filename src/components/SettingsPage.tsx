@@ -316,7 +316,7 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              <button onClick={handleSaveProfile} disabled={saving} className="w-full bg-primary text-black py-4 rounded-2xl font-bold text-[0.7rem] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-primary/10 disabled:opacity-50 mt-4">
+              <button onClick={handleSaveProfile} disabled={saving} className="w-full bg-primary text-primary-foreground py-4 rounded-2xl font-bold text-[0.7rem] uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 mt-4">
                 {saving ? t('settings.profile.processing') : t('settings.profile.updateBtn')}
               </button>
             </div>
@@ -458,7 +458,7 @@ export default function SettingsPage() {
                 <InputField label={t('settings.security.currentPass')} type="password" value={oldPassword} onChange={setOldPassword} placeholder="Verification required" />
               )}
               <InputField label={t('settings.security.newPass')} type="password" value={newPassword} onChange={setNewPassword} placeholder="Secured (Min 6 chars)" />
-              <button onClick={handleChangePassword} className="bg-foreground text-background dark:bg-white dark:text-black px-8 py-3 rounded-xl font-bold text-[0.65rem] uppercase tracking-widest hover:opacity-90 transition-all">
+              <button onClick={handleChangePassword} className="bg-foreground text-background px-8 py-3 rounded-xl font-bold text-[0.65rem] uppercase tracking-widest hover:opacity-90 transition-all">
                 {t('settings.security.updatePass')}
               </button>
             </div>
@@ -560,7 +560,7 @@ export default function SettingsPage() {
                           <button 
                             key={t}
                             onClick={() => setTheme(t)}
-                            className={`flex-1 py-1.5 rounded-lg border text-[0.55rem] font-bold uppercase tracking-tighter transition-all ${theme === t ? 'bg-primary border-primary text-black' : 'bg-secondary/20 border-border text-muted-foreground'}`}
+                            className={`flex-1 py-1.5 rounded-lg border text-[0.55rem] font-bold uppercase tracking-tighter transition-all ${theme === t ? 'bg-primary border-primary text-primary-foreground' : 'bg-secondary/20 border-border text-muted-foreground'}`}
                           >
                             {t}
                           </button>

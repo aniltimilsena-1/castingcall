@@ -20,8 +20,8 @@ export const adminService = {
         };
 
         const [profiles, projects, feedItems, applications, schedules, finances, verifications, crashReports] = await Promise.all([
-            fetchTable("profiles"),
-            fetchTable("projects"),
+            fetchTable("profiles", "*", { column: "created_at", ascending: false }),
+            fetchTable("projects", "*", { column: "created_at", ascending: false }),
             fetchTable("photo_captions"),
             fetchTable("applications", "*, projects:project_id(title)"),
             fetchTable("audition_slots", "*, projects:project_id(title)", { column: "start_time", ascending: true }),
@@ -31,15 +31,28 @@ export const adminService = {
         ]);
 
         return {
-            profiles,
-            projects,
-            feedItems,
-            applications,
-            schedules,
-            finances,
-            verifications,
-            crashReports
+            profiles: (profiles || []).slice(0, 100),
+            projects: (projects || []).slice(0, 50),
+            feedItems: (feedItems || []).slice(0, 200),
+            applications: (applications || []).slice(0, 100),
+            schedules: (schedules || []).slice(0, 50),
+            finances: (finances || []).slice(0, 100),
+            verifications: (verifications || []).slice(0, 50),
+            crashReports: (crashReports || []).slice(0, 50)
         };
+    },
+
+    async getRecentProjects(limit = 10) {
+        const { data, error } = await supabase
+            .from("projects")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(limit);
+        if (error) {
+            console.error("Error fetching recent projects:", error);
+            return [];
+        }
+        return data || [];
     },
 
     async approvePayment(v: any) {

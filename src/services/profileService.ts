@@ -38,10 +38,12 @@ export const profileService = {
         const q = supabase.from("profiles")
             .select("*")
             .eq("plan", "pro")
-            .neq("role", "Admin");
-        const { data, error } = await q.order("created_at", { ascending: false });
+            .neq("role", "Admin")
+            .order("created_at", { ascending: false })
+            .limit(10);
+        const { data, error } = await q;
         if (error) throw error;
-        return data;
+        return data || [];
     },
 
     async searchProfiles(params: {
@@ -140,14 +142,25 @@ export const profileService = {
         return (data || []).map(s => s.talent_profile_id);
     },
 
-    async saveTalent(userId: string, talentProfileId: string) {
+    async getSavedProfiles(userId: string) {
+        const ids = await this.getSavedTalentIds(userId);
+        if (ids.length === 0) return [];
+        const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .in("id", ids);
+        if (error) throw error;
+        return data || [];
+    },
+
+    async saveProfile(userId: string, talentProfileId: string) {
         const { error } = await supabase
             .from("saved_talents")
             .insert({ user_id: userId, talent_profile_id: talentProfileId });
         if (error) throw error;
     },
 
-    async unsaveTalent(userId: string, talentProfileId: string) {
+    async unsaveProfile(userId: string, talentProfileId: string) {
         const { error } = await supabase
             .from("saved_talents")
             .delete()

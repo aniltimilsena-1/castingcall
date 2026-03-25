@@ -25,7 +25,7 @@ export const messageService = {
         return data || [];
     },
 
-    async sendMessage(senderId: string, receiverId: string, content: string, fileUrl?: string, fileType?: 'image' | 'video' | 'file') {
+    async sendMessage(senderId: string, receiverId: string, content: string, fileUrl?: string, fileType?: 'image' | 'video' | 'file', replyToId?: string) {
         // 1. Check if recipient has blocked sender
         const isBlockedByRecipient = await settingsService.isBlocked(receiverId, senderId);
         if (isBlockedByRecipient) {
@@ -51,8 +51,9 @@ export const messageService = {
                 receiver_id: receiverId,
                 content: content.trim(),
                 file_url: fileUrl,
-                file_type: fileType
-            })
+                file_type: fileType,
+                reply_to_id: replyToId
+            } as any)
             .select()
             .single();
 

@@ -368,7 +368,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
           {activeTab === "managed" && (
             <button
               onClick={() => { resetForm(); setShowForm(true); }}
-              className="flex items-center justify-center gap-2 bg-primary text-black px-10 py-4 rounded-2xl font-normal text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
+              className="flex items-center justify-center gap-2 bg-primary text-primary-foreground px-10 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/20"
             >
               <Plus className="w-5 h-5" /> Launch New Project
             </button>
@@ -528,7 +528,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                       <Users className="text-primary w-7 h-7" />
                     </div>
                     <div>
-                      <h3 className="font-display text-3xl text-white leading-none mb-2">{viewingApplicantsFor.title}</h3>
+                      <h3 className="font-display text-3xl text-foreground leading-none mb-2">{viewingApplicantsFor.title}</h3>
                       <p className="text-xs text-muted-foreground font-normal uppercase tracking-[2px]">Applicants Pipeline ({applicants.length})</p>
                     </div>
                   </div>
@@ -561,7 +561,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                           <img src={a.profiles?.photo_url || ""} className="w-full h-full object-cover" alt="" />
                         </div>
                         <div className="flex-1">
-                          <div className="text-xl font-normal text-white mb-1">{a.profiles?.name}</div>
+                          <div className="text-xl font-normal text-foreground mb-1">{a.profiles?.name}</div>
                           <div className="text-sm text-primary font-normal uppercase tracking-widest text-[0.7rem] mb-2">{a.profiles?.role}</div>
                           <div className="flex gap-4 text-xs text-muted-foreground">
                             <span>📍 {a.profiles?.location || 'Remote'}</span>
@@ -581,9 +581,9 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                           <select
                             value={a.status}
                             onChange={(e) => updateApplicantStatus(a.id, e.target.value)}
-                            className={`px-4 py-2.5 rounded-xl text-xs font-normal uppercase tracking-widest outline-none border transition-all cursor-pointer ${a.status === 'accepted' ? 'bg-green-500 text-black border-green-500' :
-                              a.status === 'rejected' ? 'bg-red-500 text-white border-red-500' :
-                                'bg-secondary border-border text-white'
+                            className={`px-4 py-2.5 rounded-xl text-xs font-normal uppercase tracking-widest outline-none border transition-all cursor-pointer ${a.status === 'accepted' ? 'bg-green-600 text-white border-green-600' :
+                              a.status === 'rejected' ? 'bg-red-600 text-white border-red-600' :
+                                'bg-secondary border-border text-foreground'
                               }`}
                           >
                             <option value="pending">⏳ Pending</option>
@@ -598,7 +598,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                                 toast.error("This actor hasn't fully set up their account.");
                               }
                             }}
-                            className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-black transition-all shadow-xl shadow-primary/5 relative z-50 pointer-events-auto"
+                            className="p-4 bg-primary/20 text-primary rounded-xl hover:bg-primary hover:text-primary-foreground transition-all shadow-xl shadow-primary/5 relative z-50 pointer-events-auto"
                             title="Direct Message"
                           >
                             <MessageSquare size={18} />
@@ -656,9 +656,9 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                         </div>
                       )}
                       <div className="absolute top-6 left-6">
-                        <span className={`px-4 py-2 rounded-full text-[0.65rem] font-normal uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-black' :
+                        <span className={`px-4 py-2 rounded-full text-[0.65rem] font-normal uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-primary-foreground' :
                           p.status === 'completed' ? 'bg-blue-600 text-white' :
-                            'bg-white/10 text-white'
+                            'bg-foreground/10 text-foreground'
                           }`}>
                           {p.status}
                         </span>
@@ -676,7 +676,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                           <button 
                             type="button"
                             onClick={(e) => { e.stopPropagation(); startEdit(p); }} 
-                            className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-black rounded-xl transition-all"
+                            className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-primary-foreground rounded-xl transition-all"
                           >
                             <Edit3 size={16} />
                           </button>
@@ -690,7 +690,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                         </div>
                         <button
                           onClick={() => fetchApplicants(p)}
-                          className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] hover:bg-primary hover:text-black transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
+                          className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
                         >
                           Review Pipeline <Users size={14} />
                         </button>
@@ -720,9 +720,9 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
                         <h3 className="font-display text-2xl text-foreground">{app.projects?.title}</h3>
-                        <span className={`px-3 py-1 rounded-full text-[0.6rem] font-bold uppercase tracking-widest ${app.status === 'accepted' ? 'bg-green-500 text-black' :
-                          app.status === 'invited' ? 'bg-amber-500 text-black gold-glow animate-pulse' :
-                            app.status === 'rejected' ? 'bg-red-500 text-white' :
+                        <span className={`px-3 py-1 rounded-full text-[0.6rem] font-bold uppercase tracking-widest ${app.status === 'accepted' ? 'bg-green-600 text-white' :
+                          app.status === 'invited' ? 'bg-amber-600 text-white gold-glow animate-pulse' :
+                            app.status === 'rejected' ? 'bg-red-600 text-white' :
                               'bg-secondary text-secondary-foreground'
                           }`}>
                           {app.status === 'invited' ? 'PROJECT INVITATION' : app.status}
@@ -773,13 +773,13 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                       <div className="flex gap-2">
                         <button
                           onClick={() => respondToInvitation(app.id, 'accepted')}
-                          className="bg-green-500 text-black px-6 py-3 rounded-xl text-xs font-normal uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-green-500/20"
+                          className="bg-green-600 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-green-500/20"
                         >
                           Accept
                         </button>
                         <button
                           onClick={() => respondToInvitation(app.id, 'rejected')}
-                          className="bg-secondary border border-border text-white px-6 py-3 rounded-xl text-xs font-normal uppercase tracking-widest hover:border-red-500/50 transition-all"
+                          className="bg-secondary border border-border text-foreground px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:border-red-500/50 transition-all"
                         >
                           Decline
                         </button>

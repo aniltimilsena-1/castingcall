@@ -112,7 +112,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
               </Item>
             )}
             <Item onClick={() => go("settings")}>{t('nav.settings')}</Item>
-            <Item onClick={() => go("saved")}>Saved Talents</Item>
+            <Item onClick={() => go("saved")}>Saved Items</Item>
           </Section>
           <Hr />
           <Section label="Support">

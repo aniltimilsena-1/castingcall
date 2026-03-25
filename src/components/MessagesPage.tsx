@@ -37,15 +37,16 @@ import ProfileDetailDialog from "./ProfileDetailDialog";
 import WebRTCCall from "./WebRTCCall";
 import { type PageName } from "./AppDrawer";
 import { type Profile } from "@/services/profileService";
+import { messageService } from "@/services/messageService";
 
-function ActionItem({ icon: Icon, label, onClick, color = "text-white/70" }: { icon: any, label: string, onClick: () => void, color?: string }) {
+function ActionItem({ icon: Icon, label, onClick, color = "text-muted-foreground" }: { icon: any, label: string, onClick: () => void, color?: string }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/10 transition-colors text-left group`}
+      className={`w-full flex items-center justify-between px-4 py-2.5 hover:bg-secondary/40 transition-colors text-left group`}
     >
-      <span className={`text-xs font-normal ${color} group-hover:text-white`}>{label}</span>
-      <Icon size={14} className={`${color} group-hover:text-white opacity-40`} />
+      <span className={`text-xs font-normal ${color} group-hover:text-foreground`}>{label}</span>
+      <Icon size={14} className={`${color} group-hover:text-foreground opacity-40`} />
     </button>
   );
 }
@@ -452,22 +453,20 @@ export default function MessagesPage({
     setNewMessage("");
     setReplyingTo(null);
 
-    const { error, data } = await supabase
-      .from("messages")
-      .insert(payload)
-      .select()
-      .single();
-
-    if (error) {
-      toast.error(error.message);
-      setThread(prev => prev.filter(m => m.id !== optimistic.id));
-      setNewMessage(text);
-    } else {
+    try {
+      const data = await messageService.sendMessage(user.id, selectedPartner, text, undefined, undefined, replyingTo?.id);
+      
+      if (!data) throw new Error("No data returned from sendMessage");
+      
       // Register the real ID so the outgoing realtime echo is skipped
       sentMessageIds.current.add((data as Message).id);
       // Swap optimistic row for the real DB row
       setThread(prev => prev.map(m => m.id === optimistic.id ? data as Message : m));
       void loadConversations();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send message");
+      setThread(prev => prev.filter(m => m.id !== optimistic.id));
+      setNewMessage(text);
     }
   };
 
@@ -577,17 +576,13 @@ export default function MessagesPage({
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
       const content = type === 'image' ? `[IMAGE]:${publicUrl}` : `[VIDEO]:${publicUrl}`;
 
-      const { error: msgError, data: msgData } = await supabase.from("messages").insert({
-        sender_id: user.id,
-        receiver_id: selectedPartner,
-        content
-      }).select().single();
-      
-      if (msgError) throw msgError;
+      const msgData = await messageService.sendMessage(user.id, selectedPartner, content);
+
+      if (!msgData) throw new Error("Failed to create message data");
 
       sentMessageIds.current.add(msgData.id);
       setThread(prev => {
-        const nt = prev.map(m => m.id === optimisticId ? msgData : m);
+        const nt = prev.map(m => m.id === optimisticId ? msgData as Message : m);
         if (preview) URL.revokeObjectURL(preview); // Deferred revocation
         return nt;
       });
@@ -604,14 +599,14 @@ export default function MessagesPage({
   };
 
   return (
-    <div className="w-screen h-[100dvh] flex bg-[#1c1c1c] overflow-hidden fixed inset-0 z-[200]">
-      <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[380px] bg-[#1c1c1c] border-r border-border/10 flex-col shadow-2xl relative z-10`}>
+    <div className="w-screen h-[100dvh] flex bg-background overflow-hidden fixed inset-0 z-[200]">
+      <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[380px] bg-sidebar-background border-r border-border/10 flex-col shadow-2xl relative z-10`}>
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl text-white font-normal flex items-center gap-3">
+            <h1 className="text-2xl text-foreground font-normal flex items-center gap-3">
               <button 
                 onClick={() => onNavigate?.("home")}
-                className="p-2 -ml-2 text-muted-foreground hover:text-white transition-colors"
+                className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
                 title="Back to Home"
               >
                 <ChevronLeft size={24} />
@@ -620,12 +615,12 @@ export default function MessagesPage({
             </h1>
           </div>
           <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 w-4 h-4" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/30 w-4 h-4" />
             <input 
               placeholder="Search Active Chats" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-secondary/30 rounded-full pl-10 pr-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30" 
+              className="w-full bg-secondary/30 rounded-full pl-10 pr-4 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground/30" 
             />
           </div>
         </div>
@@ -634,7 +629,7 @@ export default function MessagesPage({
           {conversations
             .filter(c => c.partnerName.toLowerCase().includes(searchTerm.toLowerCase()) || c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()))
             .map((c) => (
-            <button key={c.partnerId} onClick={() => loadThread(c.partnerId)} className={`w-full px-3 py-3 flex items-center gap-3 hover:bg-white/5 transition-all ${selectedPartner === c.partnerId ? "bg-white/5" : ""}`}>
+            <button key={c.partnerId} onClick={() => loadThread(c.partnerId)} className={`w-full px-3 py-3 flex items-center gap-3 hover:bg-foreground/5 transition-all ${selectedPartner === c.partnerId ? "bg-foreground/5" : ""}`}>
               <div 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -644,12 +639,12 @@ export default function MessagesPage({
               >
                 {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
                 {onlineUsers.has(c.partnerId) && (
-                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1c] rounded-full" />
+                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full" />
                 )}
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <div className="text-[15px] text-white truncate">{c.partnerName}</div>
-                <div className="text-[13px] text-white/40 truncate">{c.lastMessage}</div>
+                <div className="text-[15px] text-foreground truncate">{c.partnerName}</div>
+                <div className="text-[13px] text-muted-foreground truncate">{c.lastMessage}</div>
               </div>
               {c.unread > 0 && <div className="w-3 h-3 bg-primary rounded-full mr-2 shadow-[0_0_10px_rgba(251,191,36,0.5)]" />}
             </button>
@@ -662,8 +657,8 @@ export default function MessagesPage({
               <div className="flex items-start gap-4 mb-4">
                 <Crown className="text-primary w-10 h-10" />
                 <div className="flex-1">
-                  <p className="text-white text-sm mb-0.5">Upgrade for {isNepal ? "NPR 499" : "$4.99"}</p>
-                  <p className="text-[0.65rem] text-white/40 uppercase tracking-widest leading-normal">{isNepal ? "Unlock local & global limits" : "Go Global Pro"}</p>
+                  <p className="text-foreground text-sm mb-0.5">Upgrade for {isNepal ? "NPR 499" : "$4.99"}</p>
+                  <p className="text-[0.65rem] text-muted-foreground uppercase tracking-widest leading-normal">{isNepal ? "Unlock local & global limits" : "Go Global Pro"}</p>
                 </div>
               </div>
               <button onClick={() => onNavigate?.("premium")} className="w-full bg-primary text-black py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px]">
@@ -674,11 +669,11 @@ export default function MessagesPage({
         )}
       </div>
 
-      <div className={`flex-1 flex flex-col bg-[#1c1c1c] overflow-hidden ${!selectedPartner ? "hidden md:flex items-center justify-center" : "flex"}`}>
+      <div className={`flex-1 flex flex-col bg-background overflow-hidden ${!selectedPartner ? "hidden md:flex items-center justify-center" : "flex"}`}>
         {!selectedPartner ? (
           <div className="text-center p-8 space-y-4">
-            <MessageSquare size={64} className="text-white/10 mx-auto" />
-            <p className="text-white/30 text-sm uppercase tracking-[0.3em] font-display">Cast your message worldwide</p>
+            <MessageSquare size={64} className="text-foreground/10 mx-auto" />
+            <p className="text-muted-foreground/30 text-sm uppercase tracking-[0.3em] font-display">Cast your message worldwide</p>
           </div>
         ) : (
           <>
@@ -692,28 +687,28 @@ export default function MessagesPage({
                 </button>
                 <div 
                   onClick={() => openProfile(selectedPartner!)}
-                  className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-white/10 relative cursor-pointer hover:border-primary/50 transition-colors"
+                  className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border relative cursor-pointer hover:border-primary/50 transition-colors"
                 >
                   {partnerProfile?.photo_url ? <img src={partnerProfile.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{partnerProfile?.name?.[0]}</div>}
                   {onlineUsers.has(selectedPartner) && (
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-[#1c1c1c] rounded-full" />
+                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-background rounded-full" />
                   )}
                 </div>
                 <div>
-                  <div className="text-white font-medium flex items-center gap-2">
+                  <div className="text-foreground font-medium flex items-center gap-2">
                     {partnerProfile?.name}
                     {onlineUsers.has(selectedPartner) && (
                       <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
                     )}
                   </div>
-                  <div className="text-[10px] text-white/40 uppercase tracking-[0.2em]">Global Talent</div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">Global Talent</div>
                 </div>
               </div>
               <div className="flex items-center gap-1 md:gap-2">
                 <button 
                   onClick={() => startCall('audio')} 
                   disabled={!!activeCall || !!incomingCall}
-                  className={`p-2.5 transition-all rounded-full ${activeCall || incomingCall ? 'opacity-30 pointer-events-none' : 'text-white/50 hover:bg-white/5 hover:text-white'}`} 
+                  className={`p-2.5 transition-all rounded-full ${activeCall || incomingCall ? 'opacity-30 pointer-events-none' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`} 
                   title="Audio Call"
                 >
                   <Phone size={20} />
@@ -721,7 +716,7 @@ export default function MessagesPage({
                 <button 
                   onClick={() => startCall('video')} 
                   disabled={!!activeCall || !!incomingCall}
-                  className={`p-2.5 transition-all rounded-full ${activeCall || incomingCall ? 'opacity-30 pointer-events-none' : 'text-white/50 hover:bg-white/5 hover:text-white'}`} 
+                  className={`p-2.5 transition-all rounded-full ${activeCall || incomingCall ? 'opacity-30 pointer-events-none' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`} 
                   title="Video Call"
                 >
                   <Video size={20} />
@@ -748,7 +743,7 @@ export default function MessagesPage({
                           const parent = thread.find(msg => msg.id === m.reply_to_id);
                           const parentContent = parent?.content?.startsWith('[IMAGE]:') ? 'Photo' : parent?.content || 'Original message';
                           return (
-                            <div className={`mb-1 px-3 py-2 rounded-xl text-[11px] bg-white/5 border border-white/10 ${isMine ? "mr-1 text-right" : "ml-1 text-left"} text-white/40 italic flex flex-col gap-0.5 max-w-[200px] truncate`}>
+                            <div className={`mb-1 px-3 py-2 rounded-xl text-[11px] bg-foreground/5 border border-border/10 ${isMine ? "mr-1 text-right" : "ml-1 text-left"} text-muted-foreground italic flex flex-col gap-0.5 max-w-[200px] truncate`}>
                               <span className="font-bold opacity-60 uppercase text-[9px] tracking-widest">{isMine ? "Replying..." : "Replied..."}</span>
                               <span className="truncate">{parentContent}</span>
                             </div>
@@ -761,12 +756,12 @@ export default function MessagesPage({
                             setActiveMenu({ id: m.id, x: e.clientX, y: e.clientY });
                           }}
                           className={`rounded-2xl overflow-hidden cursor-pointer transition-all active:scale-[0.98] relative ${
-                            m.content.startsWith('[CALL]:') ? "" : (isMine ? "bg-primary text-black rounded-br-none" : "bg-white/5 text-white border border-white/10 rounded-bl-none shadow-lg")
+                            m.content.startsWith('[CALL]:') ? "" : (isMine ? "bg-primary text-black rounded-br-none" : "bg-card text-foreground border border-border rounded-bl-none shadow-lg")
                           }`}
                         >
                           {m.content.startsWith('[CALL]:') ? (
-                            <div className={`flex items-center gap-3 px-5 py-3 ${isMine ? "bg-primary/20 text-primary border-primary/30" : "bg-white/10 text-white border-white/10"} rounded-2xl border shadow-lg backdrop-blur-sm`}>
-                              <div className={`p-2 rounded-full ${isMine ? "bg-primary/30" : "bg-white/10"}`}>
+                            <div className={`flex items-center gap-3 px-5 py-3 ${isMine ? "bg-primary/20 text-primary border-primary/30" : "bg-card text-foreground border border-border"} rounded-2xl border shadow-lg backdrop-blur-sm`}>
+                              <div className={`p-2 rounded-full ${isMine ? "bg-primary/30" : "bg-secondary"}`}>
                                 {m.content.includes('Missed') ? <PhoneOff size={18} /> : 
                                  (m.content.includes('Video') ? <Video size={18} /> : <Phone size={18} />)}
                               </div>
@@ -778,7 +773,7 @@ export default function MessagesPage({
                               </div>
                             </div>
                           ) : m.content.startsWith('[IMAGE]:') ? (
-                        <div className="relative group/img bg-white/5 min-w-[200px] min-h-[150px] flex items-center justify-center">
+                        <div className="relative group/img bg-secondary/20 min-w-[200px] min-h-[150px] flex items-center justify-center">
                           <img
                             key={`${m.id}-img`}
                             src={m.content.replace('[IMAGE]:', '')}
@@ -788,7 +783,7 @@ export default function MessagesPage({
                               const target = e.currentTarget;
                               target.style.opacity = '1';
                               const parent = target.parentElement;
-                              if (parent) parent.classList.remove('bg-white/5');
+                              if (parent) parent.classList.remove('bg-secondary/20');
                               
                               if (scrollRef.current) {
                                 const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;

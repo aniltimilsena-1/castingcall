@@ -29,7 +29,7 @@ import MyProjectsPage from "@/components/MyProjectsPage";
 import NotificationsPage from "@/components/NotificationsPage";
 import MessagesPage from "@/components/MessagesPage";
 import SettingsPage from "@/components/SettingsPage";
-import SavedTalentsPage from "@/components/SavedTalentsPage";
+import SavedItemsPage from "@/components/SavedItemsPage";
 import AnalyticsPage from "@/components/AnalyticsPage";
 import HelpSupportPage from "@/components/HelpSupportPage";
 import TermsPrivacyPage from "@/components/TermsPrivacyPage";
@@ -81,11 +81,11 @@ const Index = () => {
   // Call Sound Effects Logic
   useEffect(() => {
     if (!dialToneRef.current) {
-      dialToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/1352/1352-preview.mp3");
+      dialToneRef.current = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_7306236b2d.mp3?filename=phone-calling-101186.mp3");
       dialToneRef.current.loop = true;
     }
     if (!ringToneRef.current) {
-      ringToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/1356/1356-preview.mp3");
+      ringToneRef.current = new Audio("https://cdn.pixabay.com/download/audio/2022/10/30/audio_51f04dbd14.mp3?filename=mobile-phone-ring-tone-124021.mp3");
       ringToneRef.current.loop = true;
     }
     
@@ -316,6 +316,18 @@ const Index = () => {
 
   const rejectCall = async () => {
     if (!incomingCall || !user || !globalPresenceChannelRef.current) return;
+    
+    // Log as Missed Call record in chat for both parties to see the attempt
+    try {
+      await supabase.from("messages").insert({
+        sender_id: incomingCall.callerId,
+        receiver_id: user.id,
+        content: `[CALL]:Missed ${incomingCall.type === 'video' ? 'Video' : 'Audio'} Call`
+      });
+    } catch (e) {
+      console.error("Failed to log declined call:", e);
+    }
+
     await globalPresenceChannelRef.current.send({
       type: 'broadcast',
       event: 'call_signal',
@@ -373,11 +385,11 @@ const Index = () => {
     const isSaved = savedTalentIds.includes(profileId);
     try {
       if (isSaved) {
-        await profileService.unsaveTalent(user.id, profileId);
+        await profileService.unsaveProfile(user.id, profileId);
         setSavedTalentIds(prev => prev.filter(id => id !== profileId));
         toast.info("Talent removed from saved list");
       } else {
-        await profileService.saveTalent(user.id, profileId);
+        await profileService.saveProfile(user.id, profileId);
         setSavedTalentIds(prev => [...prev, profileId]);
         toast.success("Talent saved successfully!");
       }
@@ -592,7 +604,7 @@ const Index = () => {
           />
         )}
         {page === "settings" && <SettingsPage />}
-        {page === "saved" && <SavedTalentsPage />}
+        {page === "saved" && <SavedItemsPage />}
         {page === "analytics" && <AnalyticsPage />}
         {page === "help" && <HelpSupportPage />}
         {page === "terms" && <TermsPrivacyPage />}
