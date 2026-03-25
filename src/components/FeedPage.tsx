@@ -84,6 +84,71 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
 
     const [isNepal, setIsNepal] = useState<boolean | null>(null);
 
+    // ─── Real-time Social Sync ──────────────────────────────────────────────────
+    useEffect(() => {
+        if (!feed.length) return;
+
+        console.log("Subscribing to real-time social updates");
+        const channel = supabase
+            .channel('realtime-social')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'photo_likes' }, async (payload) => {
+                const { eventType, new: newLike, old: oldLike } = payload as any;
+                const affectedUrl = newLike?.photo_url || oldLike?.photo_url;
+                if (!affectedUrl) return;
+
+                // Simple re-fetch of count for this specific URL to stay accurate
+                const { data } = await supabase.from("photo_likes").select("user_id").eq("photo_url", affectedUrl);
+                const count = data?.length || 0;
+                const isLikedByMe = !!(user && data?.find(l => l.user_id === user.id));
+
+                setLikes(prev => ({
+                    ...prev,
+                    [affectedUrl]: { count, liked: isLikedByMe }
+                }));
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'photo_comments' }, async (payload) => {
+                const newComment = payload.new as any;
+                const affectedUrl = newComment.photo_url;
+                if (!affectedUrl) return;
+
+                // If we already have it (optimistic), skip
+                setComments(prev => {
+                    if (prev[affectedUrl]?.some(c => c.id === newComment.id)) return prev;
+                    
+                    // Fetch commenter profile for the new comment
+                    feedService.getCommenters([newComment.user_id]).then(profiles => {
+                        const p = profiles[0];
+                        const fullComment = { 
+                            ...newComment, 
+                            commenter: p?.name || "User", 
+                            commenter_photo: p?.photo_url || null 
+                        };
+                        setComments(current => ({
+                            ...current,
+                            [affectedUrl]: [...(current[affectedUrl] || []), fullComment]
+                        }));
+                    });
+                    
+                    return prev;
+                });
+            })
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'photo_comments' }, (payload) => {
+                const oldComment = payload.old as any;
+                setComments(prev => {
+                    const newMap = { ...prev };
+                    for (const url in newMap) {
+                        newMap[url] = newMap[url].filter(c => c.id !== oldComment.id);
+                    }
+                    return newMap;
+                });
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [feed, user]);
+
     // Detect User Location (Country)
     useEffect(() => {
         const detectLocation = async () => {

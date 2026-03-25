@@ -205,9 +205,35 @@ const Index = () => {
         }
       });
 
+    // Global Message Notifications
+    const messageSub = supabase
+      .channel('global-message-notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload: any) => {
+          const msg = payload.new;
+          // Only notify if we are not already looking at the chat with this person
+          if (msg.receiver_id === user.id) {
+             // We use a small delay to ensure toast doesn't conflict with active message page logic
+             setTimeout(() => {
+                toast("New Message", {
+                  description: msg.content.startsWith('[') ? "Shared a file" : msg.content,
+                  action: {
+                    label: "View",
+                    onClick: () => navigate('messages')
+                  },
+                });
+             }, 100);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       globalPresenceChannelRef.current = null;
       supabase.removeChannel(channel);
+      supabase.removeChannel(messageSub);
     };
   }, [user]);
 
