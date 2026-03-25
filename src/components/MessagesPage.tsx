@@ -930,7 +930,7 @@ export default function MessagesPage({
                       <video src={pendingPreviewUrl} className="w-full h-full object-cover" />
                     )}
                     <button
-                      onClick={cancelPendingFile}
+                      onClick={() => cancelPendingFile()}
                       className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-full hover:bg-red-500 transition-colors"
                     >
                       <X size={12} />

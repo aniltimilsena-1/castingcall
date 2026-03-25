@@ -71,10 +71,42 @@ const Index = () => {
   const activeCallRef = useRef(activeCall);
   const callTimeoutRef = useRef<any>(null);
   const currentUserNameRef = useRef(currentUserProfile?.name);
+  const dialToneRef = useRef<HTMLAudioElement | null>(null);
+  const ringToneRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => { incomingCallRef.current = incomingCall; }, [incomingCall]);
   useEffect(() => { activeCallRef.current = activeCall; }, [activeCall]);
   useEffect(() => { currentUserNameRef.current = currentUserProfile?.name; }, [currentUserProfile?.name]);
+  
+  // Call Sound Effects Logic
+  useEffect(() => {
+    if (!dialToneRef.current) dialToneRef.current = new Audio("https://www.soundjay.com/phone/phone-ringing-01.wav");
+    if (!ringToneRef.current) ringToneRef.current = new Audio("https://www.soundjay.com/phone/telephone-ring-03a.wav");
+    
+    dialToneRef.current.loop = true;
+    ringToneRef.current.loop = true;
+
+    // Handle Dial Tone (Caller)
+    if (activeCall && activeCall.isCaller && !activeCall.isAccepted) {
+      dialToneRef.current.play().catch(e => console.warn("Audio play blocked", e));
+    } else {
+      dialToneRef.current.pause();
+      dialToneRef.current.currentTime = 0;
+    }
+
+    // Handle Ring Tone (Recipient)
+    if (incomingCall) {
+      ringToneRef.current.play().catch(e => console.warn("Audio play blocked", e));
+    } else {
+      ringToneRef.current.pause();
+      ringToneRef.current.currentTime = 0;
+    }
+
+    return () => {
+      dialToneRef.current?.pause();
+      ringToneRef.current?.pause();
+    };
+  }, [activeCall?.isAccepted, activeCall?.isCaller, incomingCall]);
 
   useEffect(() => {
     if (!user) return;
