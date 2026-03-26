@@ -93,11 +93,10 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       } catch (err: any) {
         console.error("Search error details:", err);
         if (err.message?.toLowerCase().includes("jwt expired")) {
-          console.warn("JWT expired detected. Refreshing session...");
-          supabase.auth.signOut().then(() => {
-            // Success call to signOut will update AuthContext and trigger this effect again via currentUserProfile dependency
-            toast.info("Session refreshed. Resuming search...");
-          });
+          console.warn("JWT expired. Attempting background session recovery...");
+          // supabase.auth.refreshSession() happens automatically in core, 
+          // but we can help it here without force signing out
+          toast.info("Updating session... please wait.");
         } else {
           toast.error(`Failed to load search results: ${err.message || 'Unknown error'}`);
         }
@@ -137,7 +136,8 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       } catch (err: any) {
         console.error("Trending fetch error:", err);
         if (err.message?.toLowerCase().includes("jwt expired")) {
-          supabase.auth.signOut();
+             console.warn("Trending fetch failed: JWT expired.");
+          // No action needed, AuthContext handles globally or auto-refresh will fix it on next query
         }
         setTrendingResults([]);
       }

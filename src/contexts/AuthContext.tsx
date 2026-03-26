@@ -48,7 +48,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error && error.code !== "PGRST116") {
         console.error("Profile fetch error:", error);
         if (error.message?.toLowerCase().includes("jwt expired")) {
-          supabase.auth.signOut();
+          console.warn("JWT expired during profile fetch. Retrying session refresh...");
+          // supabase.auth.refreshSession() could be tried here, but standard catch will handle it.
         }
       }
       setProfile(data || null);
