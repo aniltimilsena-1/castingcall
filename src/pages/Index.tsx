@@ -61,6 +61,8 @@ const Index = () => {
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
   const [feedRefreshKey, setFeedRefreshKey] = useState(0);
   const [activeMessagePartnerId, setActiveMessagePartnerId] = useState<string | null>(null);
+  const activeMessagePartnerIdRef = useRef<string | null>(null);
+  useEffect(() => { activeMessagePartnerIdRef.current = activeMessagePartnerId; }, [activeMessagePartnerId]);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [projectFormInitiallyOpen, setProjectFormInitiallyOpen] = useState(false);
   const [homeRefreshKey, setHomeRefreshKey] = useState(0);
@@ -137,11 +139,15 @@ const Index = () => {
 
   useEffect(() => {
     const isNative = (window as any).Capacitor?.isNative;
+    let listener: any;
     if (isNative) {
       App.addListener('appStateChange', ({ isActive }) => {
         isAppInBackgroundRef.current = !isActive;
-      });
+      }).then(l => listener = l);
     }
+    return () => {
+      if (listener) listener.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -154,26 +160,35 @@ const Index = () => {
           if (status.display !== 'granted') {
              await LocalNotifications.requestPermissions();
           }
-          
-          // Basic notification listener for clicks
-          LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
-            const senderId = notification.notification.extra?.sender_id;
-            if (senderId) {
-               setPage('messages');
-               setActiveMessagePartnerId(senderId);
-            }
-          });
         }
       } catch (err) {
         console.warn("Notification permission request failed:", err);
       }
     };
     requestPermissions();
+
+    let clickListener: any;
+    const isNative = (window as any).Capacitor?.isNative;
+    if (isNative) {
+      LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
+        const senderId = notification.notification.extra?.sender_id;
+        if (senderId) {
+           setPage('messages');
+           setActiveMessagePartnerId(senderId);
+        }
+      }).then(l => clickListener = l);
+    }
+
+    return () => {
+      if (clickListener) clickListener.remove();
+    };
   }, []);
 
   useEffect(() => {
     // Push Notifications Registration
     const isNative = (window as any).Capacitor?.isNative;
+    let regListener: any, errListener: any, receiveListener: any, actionListener: any;
+    
     if (isNative && user?.id) {
       PushNotifications.requestPermissions().then(result => {
         if (result.receive === 'granted') {
@@ -182,28 +197,33 @@ const Index = () => {
       });
 
       PushNotifications.addListener('registration', token => {
-        console.log('Push registration success, token: ' + token.value);
         profileService.updateFcmToken(user.id, token.value).catch(err => {
-          console.error("Failed to update FCM token in profile:", err);
+          console.error("Failed to update FCM token:", err);
         });
-      });
+      }).then(l => regListener = l);
 
       PushNotifications.addListener('registrationError', error => {
         console.error('Error on registration: ' + JSON.stringify(error));
-      });
+      }).then(l => errListener = l);
 
       PushNotifications.addListener('pushNotificationReceived', notification => {
         console.log('Push notification received: ' + JSON.stringify(notification));
-      });
+      }).then(l => receiveListener = l);
 
       PushNotifications.addListener('pushNotificationActionPerformed', notification => {
-        console.log('Push notification action performed: ' + JSON.stringify(notification));
         setPage('messages');
         if (notification.notification.data?.sender_id) {
           setActiveMessagePartnerId(notification.notification.data.sender_id);
         }
-      });
+      }).then(l => actionListener = l);
     }
+
+    return () => {
+      if (regListener) regListener.remove();
+      if (errListener) errListener.remove();
+      if (receiveListener) receiveListener.remove();
+      if (actionListener) actionListener.remove();
+    };
   }, [user?.id]);
 
   // Unlock Audio on first interaction
@@ -315,13 +335,13 @@ const Index = () => {
           
           // Trigger local notification if app is native and user is in background OR in a different chat
           const isNative = (window as any).Capacitor?.isNative;
-          if (isNative && (isAppInBackgroundRef.current || msg.sender_id !== activeMessagePartnerId)) {
+          if (isNative && (isAppInBackgroundRef.current || msg.sender_id !== activeMessagePartnerIdRef.current)) {
              LocalNotifications.schedule({
                notifications: [
                  {
                    title: "New Message",
                    body: content.startsWith('[') ? "Shared a file" : content,
-                   id: Math.floor(Math.random() * 10000),
+                   id: Math.floor(Date.now() % 1000000) + Math.floor(Math.random() * 1000),
                    schedule: { at: new Date(Date.now() + 100) },
                    sound: "message_sound.mp3",
                    attachments: [],
