@@ -1,4 +1,4 @@
-import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight, UserPlus, Sparkles, UserCheck, Layout } from "lucide-react";
+import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight, UserPlus, Sparkles, UserCheck, Layout, Smartphone } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { profileService, type Profile } from "@/services/profileService";
@@ -140,12 +140,20 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </button>
             <button
-              onClick={() => onCategoryClick("post")}
-              className="px-12 py-5 bg-foreground/10 hover:bg-foreground/20 text-foreground border border-foreground/10 glass rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase transition-all duration-500 hover:border-primary/40 shadow-2xl hover:scale-105"
-            >
-              Post a Casting Call
-            </button>
-          </motion.div>
+               onClick={() => onCategoryClick("post")}
+               className="px-12 py-5 bg-foreground/10 hover:bg-foreground/20 text-foreground border border-foreground/10 glass rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase transition-all duration-500 hover:border-primary/40 shadow-2xl hover:scale-105"
+             >
+               Post a Casting Call
+             </button>
+             <a
+               href="/CastingCall.apk"
+               download
+               className="px-12 py-5 bg-secondary hover:bg-secondary/80 text-foreground border border-border glass rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase transition-all duration-500 hover:border-primary/40 shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
+             >
+               <Smartphone size={18} />
+               <span>Get the App</span>
+             </a>
+           </motion.div>
 
           {/* Role shortcut chips */}
           <motion.div
@@ -504,6 +512,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               <button onClick={() => onNavigate("search", { searchType: "talents" })} className="hover:text-primary transition-all text-left">Find Talent</button>
               <button onClick={() => onNavigate("feed")} className="hover:text-primary transition-all text-left">Community Feed</button>
               <button onClick={() => onNavigate("premium")} className="hover:text-primary transition-all text-left">Upgrade to PRO</button>
+              <a href="/CastingCall.apk" download className="hover:text-primary transition-all text-left text-amber-500">Download Android App</a>
             </div>
           </div>
 

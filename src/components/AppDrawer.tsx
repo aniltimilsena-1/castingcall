@@ -118,6 +118,9 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           <Section label="Support">
             <Item onClick={() => go("help")}>Help & Support</Item>
             <Item onClick={() => go("terms")}>Terms & Privacy</Item>
+            <a href="/CastingCall.apk" download className="block w-full text-left text-primary font-accent text-[0.7rem] font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-primary/10 transition-all border border-transparent hover:border-primary/20 ghost-border mt-2">
+              Download App
+            </a>
           </Section>
         </div>
 
