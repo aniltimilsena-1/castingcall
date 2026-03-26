@@ -395,6 +395,9 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                     ) : (
                       (p.name || "U")[0].toUpperCase()
                     )}
+                    {onlineUsers?.has(p.user_id) && (
+                      <div className="absolute bottom-0 right-0 w-3 md:w-4 h-3 md:h-4 bg-green-500 rounded-full border-2 border-background shadow-lg shadow-green-500/30 z-20" />
+                    )}
                   </div>
                   {(p.plan === "pro" || p.role === "Admin") && (
                     <div className="absolute -top-1.5 -left-1 md:bottom-[-6px] md:top-auto md:left-auto bg-amber-500 text-black text-[0.4rem] md:text-[0.5rem] font-bold px-1.5 md:px-2.5 py-0.5 rounded shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>

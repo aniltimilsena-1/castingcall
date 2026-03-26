@@ -265,7 +265,6 @@ const Index = () => {
     });
 
     channel
-      /*
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
         const onlineIds = new Set<string>();
@@ -288,7 +287,6 @@ const Index = () => {
           return next;
         });
       })
-      */
       .on('broadcast', { event: 'call_signal' }, (payload) => {
         const data = payload.payload;
         console.log("Global received call_signal:", data.action, "from", data.callerName);
@@ -314,7 +312,7 @@ const Index = () => {
         console.log("Global signal sub status:", status);
         if (status === 'SUBSCRIBED') {
           globalPresenceChannelRef.current = channel;
-          // await channel.track({ online_at: new Date().toISOString(), name: currentUserNameRef.current });
+          channel.track({ online_at: new Date().toISOString() });
         }
       });
 

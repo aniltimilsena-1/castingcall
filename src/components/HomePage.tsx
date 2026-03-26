@@ -365,6 +365,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                         <div className="w-full h-full flex items-center justify-center font-display text-4xl text-primary/20">{p.name?.[0]}</div>
                       )}
 
+                      {onlineUsers?.has(p.user_id) && (
+                        <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-background shadow-lg shadow-green-500/30 z-20" />
+                      )}
+
                       {/* Elite Pulse for profile photo */}
                       {isElite && (
                         <div className="absolute inset-0 border-2 border-amber-500/20 rounded-full animate-pulse" />
