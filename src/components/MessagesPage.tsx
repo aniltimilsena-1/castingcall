@@ -340,6 +340,9 @@ export default function MessagesPage({
               if (msg.receiver_id === user.id && activePartner === msg.sender_id) {
                 void supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
               }
+              
+              // Always refresh conversation list to show latest preview/unread count instantly
+              void loadConversations(true);
             }
           } else if (eventType === 'UPDATE') {
             if (activePartner === msg.sender_id || activePartner === msg.receiver_id) {
