@@ -154,9 +154,8 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
         const loadFeed = async () => {
             setLoading(true);
             try {
-                const [profiles, videoMap, captionMap] = await Promise.all([
+                const [profiles, captionMap] = await Promise.all([
                     feedService.getFeedData(),
-                    feedService.getVideoMap(),
                     feedService.getCaptionMap()
                 ]);
 
@@ -174,7 +173,7 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                         const meta = captionMap[url] || { description: "", isPremium: false, price: 0 };
                         items.push({ id: `${p.user_id}-${url}`, type: "photo", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at || new Date().toISOString() });
                     });
-                    (videoMap[p.user_id] || []).forEach((url: string) => {
+                    (p.videos || []).forEach((url: string) => {
                         const meta = captionMap[url] || { description: "", isPremium: false, price: 0 };
                         items.push({ id: `${p.user_id}-${url}`, type: "video", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at || new Date().toISOString() });
                     });
