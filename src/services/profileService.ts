@@ -34,6 +34,15 @@ export const profileService = {
         return data;
     },
 
+    async updateFcmToken(userId: string, token: string) {
+        const { error } = await supabase
+            .from("profiles")
+            .update({ fcm_token: token } as any)
+            .eq("user_id", userId);
+
+        if (error) throw error;
+    },
+
     async getFeaturedProfiles() {
         const q = supabase.from("profiles")
             .select("*")
@@ -59,9 +68,7 @@ export const profileService = {
         // Optimize: Only fetch fields needed for the search list to reduce payload size
         let q = supabase.from("profiles").select("id, user_id, name, photo_url, role, plan, location, experience_years, trending_score, bio, mood_tags, style_tags, is_verified, created_at, personality_traits, looks_like, visual_search_keywords");
 
-        if (!params.isAdmin) {
-            q = q.neq("role", "Admin");
-        }
+        q = q.neq("role", "Admin");
 
         if (params.isTrending) {
             q = q.order('trending_score', { ascending: false });

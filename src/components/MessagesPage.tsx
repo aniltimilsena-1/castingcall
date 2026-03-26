@@ -615,9 +615,6 @@ export default function MessagesPage({
                 className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center relative hover:scale-105 active:scale-95 transition-transform cursor-pointer"
               >
                 {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
-                {onlineUsers.has(c.partnerId) && (
-                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full" />
-                )}
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <div className="text-[15px] text-foreground truncate">{c.partnerName}</div>
@@ -667,16 +664,10 @@ export default function MessagesPage({
                   className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border relative cursor-pointer hover:border-primary/50 transition-colors"
                 >
                   {partnerProfile?.photo_url ? <img src={partnerProfile.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{partnerProfile?.name?.[0]}</div>}
-                  {onlineUsers.has(selectedPartner) && (
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-background rounded-full" />
-                  )}
                 </div>
                 <div>
                   <div className="text-foreground font-medium flex items-center gap-2">
                     {partnerProfile?.name}
-                    {onlineUsers.has(selectedPartner) && (
-                      <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
-                    )}
                   </div>
                   <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">Global Talent</div>
                 </div>

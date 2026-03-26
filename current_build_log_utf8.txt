@@ -1,0 +1,71 @@
+﻿
+> caastingcall-app@0.0.0 build
+> vite build
+
+[36mvite v5.4.19 [32mbuilding for production...[36m[39m
+transforming...
+node.exe : Browserslist: browsers data 
+(caniuse-lite) is 9 months old. Please run:
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\iamdi\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( 
+   Browserslist: b...ld. Please run::String)  
+   [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandEr 
+   ror
+ 
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://gith
+ub.com/browserslist/update-db#readme
+
+[1m[33mwarn[39m[22m - The class 
+`duration-[1.5s]` is ambiguous and matches 
+multiple utilities.
+[1m[33mwarn[39m[22m - If this is content 
+and not a class, replace it with 
+`duration-&lsqb;1.5s&rsqb;` to silence this 
+warning.
+
+[1m[33mwarn[39m[22m - The class 
+`duration-[2s]` is ambiguous and matches 
+multiple utilities.
+[1m[33mwarn[39m[22m - If this is content 
+and not a class, replace it with 
+`duration-&lsqb;2s&rsqb;` to silence this 
+warning.
+
+[1m[33mwarn[39m[22m - The class 
+`ease-[cubic-bezier(.4,0,.2,1)]` is ambiguous 
+and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content 
+and not a class, replace it with 
+`ease-&lsqb;cubic-bezier(.4,0,.2,1)&rsqb;` to 
+silence this warning.
+
+A PostCSS plugin did not pass the `from` 
+option to `postcss.parse`. This may cause 
+imported assets to be incorrectly 
+transformed. If you've recently added a 
+PostCSS plugin that raised this warning, 
+please contact the package author to fix the 
+issue.
+[32mΓ£ô[39m 2995 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                 [39m[1m[2m    2.31 kB[22m[1m[22m[2m Γöé gzip:   0.94 kB[22m
+[2mdist/[22m[35massets/index-OlVJqoTb.css  [39m[1m[2m  126.31 kB[22m[1m[22m[2m Γöé gzip:  19.77 kB[22m
+[2mdist/[22m[36massets/index-3b8cxe__.js   [39m[1m[33m1,543.07 kB[39m[22m[2m Γöé gzip: 431.41 kB[22m
+[33m
+(!) Some chunks are larger than 500 kB after 
+minification. Consider:
+- Using dynamic import() to code-split the 
+application
+- Use build.rollupOptions.output.manualChunks 
+to improve chunking: https://rollupjs.org/conf
+iguration-options/#output-manualchunks
+- Adjust chunk size limit for this warning 
+via build.chunkSizeWarningLimit.[39m
+[32mΓ£ô built in 9.92s[39m

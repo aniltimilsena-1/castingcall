@@ -79,7 +79,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
               {loading ? t('settings.profile.processing') : (profile?.name || (user ? "Account" : "Guest"))}
             </div>
             <div className="text-[0.7rem] text-primary/80 dark:text-primary font-bold uppercase tracking-[0.12em] mt-1 truncate">
-              {loading ? "Please wait" : (profile?.role || (user ? "Member" : "Not signed in"))}
+              {loading ? "Please wait" : (profile?.role === 'Admin' ? 'Member' : (profile?.role || (user ? "Member" : "Not signed in")))}
             </div>
           </div>
         </div>

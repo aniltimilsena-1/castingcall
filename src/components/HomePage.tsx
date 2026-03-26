@@ -145,15 +145,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
              >
                Post a Casting Call
              </button>
-             <a
-               href="/CastingCall.apk"
-               download
-               className="px-12 py-5 bg-secondary hover:bg-secondary/80 text-foreground border border-border glass rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase transition-all duration-500 hover:border-primary/40 shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
-             >
-               <Smartphone size={18} />
-               <span>Get the App</span>
-             </a>
-           </motion.div>
+          </motion.div>
 
           {/* Role shortcut chips */}
           <motion.div
@@ -378,13 +370,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                         <div className="absolute inset-0 border-2 border-amber-500/20 rounded-full animate-pulse" />
                       )}
 
-                    {onlineUsers.has(p.user_id) && (
-                      <div className="absolute inset-0 border-2 border-primary/20 rounded-full shadow-[inset_0_0_10px_rgba(34,197,94,0.2)]" />
-                    )}
-                  </div>
-                  {onlineUsers.has(p.user_id) && (
-                    <div className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 bg-green-500 border-2 border-border rounded-full z-10 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                  )}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 mb-2">
@@ -392,7 +378,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                     {isElite && <Crown size={14} className="text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />}
                     {p.is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
                   </div>
-                  <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-amber-500/80" : "text-primary/60"}`}>{p.role}</p>
+                  <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-amber-500/80" : "text-primary/60"}`}>{p.role === 'Admin' ? 'Member' : p.role}</p>
                   <p className="text-[0.7rem] text-muted-foreground line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
 
                   <div className="w-full h-px bg-border mb-6" />

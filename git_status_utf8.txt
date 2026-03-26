@@ -1,0 +1,33 @@
+﻿On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   lint_output.txt
+	modified:   src/App.tsx
+	modified:   src/components/AdminPage.tsx
+	modified:   src/components/AppDrawer.tsx
+	modified:   src/components/ConfirmationDialog.tsx
+	modified:   src/components/FeedPage.tsx
+	modified:   src/components/Navbar.tsx
+	modified:   src/components/ProfileDetailDialog.tsx
+	modified:   src/components/ProfilePage.tsx
+	modified:   src/components/SearchPage.tsx
+	modified:   src/components/SettingsPage.tsx
+	modified:   src/contexts/ConfirmationContext.tsx
+	modified:   src/pages/Index.tsx
+	modified:   src/services/messageService.ts
+	modified:   src/services/profileService.ts
+	modified:   supabase/.temp/cli-latest
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status.txt
+	src/components/ui/ImageWithProtection.tsx
+	src/contexts/LanguageContext.tsx
+	src/services/settingsService.ts
+	src/translations/
+	supabase/migrations/20260324101000_fix_settings_rls.sql
+
+no changes added to commit (use "git add" and/or "git commit -a")

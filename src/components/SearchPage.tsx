@@ -343,9 +343,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                       {p.name?.[0]}
                     </div>
                   )}
-                  {onlineUsers.has(p.user_id) && (
-                    <div className="absolute top-4 left-4 w-3.5 h-3.5 bg-green-500 border-2 border-[#1c1c1c] rounded-full z-10 animate-pulse" title="Online" />
-                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                   <div className="absolute bottom-4 left-4 right-4">
                     <div className="text-white font-medium text-sm mb-1 drop-shadow-md">{p.name}</div>
@@ -398,9 +395,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                     ) : (
                       (p.name || "U")[0].toUpperCase()
                     )}
-                    {onlineUsers.has(p.user_id) && (
-                      <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-border rounded-full z-10 shadow-glow shadow-green-500/50" title="Online" />
-                    )}
                   </div>
                   {(p.plan === "pro" || p.role === "Admin") && (
                     <div className="absolute -top-1.5 -left-1 md:bottom-[-6px] md:top-auto md:left-auto bg-amber-500 text-black text-[0.4rem] md:text-[0.5rem] font-bold px-1.5 md:px-2.5 py-0.5 rounded shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>
@@ -412,10 +406,9 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                     <div className="text-sm md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
                       {p.name || "Unknown"}
                       {(p.plan === "pro" || p.role === "Admin") && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
-                      {p.is_verified && <CheckCircle2 size={14} className="text-blue-500 fill-blue-500/10" />}
                     </div>
                   </div>
-                  <div className="text-primary font-normal text-[0.6rem] md:text-xs mb-1 md:mb-3 tracking-wide uppercase opacity-80 text-left">{p.role || "Member"}</div>
+                  <div className="text-primary font-normal text-[0.6rem] md:text-xs mb-1 md:mb-3 tracking-wide uppercase opacity-80 text-left">{p.role === 'Admin' ? 'Member' : (p.role || "Member")}</div>
                   <div className="hidden md:flex flex-wrap gap-4 md:gap-8 mb-4">
                     {p.location && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}

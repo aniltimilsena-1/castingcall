@@ -433,7 +433,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <h1 className="font-body font-normal text-3xl md:text-4xl text-foreground tracking-normal">{profile?.name || "Your Name"}</h1>
               {isPremium && (
                 <span className="bg-amber-500/10 text-amber-500 border border-amber-500/30 px-3 py-1 rounded-full text-[0.6rem] font-normal tracking-widest uppercase flex items-center gap-1.5 mt-1">
-                  <Crown size={11} strokeWidth={3} /> {profile?.role === 'Admin' ? 'ADMIN PRO' : 'PRO Member'}
+                  <Crown size={11} strokeWidth={3} /> PRO Member
                 </span>
               )}
               {userSettings?.advanced.openToCollaboration && (
@@ -442,7 +442,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                 </span>
               )}
             </div>
-            <div className="text-primary font-normal text-sm uppercase tracking-[2px] mb-3">{profile?.role || "Role not set"}</div>
+            <div className="text-primary font-normal text-sm uppercase tracking-[2px] mb-3">{profile?.role === 'Admin' ? 'Member' : (profile?.role || "Role not set")}</div>
 
             {/* ── Followers / Following row ── */}
             <div className="flex items-center gap-5 mb-4">

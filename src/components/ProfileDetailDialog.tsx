@@ -407,9 +407,6 @@ export default function ProfileDetailDialog({
                                                 ) : (
                                                     (profile?.name || "U")[0].toUpperCase()
                                                 )}
-                                                {isOnline && userSettings?.visibility.onlineStatus !== false && (
-                                                    <div className="absolute bottom-2 right-2 w-4 h-4 bg-green-500 border-[3px] border-secondary rounded-full z-20 shadow-glow shadow-green-500/50" title="Online" />
-                                                )}
                                             </div>
 
                                         </div>
@@ -423,7 +420,7 @@ export default function ProfileDetailDialog({
 
                                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
                                                 <span className="text-xs font-normal px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-full">
-                                                    {(profile?.plan === "pro" || profile?.role === "Admin") ? (profile?.role === "Admin" ? "ADMIN PRO" : "PRO MEMBER") : "FREE MEMBER"}
+                                                    {(profile?.plan === "pro" || profile?.role === "Admin") ? "PRO MEMBER" : "FREE MEMBER"}
                                                 </span>
                                                 {profile?.experience_years !== null && (
                                                     <span className="text-xs font-medium px-3 py-1 bg-secondary border border-border rounded-full text-muted-foreground">

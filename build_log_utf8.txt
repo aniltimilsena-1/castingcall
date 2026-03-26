@@ -1,0 +1,111 @@
+﻿
+> caastingcall-app@0.0.0 build
+> vite build
+
+[36mvite v5.4.19 [32mbuilding for production...[36m[39m
+transforming...
+node.exe : Browserslist: browsers data 
+(caniuse-lite) is 9 months old. Please run:
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\iamdi\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( 
+   Browserslist: b...ld. Please run::String)  
+   [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandEr 
+   ror
+ 
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://gith
+ub.com/browserslist/update-db#readme
+
+[1m[33mwarn[39m[22m - The class 
+`duration-[1.5s]` is ambiguous and matches 
+multiple utilities.
+[1m[33mwarn[39m[22m - If this is content 
+and not a class, replace it with 
+`duration-&lsqb;1.5s&rsqb;` to silence this 
+warning.
+
+[1m[33mwarn[39m[22m - The class 
+`duration-[2s]` is ambiguous and matches 
+multiple utilities.
+[1m[33mwarn[39m[22m - If this is content 
+and not a class, replace it with 
+`duration-&lsqb;2s&rsqb;` to silence this 
+warning.
+
+[1m[33mwarn[39m[22m - The class 
+`ease-[cubic-bezier(.4,0,.2,1)]` is ambiguous 
+and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content 
+and not a class, replace it with 
+`ease-&lsqb;cubic-bezier(.4,0,.2,1)&rsqb;` to 
+silence this warning.
+
+A PostCSS plugin did not pass the `from` 
+option to `postcss.parse`. This may cause 
+imported assets to be incorrectly 
+transformed. If you've recently added a 
+PostCSS plugin that raised this warning, 
+please contact the package author to fix the 
+issue.
+[32mΓ£ô[39m 74 modules transformed.
+[31mx[39m Build failed in 1.84s
+[31merror during build:
+[31m[vite:esbuild] Transform failed with 1 
+error:
+C:/Users/iamdi/Downloads/user-hub-expansion-ma
+in/user-hub-expansion-main/src/components/Mess
+agesPage.tsx:285:30: ERROR: "await" can only 
+be used inside an "async" function[31m
+file: [36mC:/Users/iamdi/Downloads/user-hub-e
+xpansion-main/user-hub-expansion-main/src/comp
+onents/MessagesPage.tsx:285:30[31m
+[33m
+[33m"await" can only be used inside an 
+"async" function[33m
+283|            try {
+284|              // Mark read safely outside 
+the React state setter to maintain purity
+285|              const { error } = await 
+supabase.from("messages").update({ is_read: 
+true }).eq("sender_id", 
+selectedPartner).eq("receiver_id", 
+user.id).eq("is_read", false);
+   |                                ^
+286|              if (error) 
+console.error("Error marking messages as read 
+in polling:", error);
+287|            } catch (e) {
+[31m
+    at failureErrorWithLog (C:\Users\iamdi\Dow
+nloads\user-hub-expansion-main\user-hub-expans
+ion-main\node_modules\esbuild\lib\main.js:1472
+:15)
+    at C:\Users\iamdi\Downloads\user-hub-expan
+sion-main\user-hub-expansion-main\node_modules
+\esbuild\lib\main.js:755:50
+    at responseCallbacks.<computed> (C:\Users\
+iamdi\Downloads\user-hub-expansion-main\user-h
+ub-expansion-main\node_modules\esbuild\lib\mai
+n.js:622:9)
+    at handleIncomingPacket (C:\Users\iamdi\Do
+wnloads\user-hub-expansion-main\user-hub-expan
+sion-main\node_modules\esbuild\lib\main.js:677
+:12)
+    at Socket.readFromStdout (C:\Users\iamdi\D
+ownloads\user-hub-expansion-main\user-hub-expa
+nsion-main\node_modules\esbuild\lib\main.js:60
+0:7)
+    at Socket.emit (node:events:508:20)
+    at addChunk 
+(node:internal/streams/readable:564:12)
+    at readableAddChunkPushByteMode 
+(node:internal/streams/readable:515:3)
+    at Readable.push 
+(node:internal/streams/readable:395:5)
+    at Pipe.onStreamRead (node:internal/stream
+_base_commons:189:23)[39m

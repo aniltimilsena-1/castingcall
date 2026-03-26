@@ -13,11 +13,15 @@ import {
   Phone, 
   PhoneOff, 
   VideoOff, 
-  X 
+  X,
+  Smartphone
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import WebRTCCall from "@/components/WebRTCCall";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { LocalNotifications } from "@capacitor/local-notifications";
+import { PushNotifications } from "@capacitor/push-notifications";
+import { App } from "@capacitor/app";
 import Navbar from "@/components/Navbar";
 import AppDrawer, { PageName } from "@/components/AppDrawer";
 import HomePage from "@/components/HomePage";
@@ -60,6 +64,8 @@ const Index = () => {
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [projectFormInitiallyOpen, setProjectFormInitiallyOpen] = useState(false);
   const [homeRefreshKey, setHomeRefreshKey] = useState(0);
+  const [showDownloadPopup, setShowDownloadPopup] = useState(false);
+  const isAppInBackgroundRef = useRef(false);
   const lastHomeClickRef = useRef<number>(0);
   
   // Audio/Video Call Global State
@@ -115,6 +121,91 @@ const Index = () => {
     };
   }, [activeCall?.isAccepted, activeCall?.isCaller, incomingCall]);
 
+  useEffect(() => {
+    // Show download popup on web if not dismissed
+    const isNative = (window as any).Capacitor?.isNative;
+    const hasDismissed = localStorage.getItem('cc_dismissed_download');
+    
+    // Only show for mobile web users
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    if (!isNative && !hasDismissed && isMobile) {
+      const timer = setTimeout(() => setShowDownloadPopup(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    const isNative = (window as any).Capacitor?.isNative;
+    if (isNative) {
+      App.addListener('appStateChange', ({ isActive }) => {
+        isAppInBackgroundRef.current = !isActive;
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Request notification permissions on mount
+    const requestPermissions = async () => {
+      try {
+        const isNative = (window as any).Capacitor?.isNative;
+        if (isNative) {
+          const status = await LocalNotifications.checkPermissions();
+          if (status.display !== 'granted') {
+             await LocalNotifications.requestPermissions();
+          }
+          
+          // Basic notification listener for clicks
+          LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
+            const senderId = notification.notification.extra?.sender_id;
+            if (senderId) {
+               setPage('messages');
+               setActiveMessagePartnerId(senderId);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("Notification permission request failed:", err);
+      }
+    };
+    requestPermissions();
+  }, []);
+
+  useEffect(() => {
+    // Push Notifications Registration
+    const isNative = (window as any).Capacitor?.isNative;
+    if (isNative && user?.id) {
+      PushNotifications.requestPermissions().then(result => {
+        if (result.receive === 'granted') {
+          PushNotifications.register();
+        }
+      });
+
+      PushNotifications.addListener('registration', token => {
+        console.log('Push registration success, token: ' + token.value);
+        profileService.updateFcmToken(user.id, token.value).catch(err => {
+          console.error("Failed to update FCM token in profile:", err);
+        });
+      });
+
+      PushNotifications.addListener('registrationError', error => {
+        console.error('Error on registration: ' + JSON.stringify(error));
+      });
+
+      PushNotifications.addListener('pushNotificationReceived', notification => {
+        console.log('Push notification received: ' + JSON.stringify(notification));
+      });
+
+      PushNotifications.addListener('pushNotificationActionPerformed', notification => {
+        console.log('Push notification action performed: ' + JSON.stringify(notification));
+        setPage('messages');
+        if (notification.notification.data?.sender_id) {
+          setActiveMessagePartnerId(notification.notification.data.sender_id);
+        }
+      });
+    }
+  }, [user?.id]);
+
   // Unlock Audio on first interaction
   useEffect(() => {
     const unlock = () => {
@@ -154,6 +245,7 @@ const Index = () => {
     });
 
     channel
+      /*
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
         const onlineIds = new Set<string>();
@@ -176,6 +268,7 @@ const Index = () => {
           return next;
         });
       })
+      */
       .on('broadcast', { event: 'call_signal' }, (payload) => {
         const data = payload.payload;
         console.log("Global received call_signal:", data.action, "from", data.callerName);
@@ -201,7 +294,7 @@ const Index = () => {
         console.log("Global signal sub status:", status);
         if (status === 'SUBSCRIBED') {
           globalPresenceChannelRef.current = channel;
-          await channel.track({ online_at: new Date().toISOString(), name: currentUserNameRef.current });
+          // await channel.track({ online_at: new Date().toISOString(), name: currentUserNameRef.current });
         }
       });
 
@@ -220,13 +313,34 @@ const Index = () => {
           const msg = payload.new;
           const content = msg.content || "";
           
+          // Trigger local notification if app is native and user is in background OR in a different chat
+          const isNative = (window as any).Capacitor?.isNative;
+          if (isNative && (isAppInBackgroundRef.current || msg.sender_id !== activeMessagePartnerId)) {
+             LocalNotifications.schedule({
+               notifications: [
+                 {
+                   title: "New Message",
+                   body: content.startsWith('[') ? "Shared a file" : content,
+                   id: Math.floor(Math.random() * 10000),
+                   schedule: { at: new Date(Date.now() + 100) },
+                   sound: "message_sound.mp3",
+                   attachments: [],
+                   actionTypeId: "",
+                   extra: {
+                     sender_id: msg.sender_id
+                   }
+                 }
+               ]
+             }).catch(err => console.error("Failed to schedule local notification:", err));
+          }
+
           // We use a small delay to ensure toast doesn't conflict with active message page logic
           setTimeout(() => {
              toast("New Message", {
                description: content.startsWith('[') ? "File shared" : content,
                action: {
                  label: "View",
-                 onClick: () => navigate('messages')
+                 onClick: () => setPage('messages')
                },
              });
           }, 100);
@@ -250,7 +364,7 @@ const Index = () => {
              description: "Someone started following you!",
              action: {
                label: "View",
-               onClick: () => navigate('profile')
+               onClick: () => setPage('profile')
              },
            });
         }
@@ -757,6 +871,69 @@ const Index = () => {
                 <span className="text-[10px] text-white/80 font-black uppercase tracking-widest group-hover:text-green-500 transition-colors">Accept</span>
               </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showDownloadPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-card border border-border rounded-[2.5rem] p-8 max-w-sm w-full relative overflow-hidden shadow-2xl"
+            >
+              <div className="absolute top-0 right-0 p-4">
+                <button 
+                  onClick={() => {
+                    setShowDownloadPopup(false);
+                    localStorage.setItem('cc_dismissed_download', 'true');
+                  }}
+                  className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center text-primary border border-primary/20">
+                  <Smartphone size={40} />
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-display text-foreground uppercase tracking-wider font-black">Experience the Full App</h3>
+                  <p className="text-sm text-muted-foreground font-light leading-relaxed">Download our native Android app for a smoother experience, real-time notifications, and premium features.</p>
+                </div>
+
+                <div className="w-full space-y-3 pt-4">
+                  <a
+                    href="/CastingCall.apk"
+                    download
+                    onClick={() => {
+                      setShowDownloadPopup(false);
+                      localStorage.setItem('cc_dismissed_download', 'true');
+                    }}
+                    className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+                  >
+                    Download APK
+                  </a>
+                  <button
+                    onClick={() => {
+                      setShowDownloadPopup(false);
+                      localStorage.setItem('cc_dismissed_download', 'true');
+                    }}
+                    className="w-full text-[0.6rem] text-muted-foreground uppercase tracking-widest font-bold hover:text-foreground transition-colors"
+                  >
+                    Continue in Web App
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
