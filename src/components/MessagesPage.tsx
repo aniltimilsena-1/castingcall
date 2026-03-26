@@ -274,27 +274,6 @@ export default function MessagesPage({
     const interval = setInterval(() => {
       void loadConversations(true);
     }, 5000);
-    return () => clearInterval(interval);
-  }, [user, loadConversations]);
-
-  useEffect(() => {
-    if (!user || !selectedPartner) return;
-    const interval = setInterval(async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
-        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedPartner}),and(sender_id.eq.${selectedPartner},receiver_id.eq.${user.id})`)
-        .order("created_at", { ascending: true });
-        
-      if (data) {
-        const prev = threadRef.current;
-        // Skip if we are holding optimistic messages (prevent flash/tearing)
-        if (prev.some(m => m.id.toString().startsWith('optimistic-'))) return;
-        
-        const prevStr = prev.map(m => m.id).join(',');
-        const dataStr = data.map(m => m.id).join(',');
-        
-        let changed = false;
         if (prevStr !== dataStr || JSON.stringify(prev) !== JSON.stringify(data)) {
           setThread(data);
           changed = true;

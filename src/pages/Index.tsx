@@ -210,22 +210,26 @@ const Index = () => {
       .channel('global-message-notifications')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'messages',
+          filter: `receiver_id=eq.${user.id}`
+        },
         (payload: any) => {
           const msg = payload.new;
-          // Only notify if we are not already looking at the chat with this person
-          if (msg.receiver_id === user.id) {
-             // We use a small delay to ensure toast doesn't conflict with active message page logic
-             setTimeout(() => {
-                toast("New Message", {
-                  description: msg.content.startsWith('[') ? "Shared a file" : msg.content,
-                  action: {
-                    label: "View",
-                    onClick: () => navigate('messages')
-                  },
-                });
-             }, 100);
-          }
+          const content = msg.content || "";
+          
+          // We use a small delay to ensure toast doesn't conflict with active message page logic
+          setTimeout(() => {
+             toast("New Message", {
+               description: content.startsWith('[') ? "File shared" : content,
+               action: {
+                 label: "View",
+                 onClick: () => navigate('messages')
+               },
+             });
+          }, 100);
         }
       )
       .subscribe();
@@ -235,18 +239,20 @@ const Index = () => {
       .channel('global-follow-notifications')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'follows' },
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'follows',
+          filter: `following_id=eq.${user.id}`
+        },
         (payload: any) => {
-          const follow = payload.new;
-          if (follow.following_id === user.id) {
-             toast("New Follow", {
-               description: "Someone started following you!",
-               action: {
-                 label: "View",
-                 onClick: () => navigate('profile')
-               },
-             });
-          }
+           toast("New Follow", {
+             description: "Someone started following you!",
+             action: {
+               label: "View",
+               onClick: () => navigate('profile')
+             },
+           });
         }
       )
       .subscribe();

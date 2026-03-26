@@ -63,15 +63,28 @@ export const adminService = {
         if (pType === 'pro') {
             const { error: e1 } = await (supabase.from("profiles") as any).update({ plan: 'pro' }).eq("user_id", v.user_id);
             if (e1) throw e1;
-        } else if (pType === 'fan_pass') {
-            const { error: e2 } = await (supabase.from("fan_subscriptions" as any) as any).insert({
-                subscriber_id: v.user_id,
-                talent_id: meta.talent_id,
-                status: 'active',
-                expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-            });
+        }
+        // 1. Update Fan Pass if applicable
+        else if (pType === 'fan_pass') {
+            const talentId = meta.talent_id;
+            if (!talentId) {
+                console.error("Missing talent_id for fan_pass verification");
+                throw new Error("Cannot verify fan pass: Missing talent ID");
+            }
+
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + 30);
+
+            const { error: e2 } = await (supabase.from("fan_subscriptions" as any) as any)
+                .upsert({
+                    subscriber_id: v.user_id,
+                    talent_id: talentId,
+                    status: 'active',
+                    expires_at: expiresAt.toISOString()
+                });
             if (e2) throw e2;
-        } else if (pType === 'product') {
+        }
+        else if (pType === 'product') {
             const { error: e3 } = await (supabase.from("product_purchases" as any) as any).insert({
                 buyer_id: v.user_id,
                 product_id: meta.product_id,

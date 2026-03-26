@@ -2,24 +2,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { settingsService } from "./settingsService";
 
 export const messageService = {
-    async getMessages(userId: string) {
+    async getMessages(userId: string, limit = 50) {
         const { data, error } = await supabase
             .from("messages")
             .select("*")
             .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-            .order("created_at", { ascending: true });
+            .order("created_at", { ascending: true })
+            .limit(limit);
 
         if (error) throw error;
         return data || [];
     },
 
-    async getLatestMessages(userId: string) {
-        // This is more complex logic often used in messaging apps to get the latest message per conversation
+    async getLatestMessages(userId: string, limit = 100) {
+        // This logic gets the most recent messages to build the conversation list
         const { data, error } = await supabase
             .from("messages")
             .select("*")
             .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
-            .order("created_at", { ascending: false });
+            .order("created_at", { ascending: false })
+            .limit(limit);
 
         if (error) throw error;
         return data || [];
