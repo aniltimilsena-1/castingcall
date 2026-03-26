@@ -389,12 +389,14 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                 className="group relative flex flex-row items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-3 md:px-6 py-3 md:py-5 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5"
               >
                 <div className="flex flex-col items-center flex-shrink-0 relative">
-                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-base md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
-                    {p.photo_url ? (
-                      <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
-                    ) : (
-                      (p.name || "U")[0].toUpperCase()
-                    )}
+                  <div className="relative group/search-avatar">
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-base md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
+                      {p.photo_url ? (
+                        <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
+                      ) : (
+                        (p.name || "U")[0].toUpperCase()
+                      )}
+                    </div>
                     {onlineUsers?.has(p.user_id) && (
                       <div className="absolute bottom-0 right-0 w-3 md:w-4 h-3 md:h-4 bg-green-500 rounded-full border-2 border-background shadow-lg shadow-green-500/30 z-20" />
                     )}

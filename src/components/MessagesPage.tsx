@@ -615,11 +615,13 @@ export default function MessagesPage({
                   e.stopPropagation();
                   openProfile(c.partnerId);
                 }}
-                className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center relative hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+                className="relative cursor-pointer hover:scale-105 active:scale-95 transition-transform"
               >
-                {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
+                <div className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center">
+                  {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
+                </div>
                 {onlineUsers?.has(c.partnerId) && (
-                  <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-sidebar-background shadow-lg shadow-green-500/20 z-10" />
+                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-sidebar-background shadow-lg shadow-green-500/20 z-10" />
                 )}
               </div>
               <div className="flex-1 min-w-0 text-left">
@@ -667,9 +669,11 @@ export default function MessagesPage({
                 </button>
                 <div 
                   onClick={() => openProfile(selectedPartner!)}
-                  className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border relative cursor-pointer hover:border-primary/50 transition-colors"
+                  className="relative cursor-pointer group/header-avatar"
                 >
-                  {partnerProfile?.photo_url ? <img src={partnerProfile.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{partnerProfile?.name?.[0]}</div>}
+                  <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border group-hover/header-avatar:border-primary/50 transition-colors">
+                    {partnerProfile?.photo_url ? <img src={partnerProfile.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{partnerProfile?.name?.[0]}</div>}
+                  </div>
                   {onlineUsers?.has(selectedPartner!) && (
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background shadow-lg shadow-green-500/20 z-10" />
                   )}
