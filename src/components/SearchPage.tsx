@@ -159,7 +159,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         setSavedTalentIds(prev => prev.filter(id => id !== profileId));
         toast.info("Talent removed from saved list");
       } else {
-        await supabase.from("saved_talents").insert({ user_id: user.id, talent_profile_id: profileId });
+        await supabase.from("saved_talents").upsert({ user_id: user.id, talent_profile_id: profileId }, { onConflict: 'user_id,talent_profile_id', ignoreDuplicates: true });
         setSavedTalentIds(prev => [...prev, profileId]);
         toast.success("Talent saved successfully!");
       }
@@ -850,7 +850,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
       setUserLiked(false);
       setLikes(prev => prev - 1);
     } else {
-      await supabase.from('photo_likes').insert({ photo_url: url, user_id: user.id });
+      await supabase.from('photo_likes').upsert({ photo_url: url, user_id: user.id }, { onConflict: 'photo_url,user_id', ignoreDuplicates: true });
       setUserLiked(true);
       setLikes(prev => prev + 1);
     }
@@ -910,7 +910,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
       }
     }));
     if (isLiking) {
-      await supabase.from('photo_comment_likes' as any).insert({ comment_id: id, user_id: user.id });
+      await supabase.from('photo_comment_likes' as any).upsert({ comment_id: id, user_id: user.id }, { onConflict: 'comment_id,user_id', ignoreDuplicates: true });
     } else {
       await supabase.from('photo_comment_likes' as any).delete().eq('comment_id', id).eq('user_id', user.id);
     }

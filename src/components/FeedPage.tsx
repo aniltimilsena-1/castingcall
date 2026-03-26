@@ -43,7 +43,7 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     // likes: map of mediaUrl → count + isLiked
     const [likes, setLikes] = useState<Record<string, { count: number; liked: boolean }>>({});
     // comments: map of mediaUrl → comment[]
-    const [comments, setComments] = useState<Record<string, { id: string; content: string; user_id: string; commenter: string; commenter_photo: string | null; created_at: string; parent_id: string | null }[]>>({});
+    const [comments, setComments] = useState<Record<string, Comment[]>>({});
     const [openComments, setOpenComments] = useState<string | null>(null);
     const [commentText, setCommentText] = useState<Record<string, string>>({});
     const [postingComment, setPostingComment] = useState<string | null>(null);
@@ -171,11 +171,11 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
                     };
                     (p.photos || []).forEach((url: string) => {
                         const meta = captionMap[url] || { description: "", isPremium: false, price: 0 };
-                        items.push({ id: `${p.user_id}-${url}`, type: "photo", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at || new Date().toISOString() });
+                        items.push({ id: `${p.user_id}-${url}`, type: "photo", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, isUnlocked: false, owner, createdAt: p.created_at || new Date().toISOString() });
                     });
                     (p.videos || []).forEach((url: string) => {
                         const meta = captionMap[url] || { description: "", isPremium: false, price: 0 };
-                        items.push({ id: `${p.user_id}-${url}`, type: "video", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, owner, createdAt: p.created_at || new Date().toISOString() });
+                        items.push({ id: `${p.user_id}-${url}`, type: "video", url, caption: meta.description, isPremium: meta.isPremium, price: meta.price, isUnlocked: false, owner, createdAt: p.created_at || new Date().toISOString() });
                     });
                 });
 

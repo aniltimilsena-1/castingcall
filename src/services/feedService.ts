@@ -81,7 +81,7 @@ export const feedService = {
     async likePost(photoUrl: string, userId: string) {
         const { error } = await supabase
             .from("photo_likes")
-            .insert({ photo_url: photoUrl, user_id: userId });
+            .upsert({ photo_url: photoUrl, user_id: userId }, { onConflict: 'photo_url,user_id', ignoreDuplicates: true });
         if (error) throw error;
     },
 
@@ -117,7 +117,7 @@ export const feedService = {
     async likeComment(commentId: string, userId: string) {
         const { error } = await supabase
             .from("photo_comment_likes")
-            .insert({ comment_id: commentId, user_id: userId });
+            .upsert({ comment_id: commentId, user_id: userId }, { onConflict: 'comment_id,user_id', ignoreDuplicates: true });
         if (error) throw error;
     },
 
@@ -158,7 +158,7 @@ export const feedService = {
         try {
             const { error } = await supabase
                 .from("saved_posts")
-                .insert({ user_id: userId, post_url: postUrl });
+                .upsert({ user_id: userId, post_url: postUrl }, { onConflict: 'user_id,post_url', ignoreDuplicates: true });
             if (error) throw error;
         } catch (err: any) {
             console.error("Save post error:", err);

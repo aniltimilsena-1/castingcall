@@ -271,27 +271,25 @@ export default function MessagesPage({
   // Robust polling mechanism as a fallback for when Supabase Realtime is dropping events or not properly configured
   useEffect(() => {
     if (!user) return;
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       void loadConversations(true);
-    }, 5000);
-        if (prevStr !== dataStr || JSON.stringify(prev) !== JSON.stringify(data)) {
-          setThread(data);
-          changed = true;
-        }
-
-        if (changed) {
+      
+      // If we have an active conversation, mark incoming messages as read periodically
+      if (selectedPartner) {
           try {
-            // Mark read safely outside the React state setter to maintain purity
-            const { error } = await supabase.from("messages").update({ is_read: true }).eq("sender_id", selectedPartner).eq("receiver_id", user.id).eq("is_read", false);
-            if (error) console.error("Error marking messages as read in polling:", error);
+            await supabase
+              .from("messages")
+              .update({ is_read: true })
+              .eq("sender_id", selectedPartner)
+              .eq("receiver_id", user.id)
+              .eq("is_read", false);
           } catch (e) {
             console.error("Failed to execute background read update:", e);
           }
-        }
       }
-    }, 3000);
+    }, 5000);
     return () => clearInterval(interval);
-  }, [user, selectedPartner]);
+  }, [user, selectedPartner, loadConversations]);
 
   useEffect(() => {
     if (!user) return;

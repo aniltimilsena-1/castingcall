@@ -81,7 +81,7 @@ export const adminService = {
                     talent_id: talentId,
                     status: 'active',
                     expires_at: expiresAt.toISOString()
-                });
+                }, { onConflict: 'subscriber_id,talent_id' });
             if (e2) throw e2;
         }
         else if (pType === 'product') {
