@@ -938,7 +938,7 @@ export default function MessagesPage({
                   onChange={e => setNewMessage(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendMessage()}
                   placeholder={pendingFile ? "Add a caption..." : "Send global message..."}
-                  className="flex-1 bg-white/5 border-none rounded-full px-5 py-2.5 text-sm text-white focus:ring-1 focus:ring-primary/20 outline-none"
+                  className="flex-1 bg-black/5 dark:bg-white/5 border border-primary/20 rounded-full px-5 py-2.5 text-sm text-black dark:text-white focus:ring-1 focus:ring-primary/40 outline-none"
                 />
 
                 {(newMessage.trim() || pendingFile) && (
