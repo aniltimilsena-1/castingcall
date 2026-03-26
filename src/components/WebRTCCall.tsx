@@ -99,11 +99,15 @@ export default function WebRTCCall({
     }
 
     // Capture remote stream output
+    const remoteStreamInstance = new MediaStream();
+    setRemoteStream(remoteStreamInstance);
+
     pc.ontrack = (event) => {
       console.log("WebRTC: Remote track received:", event.track.kind);
-      // Ensure we have a stream object
-      const stream = event.streams && event.streams[0] ? event.streams[0] : new MediaStream([event.track]);
-      setRemoteStream(stream);
+      // Add each incoming track to our stable stream instance
+      if (event.track) {
+        remoteStreamInstance.addTrack(event.track);
+      }
     };
 
     pc.oniceconnectionstatechange = () => {
@@ -204,21 +208,30 @@ export default function WebRTCCall({
     };
   }, [streamReady, isAccepted, roomId, targetId, currentUserId, isCaller]);
 
-  // Separate effect to keep the remote video/audio element synchronized with the remoteStream state
-  // to avoid re-triggering the entire peer connection logic and causing resets.
+  // Synchronize remote stream with media element and force playback
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      console.log("WebRTC: Attaching remote stream to media element");
-      remoteVideoRef.current.srcObject = remoteStream;
+    const mediaEl = remoteVideoRef.current;
+    if (mediaEl && remoteStream && isAccepted) {
+      console.log("WebRTC: Binding remote stream to media element. Tracks:", remoteStream.getTracks().length);
       
-      // Attempt to force play if not playing automatically
-      if (remoteVideoRef.current instanceof HTMLVideoElement || remoteVideoRef.current instanceof HTMLAudioElement) {
-        remoteVideoRef.current.play().catch(e => {
-            console.warn("WebRTC: Remote stream playback blocked by browser:", e);
-        });
+      // Prevent screen flicker by only updating srcObject if it's different
+      if (mediaEl.srcObject !== remoteStream) {
+        mediaEl.srcObject = remoteStream;
       }
+      
+      // Some browsers (Safari/Chrome Mobile) require an explicit play() on user interaction
+      const playMedia = () => {
+        mediaEl.play().catch(e => {
+            console.warn("WebRTC: Playback deferred. Waiting for hardware context:", e.message);
+        });
+      };
+
+      playMedia();
+      
+      // Re-trigger play on any new track added
+      remoteStream.onaddtrack = () => playMedia();
     }
-  }, [remoteStream, isAccepted, callType]);
+  }, [remoteStream, isAccepted]);
 
   const toggleMute = () => {
     if (localStreamRef.current) {
