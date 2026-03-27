@@ -152,14 +152,14 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.85 }}
-            className="flex flex-wrap items-center justify-center gap-2 mt-8"
+            className="flex flex-wrap items-center justify-center gap-3 mt-12"
           >
-            <span className="text-[0.6rem] uppercase tracking-[0.25em] text-muted-foreground mr-1">Browse by role:</span>
+            <span className="text-[0.7rem] md:text-[0.75rem] uppercase tracking-[0.3em] text-white/50 mr-2 font-medium">Browse by role:</span>
             {["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"].map((role) => (
               <button
                 key={role}
                 onClick={() => onCategoryClick(role)}
-                className="px-5 py-2.5 rounded-full bg-foreground/5 border border-foreground/10 text-muted-foreground hover:bg-primary/15 hover:border-primary/40 hover:text-foreground text-[0.7rem] sm:text-[0.65rem] font-bold uppercase tracking-wider transition-all duration-200 backdrop-blur-sm shadow-xl"
+                className="px-7 py-3.5 rounded-full bg-white/5 border border-white/10 text-white/80 hover:bg-primary/20 hover:border-primary/50 hover:text-white text-[0.8rem] md:text-[0.75rem] font-black uppercase tracking-[0.15em] transition-all duration-300 backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95"
               >
                 {role}
               </button>
