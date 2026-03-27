@@ -99,7 +99,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 
           <Section label="Account">
             <Item onClick={() => go("profile")}>{t('nav.profile')}</Item>
-            {!isPremium && <Item onClick={() => go("premium")} highlight>Premium Upgrade</Item>}
+            {!isPremium && <Item onClick={() => go("premium")}>Premium Upgrade</Item>}
             <Item onClick={() => go("notifications")}>Notifications</Item>
             <Item onClick={() => go("messages")}>Messages</Item>
           </Section>
@@ -123,7 +123,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             <a 
               href="/CastingCall.apk" 
               download 
-              className="block w-full text-left text-primary font-accent text-[0.7rem] font-bold uppercase tracking-[0.2em] px-5 py-4.5 mt-4 rounded-2xl bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-all active:scale-98 shadow-lg shadow-primary/5"
+              className="block w-full text-left text-foreground/70 font-accent text-[0.7rem] font-bold uppercase tracking-[0.2em] px-5 py-4.5 mt-2 rounded-2xl hover:bg-foreground/5 hover:text-foreground hover:border-foreground/10 transition-all active:scale-98"
             >
               Download App
             </a>
