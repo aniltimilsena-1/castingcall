@@ -128,18 +128,33 @@ export default function MessagesPage({
     threadRef.current = thread;
   }, [thread]);
 
+  // 1. Core Scroll management - ensures we see the latest messages
   useEffect(() => {
     if (scrollRef.current && thread.length > 0) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 300;
+      const el = scrollRef.current;
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 600;
       const lastMessage = thread[thread.length - 1];
       const sentByMe = lastMessage?.sender_id === user?.id;
 
+      // Logic: Scroll if I just sent a message, or if I am already looking at the bottom.
+      // We use a small timeout to let the DOM paint fully (important for images/videos).
       if (isNearBottom || sentByMe) {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        setTimeout(() => {
+          el.scrollTop = el.scrollHeight;
+        }, 100);
       }
     }
   }, [thread, user?.id]);
+
+  // 2. Force scroll to bottom when switching conversations 
+  useEffect(() => {
+    if (selectedPartner && scrollRef.current) {
+        setTimeout(() => {
+            if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }, 500); // Higher delay for initial load to account for API results
+    }
+  }, [selectedPartner]);
 
   useEffect(() => {
     fetch("https://ipapi.co/json/").then(r => r.json()).then(d => setIsNepal(d.country_code === "NP")).catch(() => setIsNepal(false));
@@ -880,7 +895,17 @@ export default function MessagesPage({
                           </div>
                         )}
                       </div>
-                      <div className="text-[9px] text-white/20 uppercase tracking-[0.2em] px-1">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                      <div className={`flex items-center gap-1.5 px-1 ${isMine ? "justify-end" : "justify-start"}`}>
+                        <div className="text-[9px] text-white/20 uppercase tracking-[0.2em]">{new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        {isMine && (
+                          <div 
+                            className={`flex items-center transition-all ${m.is_read ? "text-primary scale-110" : "text-white/10"}`}
+                            title={m.is_read ? "Seen" : "Sent"}
+                          >
+                            <CheckCircle2 size={10} strokeWidth={3} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

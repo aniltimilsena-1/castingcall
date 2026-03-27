@@ -71,6 +71,10 @@ export default function WebRTCCall({
 
     const iceServers: RTCIceServer[] = [
       { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
       { urls: 'stun:global.stun.twilio.com:3478' },
     ];
 
@@ -89,7 +93,11 @@ export default function WebRTCCall({
       );
     }
 
-    const pc = new RTCPeerConnection({ iceServers });
+    const pc = new RTCPeerConnection({ 
+      iceServers,
+      iceCandidatePoolSize: 10,
+      bundlePolicy: 'max-compat'
+    });
     peerConnectionRef.current = pc;
 
     // Pipe in our local hardware stream
