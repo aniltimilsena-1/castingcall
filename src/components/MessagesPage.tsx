@@ -317,7 +317,16 @@ export default function MessagesPage({
           const activePartner = selectedPartnerRef.current; 
 
           if (eventType === 'INSERT') {
-            if (activePartner === msg.sender_id || activePartner === msg.receiver_id) {
+            console.log("New message caught:", msg.id, "Sender:", msg.sender_id, "Receiver:", msg.receiver_id, "ActivePartner:", activePartner);
+            
+            // Check if this message belongs to the current open conversation
+            // Use toString() just in case of ID type mismatch (though usually UUID strings)
+            const isRelevant = 
+              (activePartner?.toString() === msg.sender_id?.toString()) || 
+              (activePartner?.toString() === msg.receiver_id?.toString());
+
+            if (isRelevant) {
+              console.log("Message is relevant to current thread. Updating UI.");
               setThread(prev => {
                 // If it's already there (optimistic match), skip
                 if (prev.some(m => m.id === msg.id)) return prev;
@@ -340,19 +349,22 @@ export default function MessagesPage({
               if (msg.receiver_id === user.id && activePartner === msg.sender_id) {
                 void supabase.from("messages").update({ is_read: true }).eq("id", msg.id);
               }
-              
-              // Always refresh conversation list to show latest preview/unread count instantly
-              void loadConversations(true);
             }
           } else if (eventType === 'UPDATE') {
-            if (activePartner === msg.sender_id || activePartner === msg.receiver_id) {
+            const isRelevant = 
+              (activePartner?.toString() === msg.sender_id?.toString()) || 
+              (activePartner?.toString() === msg.receiver_id?.toString());
+              
+            if (isRelevant) {
               setThread(prev => prev.map(m => m.id === msg.id ? msg : m));
             }
           } else if (eventType === 'DELETE') {
             setThread(prev => prev.filter(m => m.id !== msg.id));
           }
 
-          void loadConversations(true); // silent refresh
+          // Always refresh conversation list for ANY message event involving the user
+          // to update previews and unread counts in the sidebar.
+          void loadConversations(true); 
         }
       )
       .subscribe((status) => {

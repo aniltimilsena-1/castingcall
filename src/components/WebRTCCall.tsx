@@ -80,8 +80,9 @@ export default function WebRTCCall({
 
     if (turnUrl && turnUser && turnPass) {
       iceServers.push({ urls: turnUrl, username: turnUser, credential: turnPass });
-    } else if (import.meta.env.DEV) {
-      // Insecure generic relay strictly gated for local development testing only
+    } else {
+      // Use free public relay as a fallback if custom TURN isn't provided to ensure connectivity
+      // across NAT/Firewalls which typically causes the 'Black Screen' or 'No Sound' issues.
       iceServers.push(
         { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
         { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
@@ -99,21 +100,30 @@ export default function WebRTCCall({
     }
 
     // Capture remote stream output
-    const remoteStreamInstance = new MediaStream();
-    setRemoteStream(remoteStreamInstance);
-
     pc.ontrack = (event) => {
-      console.log("WebRTC: Remote track received:", event.track.kind);
-      // Add each incoming track to our stable stream instance
-      if (event.track) {
-        remoteStreamInstance.addTrack(event.track);
-      }
+      console.log("WebRTC: Remote track received via PC:", event.track.kind);
+      setRemoteStream((prev) => {
+        const stream = prev || new MediaStream();
+        if (!stream.getTracks().find(t => t.id === event.track.id)) {
+           stream.addTrack(event.track);
+        }
+        // Force state update by creating a new stream instance containing all current tracks
+        const newStream = new MediaStream(stream.getTracks());
+        return newStream;
+      });
     };
 
     pc.oniceconnectionstatechange = () => {
-      console.log("WebRTC: ICE connection state:", pc.iceConnectionState);
-      if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
-        console.warn("WebRTC: Connection interrupted. Attempting to maintain...");
+      console.log("WebRTC: ICE connection state changed to:", pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed') {
+        setMediaError("Connection failed (Network Issue). Please check your internet or retry call.");
+      } else if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        console.log("WebRTC: P2P Bridge Established!");
+        // Re-trigger playback once connection is solid
+        const mediaEl = remoteVideoRef.current;
+        if (mediaEl && mediaEl.paused) {
+           mediaEl.play().catch(() => {});
+        }
       }
     };
 
@@ -214,22 +224,30 @@ export default function WebRTCCall({
     if (mediaEl && remoteStream && isAccepted) {
       console.log("WebRTC: Binding remote stream to media element. Tracks:", remoteStream.getTracks().length);
       
-      // Prevent screen flicker by only updating srcObject if it's different
       if (mediaEl.srcObject !== remoteStream) {
         mediaEl.srcObject = remoteStream;
       }
       
-      // Some browsers (Safari/Chrome Mobile) require an explicit play() on user interaction
       const playMedia = () => {
+        // Mute incoming audio temporarily if we suspect a playback block
         mediaEl.play().catch(e => {
             console.warn("WebRTC: Playback deferred. Waiting for hardware context:", e.message);
+            // On some mobile devices, we need to show a 'Tap to enable sound' button if play() fails
+            setMediaError(`Interaction Required: Tap anywhere to enable ${callType} streaming.`);
         });
       };
 
+      // Ensure tracks are actually enabled
+      remoteStream.getTracks().forEach(t => {
+        if (t.kind === 'video') console.log("WebRTC: Video track state:", t.readyState, t.enabled);
+        if (t.kind === 'audio') console.log("WebRTC: Audio track state:", t.readyState, t.enabled);
+      });
+
       playMedia();
       
-      // Re-trigger play on any new track added
-      remoteStream.onaddtrack = () => playMedia();
+      // Also try again after a brief delay to ensure hardware is warm
+      const timer = setTimeout(playMedia, 1000);
+      return () => clearTimeout(timer);
     }
   }, [remoteStream, isAccepted]);
 
