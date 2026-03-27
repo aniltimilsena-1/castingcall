@@ -89,11 +89,13 @@ const Index = () => {
   // Call Sound Effects Logic
   useEffect(() => {
     if (!dialToneRef.current) {
-      dialToneRef.current = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_7306236b2d.mp3?filename=phone-calling-101186.mp3");
+      // Modern digital dial tone/outgoing ring
+      dialToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/1350/1350-preview.mp3");
       dialToneRef.current.loop = true;
     }
     if (!ringToneRef.current) {
-      ringToneRef.current = new Audio("https://cdn.pixabay.com/download/audio/2022/10/30/audio_51f04dbd14.mp3?filename=mobile-phone-ring-tone-124021.mp3");
+      // Melodic modern ringtone for incoming calls
+      ringToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3");
       ringToneRef.current.loop = true;
     }
     
