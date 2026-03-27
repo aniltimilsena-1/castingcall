@@ -409,7 +409,7 @@ export default function WebRTCCall({
       <div className="fixed inset-0 z-[500] bg-black flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
         <div className="bg-red-500/10 text-red-500 p-8 rounded-3xl border border-red-500/20 max-w-sm shadow-2xl">
           <PhoneOff size={48} className="mx-auto mb-4 opacity-80" />
-          <h2 className="text-xl font-bold mb-3">Hardware Access Denied</h2>
+          <h2 className="text-xl font-bold mb-3 text-black">Hardware Access Denied</h2>
           <p className="text-sm opacity-80 mb-6 leading-relaxed">{mediaError}</p>
           <button onClick={onEndCall} className="bg-red-500 text-white px-8 py-3 rounded-full font-bold w-full hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 active:scale-95">
             Close Panel

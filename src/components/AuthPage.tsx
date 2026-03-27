@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Phone, Mail } from "lucide-react";
+import { loggingService } from "@/services/loggingService";
 
 interface AuthPageProps {
   onSuccess: () => void;
@@ -97,7 +98,8 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
           onSuccess();
         }
       }
-    } catch (err: unknown) {
+    } catch (err: any) {
+      await loggingService.logAuthFailure(tab, err);
       console.error("Auth Error details:", err);
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred during auth";
       
@@ -120,7 +122,6 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         transition={{ duration: 0.4 }}
       >
         <div className="flex flex-col items-center text-center mb-8">
-          <img src="/logo.png" alt="CaastingCall Logo" className="h-20 w-auto mb-4" />
           <h1 className="font-accent text-3xl text-foreground tracking-tight">CaastingCall</h1>
           <p className="text-muted-foreground text-sm mt-2 font-medium">
             {tab === "reset" ? "Recover your account password" : "Connect with top talent and industry professionals"}
@@ -164,13 +165,13 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
             <div className="flex bg-secondary/30 p-1 rounded-xl mb-6 border border-white/5">
               <button
                 onClick={() => { setAuthMethod("email"); setOtpSent(false); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-normal tracking-widest transition-all ${authMethod === "email" ? "bg-primary text-black" : "text-muted-foreground hover:text-white"}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-normal tracking-widest transition-all ${authMethod === "email" ? "bg-primary text-foreground" : "text-muted-foreground hover:text-white"}`}
               >
                 <Mail size={16} /> EMAIL
               </button>
               <button
                 onClick={() => { setAuthMethod("phone"); setOtpSent(false); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-normal tracking-widest transition-all ${authMethod === "phone" ? "bg-primary text-black" : "text-muted-foreground hover:text-white"}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-normal tracking-widest transition-all ${authMethod === "phone" ? "bg-primary text-foreground" : "text-muted-foreground hover:text-white"}`}
               >
                 <Phone size={16} /> PHONE
               </button>

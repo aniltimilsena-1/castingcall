@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 export default function TermsPrivacyPage() {
   return (
     <motion.div className="max-w-[700px] mx-auto px-4 py-12" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="font-display text-4xl text-primary mb-8">Terms & Privacy</h1>
+      <h1 className="font-display text-4xl text-foreground mb-8">Terms & Privacy</h1>
 
       <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 mb-6">
         <h2 className="font-display text-2xl text-foreground mb-4">Terms of Service</h2>

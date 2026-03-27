@@ -62,7 +62,7 @@ export default function PremiumPage() {
         return (
             <div className="max-w-[600px] mx-auto py-24 text-center">
                 <PartyPopper className="w-12 h-12 text-primary mx-auto mb-6" />
-                <h1 className="text-4xl text-foreground mb-4 font-display italic">Welcome to PRO!</h1>
+                <h1 className="text-4xl text-black mb-4 font-display italic">Welcome to PRO!</h1>
                 <p className="text-muted-foreground uppercase tracking-widest text-xs">Your career elevation starts now.</p>
                 <button onClick={() => window.location.href = "/"} className="bg-primary text-primary-foreground px-10 py-4 rounded-xl mt-10 font-bold tracking-widest text-[0.6rem] uppercase shadow-xl shadow-primary/20">Go to Dashboard</button>
             </div>
@@ -76,7 +76,7 @@ export default function PremiumPage() {
                     <Globe className="w-4 h-4" />
                     Casting Hub {isNepal ? "Nepal" : "Global"} Elite
                 </motion.div>
-                <h1 className="text-5xl md:text-8xl text-primary font-display italic mb-6 leading-[1.1]">Elevate Your <span className="text-foreground not-italic">Career</span></h1>
+                <h1 className="text-5xl md:text-8xl text-black font-display italic mb-6 leading-[1.1]">Elevate Your <span className="text-black not-italic">Career</span></h1>
                 <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto uppercase tracking-tighter">Get discovered by top casting directors {isNepal ? "in Nepal & Worldwide" : "Worldwide"}.</p>
             </div>
 
@@ -90,9 +90,9 @@ export default function PremiumPage() {
                         className={`bg-card/30 backdrop-blur-3xl border-2 rounded-3xl p-8 relative overflow-hidden flex flex-col ${plan.popular ? "border-primary" : "border-border"}`}
                     >
                         {plan.popular && (
-                            <div className="absolute top-10 right-10 bg-primary text-black px-4 py-1 rounded-full text-[0.5rem] font-bold tracking-widest uppercase">Popular Choice</div>
+                            <div className="absolute top-10 right-10 bg-primary text-foreground px-4 py-1 rounded-full text-[0.5rem] font-bold tracking-widest uppercase">Popular Choice</div>
                         )}
-                        <h3 className="text-[0.65rem] text-primary/60 mb-6 uppercase tracking-[4px]">{plan.name} PLAN</h3>
+                        <h3 className="text-[0.65rem] text-foreground/60 mb-6 uppercase tracking-[4px]">{plan.name} PLAN</h3>
                         <div className="flex items-baseline gap-2 mb-10">
                             <span className="text-6xl font-display text-foreground italic">{isNepal ? "NPR " : "$"}{plan.price}</span>
                             <span className="text-xs text-muted-foreground">/ PERMANENT ACCESS</span>
@@ -103,7 +103,7 @@ export default function PremiumPage() {
                         <button
                             disabled={plan.current}
                             onClick={() => plan.name === 'PRO' && setShowPayment(true)}
-                            className={`w-full py-5 rounded-2xl text-[0.6rem] font-bold uppercase tracking-[3px] transition-all ${plan.current ? "bg-muted text-muted-foreground cursor-default" : "bg-primary text-black hover:scale-[1.02] shadow-xl shadow-primary/20"}`}
+                            className={`w-full py-5 rounded-2xl text-[0.6rem] font-bold uppercase tracking-[3px] transition-all ${plan.current ? "bg-muted text-muted-foreground cursor-default" : "bg-primary text-foreground hover:scale-[1.02] shadow-xl shadow-primary/20"}`}
                         >
                             {plan.current ? "Current Plan" : "Upgrade to Pro"}
                         </button>
@@ -114,7 +114,7 @@ export default function PremiumPage() {
             <div className="bg-card/60 backdrop-blur-3xl border border-border rounded-3xl p-10 text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-10" />
                 <Wallet className="text-primary w-8 h-8 mx-auto mb-8" />
-                <h3 className="text-2xl text-foreground font-display italic mb-3">The Smart Move for Your Talent</h3>
+                <h3 className="text-2xl text-black font-display italic mb-3">The Smart Move for Your Talent</h3>
                 <p className="text-muted-foreground text-[0.65rem] uppercase tracking-[2px] mb-8">Trusted by over {talentsCount} talents globally across the network.</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     <Benefit icon={<Crown size={20} />} label="Premium Badge" />

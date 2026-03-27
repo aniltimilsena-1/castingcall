@@ -1122,9 +1122,9 @@ function FeedCard({
                         <div className="p-6 border-t border-white/5 flex-shrink-0 bg-background/50">
                             <div className="relative">
                                 {replyingTo?.photoUrl === item.url && (
-                                    <div className="absolute -top-10 left-3 flex items-center justify-between gap-4 bg-primary text-black px-4 py-1.5 rounded-full text-[0.65rem] uppercase tracking-widest font-bold shadow-lg shadow-primary/20">
+                                    <div className="absolute -top-10 left-3 flex items-center justify-between gap-4 bg-primary text-background px-4 py-1.5 rounded-full text-[0.65rem] uppercase tracking-widest font-bold shadow-lg shadow-primary/20">
                                         <span>Replying to {replyingTo.commenter}</span>
-                                        <button type="button" onClick={onCancelReply} className="hover:text-black/60 transition-colors bg-black/10 rounded-full p-0.5"><X size={12} /></button>
+                                        <button type="button" onClick={onCancelReply} className="hover:text-foreground/60 transition-colors bg-foreground/10 rounded-full p-0.5"><X size={12} /></button>
                                     </div>
                                 )}
                                 <input
@@ -1138,7 +1138,7 @@ function FeedCard({
                                 <button
                                     onClick={onCommentSubmit}
                                     disabled={!commentValue.trim() || !!isPostingComment}
-                                    className="absolute right-2 top-2 bottom-2 w-10 bg-primary rounded-xl flex items-center justify-center text-black disabled:opacity-30 transition-all hover:scale-105"
+                                    className="absolute right-2 top-2 bottom-2 w-10 bg-primary rounded-xl flex items-center justify-center text-background disabled:opacity-30 transition-all hover:scale-105"
                                 >
                                     <Send size={16} fill="currentColor" />
                                 </button>

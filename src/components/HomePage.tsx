@@ -74,7 +74,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
   }, [currentUserProfile?.role]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 overflow-x-hidden">
+    <div className="bg-transparent text-foreground selection:bg-primary/30 overflow-x-hidden">
       {/* ── HERO SECTION ── */}
       <section ref={heroRef} className="relative h-[92vh] flex items-center justify-center overflow-hidden">
         {/* Background Layer */}
@@ -94,34 +94,22 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
         {/* Content Layer */}
         <div className="relative z-20 text-center px-6 max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            className="mb-8 flex justify-center"
-          >
-            <div className="p-[1.5px] rounded-full bg-gradient-to-tr from-primary/50 via-amber-500/50 to-primary/50">
-              <div className="bg-black/40 rounded-full p-2 px-6 backdrop-blur-xl border border-white/10 shadow-2xl">
-                <span className="text-[0.65rem] font-medium uppercase tracking-[0.3em] text-amber-500">Premium Talent Network</span>
-              </div>
-            </div>
-          </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-accent text-[clamp(1.2rem,4.8vw,4rem)] leading-none tracking-[-0.04em] text-white mb-8 uppercase flex flex-nowrap justify-center items-center gap-x-3 md:gap-x-5"
+            className="font-accent text-[clamp(1.2rem,4.8vw,4rem)] leading-none tracking-[-0.04em] text-foreground mb-8 uppercase flex flex-nowrap justify-center items-center gap-x-3 md:gap-x-5"
           >
-            <span className="text-white font-black italic whitespace-nowrap">Casting</span> 
-            <span className="text-white font-light whitespace-nowrap">for Actors & Creators</span>
+            <span className="text-foreground font-black italic whitespace-nowrap">Casting</span> 
+            <span className="text-foreground font-light whitespace-nowrap">for Actors & Creators</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg md:text-xl text-white/70 font-body max-w-2xl mx-auto mb-10 leading-relaxed font-light"
+            className="text-lg md:text-xl text-foreground/70 font-body max-w-2xl mx-auto mb-10 leading-relaxed font-light text-center"
           >
             Where directors meet talent. Find your role or cast your vision.
           </motion.p>
@@ -130,20 +118,14 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-5"
+            className="flex items-center justify-center"
           >
             <button
-              onClick={() => onCategoryClick("all")}
-              className="group relative px-12 py-5 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95"
-            >
-              <span className="relative z-10 flex items-center gap-2">Browse Auditions <ChevronRight size={18} /></span>
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </button>
-            <button
                onClick={() => onCategoryClick("post")}
-               className="px-12 py-5 bg-foreground/10 hover:bg-foreground/20 text-foreground border border-foreground/10 glass rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase transition-all duration-500 hover:border-primary/40 shadow-2xl hover:scale-105"
+               className="group relative px-16 py-6 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.8rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95 shadow-[0_20px_50px_rgba(245,197,24,0.3)]"
              >
-               Post a Casting Call
+               <span className="relative z-10 flex items-center gap-2">Post a Casting Call <ChevronRight size={20} /></span>
+               <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
              </button>
           </motion.div>
 
@@ -152,14 +134,14 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.85 }}
-            className="flex flex-wrap items-center justify-center gap-3 mt-12"
+            className="flex flex-nowrap items-center lg:justify-center gap-3 mt-12 overflow-x-auto no-scrollbar pb-6 px-4 md:px-0 mask-fade-right lg:mask-none"
           >
-            <span className="text-[0.7rem] md:text-[0.75rem] uppercase tracking-[0.3em] text-white/50 mr-2 font-medium">Browse by role:</span>
+            <span className="text-[0.7rem] md:text-[0.75rem] uppercase tracking-[0.3em] text-foreground/50 mr-2 font-medium">Browse by role:</span>
             {["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"].map((role) => (
               <button
                 key={role}
                 onClick={() => onCategoryClick(role)}
-                className="px-7 py-3.5 rounded-full bg-white/5 border border-white/10 text-white/80 hover:bg-primary/20 hover:border-primary/50 hover:text-white text-[0.8rem] md:text-[0.75rem] font-black uppercase tracking-[0.15em] transition-all duration-300 backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95"
+                className="px-7 py-3.5 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/80 hover:bg-foreground/10 hover:border-foreground/50 hover:text-foreground text-[0.8rem] md:text-[0.75rem] font-black uppercase tracking-[0.15em] transition-all duration-300 backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95"
               >
                 {role}
               </button>
@@ -194,7 +176,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               transition={{ delay: i * 0.1 }}
               className="space-y-2"
             >
-              <div className="text-3xl md:text-5xl font-display text-amber-500 drop-shadow-sm">{stat.value}</div>
+              <div className="text-3xl md:text-5xl font-display text-foreground drop-shadow-sm">{stat.value}</div>
               <div className="text-[0.65rem] uppercase tracking-[0.25em] text-foreground/60 font-bold">{stat.label}</div>
             </motion.div>
           ))}
@@ -205,8 +187,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto relative z-30">
         <div className="text-center mb-10 md:mb-24 space-y-4 md:space-y-6">
           <h2 className="text-[0.65rem] md:text-[0.75rem] uppercase tracking-[0.5em] text-primary font-black">Select Your Discipline</h2>
-          <h3 className="text-4xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-primary font-medium">Elite</span></h3>
-          <div className="w-12 md:w-16 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto rounded-full" />
+          <h3 className="text-4xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-foreground font-medium">Elite</span></h3>
+          <div className="w-12 md:w-16 h-[2px] bg-gradient-to-r from-transparent via-foreground/20 to-transparent mx-auto rounded-full" />
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
@@ -221,8 +203,9 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             >
               <div
                 onClick={() => onCategoryClick(cat.role)}
-                className="relative z-10 h-48 md:h-64 bg-surface-low/60 border border-foreground/5 glass-card rounded-[2rem] md:rounded-[2.5rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer transition-all duration-700 hover:border-primary/30 hover:bg-primary/5 hover-cinematic"
+                className="stitched-card relative z-10 h-44 md:h-56 rounded-3xl md:rounded-[2rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer hover-cinematic"
               >
+                <div className="stitched-card-scanner" />
                 {/* Decorative background element */}
                 <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
 
@@ -232,7 +215,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
                 <div className="text-center space-y-1 md:space-y-2 w-full px-4">
                   <span className="block font-display text-[0.9rem] md:text-lg lg:text-xl text-foreground tracking-tight uppercase font-bold truncate w-full">{cat.role}</span>
-                  <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-muted-foreground group-hover:text-primary transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
+                  <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-foreground/60 group-hover:text-foreground transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
                 </div>
               </div>
             </motion.div>
@@ -251,9 +234,9 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             {/* For Talents Track */}
             <div className="space-y-12">
               <div className="space-y-4">
-                <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-amber-500/80">For Talent</span>
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-primary">For Talent</span>
                 <h3 className="text-4xl font-display text-foreground">Shine in the Spotlight</h3>
-                <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-md">Your gateway to the industry's most prestigious projects. Start your journey with three simple steps.</p>
+                <p className="text-sm text-foreground/70 font-light leading-relaxed max-w-md">Your gateway to the industry's most prestigious projects. Start your journey with three simple steps.</p>
               </div>
 
               <div className="space-y-10">
@@ -270,12 +253,12 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                     transition={{ delay: i * 0.15 }}
                     className="flex gap-6 group"
                   >
-                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-secondary border border-border flex items-center justify-center text-amber-500 group-hover:bg-amber-500 group-hover:text-black transition-all duration-500">
+                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-secondary border border-border flex items-center justify-center text-foreground group-hover:bg-foreground group-hover:text-background transition-all duration-500">
                       <step.icon size={24} strokeWidth={1.5} />
                     </div>
                     <div className="space-y-2 pt-2">
-                      <h4 className="text-lg font-display text-foreground group-hover:text-amber-500 transition-colors uppercase tracking-widest">{step.title}</h4>
-                      <p className="text-xs text-muted-foreground font-light leading-relaxed">{step.desc}</p>
+                      <h4 className="text-lg font-display text-foreground group-hover:text-foreground/80 transition-colors uppercase tracking-widest">{step.title}</h4>
+                      <p className="text-xs text-foreground/70 font-light leading-relaxed">{step.desc}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -285,9 +268,9 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             {/* For Creatives Track */}
             <div className="space-y-12">
               <div className="space-y-4">
-                <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-primary/80">For Directors</span>
+                <span className="text-[0.65rem] font-bold uppercase tracking-[0.3em] text-primary">For Directors</span>
                 <h3 className="text-4xl font-display text-foreground">Vision Meets Talent</h3>
-                <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-md">Cast the perfect ensemble for your next masterpiece. Our network brings the world's best to you.</p>
+                <p className="text-sm text-foreground/70 font-light leading-relaxed max-w-md">Cast the perfect ensemble for your next masterpiece. Our network brings the world's best to you.</p>
               </div>
 
               <div className="space-y-10">
@@ -304,12 +287,12 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                     transition={{ delay: i * 0.15 }}
                     className="flex gap-6 group text-right lg:flex-row-reverse"
                   >
-                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-secondary border border-border flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all duration-500">
+                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-secondary border border-border flex items-center justify-center text-foreground group-hover:bg-foreground group-hover:text-background transition-all duration-500">
                       <step.icon size={24} strokeWidth={1.5} />
                     </div>
                     <div className="space-y-2 pt-2">
-                      <h4 className="text-lg font-display text-foreground group-hover:text-primary transition-colors uppercase tracking-widest">{step.title}</h4>
-                      <p className="text-xs text-muted-foreground font-light leading-relaxed">{step.desc}</p>
+                      <h4 className="text-lg font-display text-foreground group-hover:text-foreground/80 transition-colors uppercase tracking-widest">{step.title}</h4>
+                      <p className="text-xs text-foreground/70 font-light leading-relaxed">{step.desc}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -324,10 +307,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         <section className="py-12 md:py-16 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[2.5rem] md:rounded-[4rem] border border-border relative z-30">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 mb-10 md:mb-20 px-2 md:px-4">
             <div className="space-y-3 md:space-y-4 text-center md:text-left">
-              <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-amber-500 font-bold">Wall of Excellence</h2>
-              <h3 className="text-3xl md:text-5xl font-display text-amber-600 dark:text-amber-500">Spotlight Performers</h3>
+              <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Wall of Excellence</h2>
+              <h3 className="text-3xl md:text-5xl font-display text-foreground">Spotlight Performers</h3>
             </div>
-            <button className="text-xs uppercase tracking-[0.2em] text-muted-foreground/40 hover:text-primary border-b border-border pb-2 transition-colors">View Directory</button>
+            <button className="text-xs uppercase tracking-[0.2em] text-foreground/40 hover:text-foreground border-b border-border pb-2 transition-colors">View Directory</button>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
@@ -377,15 +360,15 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   </div>
 
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className={`font-display text-lg group-hover:text-primary transition-colors ${isElite ? "text-amber-500" : "text-foreground"}`}>{p.name}</h4>
-                    {isElite && <Crown size={14} className="text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />}
+                    <h4 className={`font-display text-lg group-hover:text-foreground transition-colors ${isElite ? "text-foreground" : "text-foreground"}`}>{p.name}</h4>
+                    {isElite && <Crown size={14} className="text-foreground shadow-[0_0_10px_rgba(0,0,0,0.2)]" />}
                     {p.is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
                   </div>
-                  <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-amber-500/80" : "text-primary/60"}`}>{p.role === 'Admin' ? 'Member' : p.role}</p>
-                  <p className="text-[0.7rem] text-muted-foreground line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
+                  <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-foreground/80" : "text-foreground/60"}`}>{p.role === 'Admin' ? 'Member' : p.role}</p>
+                  <p className="text-[0.7rem] text-foreground/70 line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
 
                   <div className="w-full h-px bg-border mb-6" />
-                  <span className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] transition-colors ${isElite ? "text-amber-500/40 group-hover:text-amber-500" : "text-muted-foreground group-hover:text-foreground"}`}>Portfolio</span>
+                  <span className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] transition-colors ${isElite ? "text-foreground/40 group-hover:text-foreground" : "text-foreground/40 group-hover:text-foreground"}`}>Portfolio</span>
                 </motion.div>
               );
             })}
@@ -398,7 +381,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         <section className="py-12 md:py-16 px-6 max-w-7xl mx-auto relative z-30">
           <div className="text-center mb-10 md:mb-20 space-y-3 md:space-y-4">
             <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Open Opportunities</h2>
-            <h3 className="text-3xl md:text-5xl font-display text-primary">Live Casting Calls</h3>
+            <h3 className="text-3xl md:text-5xl font-display text-foreground">Live Casting Calls</h3>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
@@ -410,34 +393,41 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => onCategoryClick(proj.role_category || 'Actor')}
-                className="group relative h-full bg-card border border-border rounded-[1.2rem] p-4 md:p-7 hover:border-primary transition-all cursor-pointer flex flex-col justify-between"
+                className="stitched-card group relative h-full rounded-2xl md:rounded-[1.2rem] p-3 md:p-7 transition-all cursor-pointer flex flex-col justify-between"
               >
-                <div className="relative aspect-[4/3] md:aspect-video rounded-xl overflow-hidden bg-secondary/50 mb-4 md:mb-8">
+                <div className="stitched-card-scanner" />
+                <div className="relative aspect-[4/3] md:aspect-video rounded-xl overflow-hidden bg-secondary/50 mb-3 md:mb-8">
                   {proj.thumbnail_url ? (
-                    <img src={proj.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+                    <motion.img 
+                      whileHover={{ scale: 1.15, x: 5, y: 5 }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                      src={proj.thumbnail_url} 
+                      className="w-full h-full object-cover" 
+                      alt="" 
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-primary/10">
                       <Layout className="w-10 h-10" />
                     </div>
                   )}
                   <div className="absolute top-2 left-2 md:top-4 md:left-4">
-                    <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-full text-[0.45rem] md:text-[0.55rem] font-bold tracking-[0.15em] text-white/50 border border-white/5">
+                    <div className="bg-black/60 backdrop-blur-md px-2 py-1 rounded-full text-[0.45rem] md:text-[0.55rem] font-bold tracking-[0.15em] text-primary border border-primary/20">
                       {proj.location || 'Remote'}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-display text-sm md:text-2xl text-primary mb-2 md:mb-4 group-hover:text-primary transition-all duration-300 line-clamp-1">{proj.title}</h4>
-                  <p className="text-[0.6rem] md:text-xs text-muted-foreground mb-4 md:mb-10 font-light italic leading-relaxed">Looking for: {proj.role_category}</p>
+                  <h4 className="font-display text-sm md:text-2xl text-foreground mb-2 md:mb-4 group-hover:text-foreground transition-all duration-300 line-clamp-1">{proj.title}</h4>
+                  <p className="text-[0.6rem] md:text-xs text-foreground/70 mb-4 md:mb-10 font-light italic leading-relaxed">Looking for: <span className="text-primary font-medium">{proj.role_category}</span></p>
                 </div>
 
                 <div className="flex items-center justify-between mt-auto">
                   <div className="flex flex-col">
-                    <span className="text-[0.4rem] md:text-[0.5rem] uppercase tracking-widest text-muted-foreground/50">Comp.</span>
-                    <span className="text-[0.5rem] md:text-[0.7rem] text-amber-500 font-bold tracking-widest uppercase">Competitive</span>
+                    <span className="text-[0.4rem] md:text-[0.5rem] uppercase tracking-widest text-primary/70">Comp.</span>
+                    <span className="text-[0.5rem] md:text-[0.7rem] text-foreground font-bold tracking-widest uppercase">Competitive</span>
                   </div>
-                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-border flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
+                  <div className="w-8 h-8 md:w-12 md:h-12 rounded-full border border-border flex items-center justify-center group-hover:bg-foreground group-hover:text-background group-hover:border-foreground transition-all">
                     <ChevronRight size={14} className="md:w-[18px] md:h-[18px]" />
                   </div>
                 </div>
@@ -448,24 +438,24 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       )}
 
       {/* ── MISSION & VISION ── */}
-      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto relative z-30">
+      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto relative z-30 bg-card border border-border rounded-[3rem] my-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
           <div className="space-y-8">
             <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold italic">Our Soul</h2>
-            <h3 className="text-5xl font-display text-primary italic leading-tight">Empowering Every Story <br /> <span className="text-primary/40 font-normal not-italic">to be Told</span></h3>
-            <p className="text-sm text-muted-foreground leading-relaxed font-light font-body max-w-md">
+            <h3 className="text-5xl font-display text-foreground italic leading-tight">Empowering Every Story <br /> <span className="text-foreground/40 font-normal not-italic">to be Told</span></h3>
+            <p className="text-sm text-foreground leading-relaxed font-light font-body max-w-md">
               CaastingCall was built with a single vision: to democratize the entertainment industry.
               Whether you're a child star in the making or a veteran director looking for your next leading man,
               we provide the tools to connect, showcase, and succeed.
             </p>
             <div className="grid grid-cols-2 gap-6 pt-6">
               <div className="space-y-2">
-                <span className="block text-2xl font-display text-amber-500">Global Reach</span>
-                <span className="text-[0.6rem] text-muted-foreground/60 uppercase tracking-[0.2em]">Unlimited connections from any corner of the globe.</span>
+                <span className="block text-2xl font-display text-foreground">Global Reach</span>
+                <span className="text-[0.6rem] text-foreground/60 uppercase tracking-[0.2em]">Unlimited connections from any corner of the globe.</span>
               </div>
               <div className="space-y-2">
-                <span className="block text-2xl font-display text-primary">Trust First</span>
-                <span className="text-[0.6rem] text-muted-foreground/60 uppercase tracking-[0.2em]">Verified profiles and secure communications for peace of mind.</span>
+                <span className="block text-2xl font-display text-foreground">Trust First</span>
+                <span className="text-[0.6rem] text-foreground/60 uppercase tracking-[0.2em]">Verified profiles and secure communications for peace of mind.</span>
               </div>
             </div>
           </div>
@@ -482,36 +472,36 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="mt-12 border-t border-border py-16 relative z-30 bg-secondary/50">
+      <footer className="mt-12 border-t border-border py-16 relative z-30 bg-card/60 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 text-left">
           <div className="col-span-2 md:col-span-2 space-y-8 text-center md:text-left mb-8 md:mb-0">
             <div className="flex justify-center md:justify-start">
-              <h2 className="font-display text-3xl tracking-widest text-primary hover:text-primary/80 transition-all cursor-pointer uppercase italic">CaastingCall</h2>
+              <h2 className="font-display text-3xl tracking-widest text-foreground hover:text-foreground/80 transition-all cursor-pointer uppercase italic">CaastingCall</h2>
             </div>
-            <p className="text-[0.65rem] text-muted-foreground uppercase tracking-[0.3em] font-medium italic max-w-sm mx-auto md:mx-0">
+            <p className="text-[0.65rem] text-foreground uppercase tracking-[0.3em] font-medium italic max-w-sm mx-auto md:mx-0">
               The premium network for actors, creators, and visionary storytellers.
               Bridging the gap between raw talent and the global stage.
             </p>
           </div>
 
           <div className="space-y-6">
-            <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Platform</h4>
-            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-muted-foreground">
-              <button onClick={() => onNavigate("search", { searchType: "projects" })} className="hover:text-primary transition-all text-left">Casting Calls</button>
-              <button onClick={() => onNavigate("search", { searchType: "talents" })} className="hover:text-primary transition-all text-left">Find Talent</button>
-              <button onClick={() => onNavigate("feed")} className="hover:text-primary transition-all text-left">Community Feed</button>
-              <button onClick={() => onNavigate("premium")} className="hover:text-primary transition-all text-left">Upgrade to PRO</button>
-              <a href="/CastingCall.apk" download className="hover:text-primary transition-all text-left text-amber-500">Download Android App</a>
+            <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-foreground font-bold">Platform</h4>
+            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-foreground">
+              <button onClick={() => onNavigate("search", { searchType: "projects" })} className="hover:text-foreground/70 transition-all text-left">Casting Calls</button>
+              <button onClick={() => onNavigate("search", { searchType: "talents" })} className="hover:text-foreground/70 transition-all text-left">Find Talent</button>
+              <button onClick={() => onNavigate("feed")} className="hover:text-foreground/70 transition-all text-left">Community Feed</button>
+              <button onClick={() => onNavigate("premium")} className="hover:text-foreground/70 transition-all text-left">Upgrade to PRO</button>
+              <a href="/CastingCall.apk" download className="hover:text-foreground/70 transition-all text-left text-foreground">Download Android App</a>
             </div>
           </div>
 
           <div className="space-y-6">
-            <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-amber-500 font-bold">Company</h4>
-            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-muted-foreground">
-              <button onClick={() => onNavigate("help")} className="hover:text-amber-500 transition-all text-left">About Us</button>
-              <button onClick={() => onNavigate("help")} className="hover:text-amber-500 transition-all text-left">Contact Support</button>
-              <button onClick={() => onNavigate("terms")} className="hover:text-amber-500 transition-all text-left">Terms of Service</button>
-              <button onClick={() => onNavigate("terms")} className="hover:text-amber-500 transition-all text-left">Privacy Policy</button>
+            <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-foreground font-bold">Company</h4>
+            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-foreground">
+              <button onClick={() => onNavigate("help")} className="hover:text-foreground/70 transition-all text-left">About Us</button>
+              <button onClick={() => onNavigate("help")} className="hover:text-foreground/70 transition-all text-left">Contact Support</button>
+              <button onClick={() => onNavigate("terms")} className="hover:text-foreground/70 transition-all text-left">Terms of Service</button>
+              <button onClick={() => onNavigate("terms")} className="hover:text-foreground/70 transition-all text-left">Privacy Policy</button>
             </div>
           </div>
         </div>

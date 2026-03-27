@@ -366,7 +366,7 @@ export default function ProfileDetailDialog({
     return (
         <>
             <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setShowFullProfile(false); }}>
-                <DialogContent className="max-w-4xl w-full bg-background p-0 border-none shadow-2xl rounded-3xl flex flex-col overflow-hidden h-[95vh] md:h-auto md:max-h-[92svh]">
+                <DialogContent className="max-w-4xl w-[92vw] md:w-full bg-background p-0 border-none shadow-2xl rounded-[2rem] md:rounded-3xl flex flex-col overflow-hidden h-auto max-h-[92vh] md:max-h-[92svh]">
                     <div
                         className="flex-1 overflow-y-auto overscroll-contain no-scrollbar min-h-0"
                         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
@@ -395,7 +395,7 @@ export default function ProfileDetailDialog({
                                 <div className="space-y-8">
                                     <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
                                         <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                                            <div className="w-28 h-28 md:w-40 md:h-40 rounded-full bg-secondary border-[3px] border-primary flex items-center justify-center font-display text-4xl md:text-5xl text-primary shadow-xl shadow-primary/10 overflow-hidden relative">
+                                            <div className="w-20 h-20 md:w-40 md:h-40 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-2xl md:text-5xl text-primary shadow-xl shadow-primary/10 overflow-hidden relative">
                                                 {profile?.photo_url ? (
                                                     <ImageWithProtection 
                                                         src={profile.photo_url} 
@@ -411,12 +411,12 @@ export default function ProfileDetailDialog({
 
                                         </div>
                                         <div className="flex-1 text-center md:text-left pt-4">
-                                            <h2 className="font-display text-4xl text-foreground mb-2 flex items-center gap-3">
+                                            <h2 className="font-display text-2xl md:text-4xl text-foreground mb-1 md:mb-2 flex items-center gap-2 md:gap-3">
                                                 {profile?.name || "Unknown"}
                                                 {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={24} className="text-amber-500 fill-amber-500/10" />}
                                                 {(profile as any).is_verified && <CheckCircle2 size={20} className="text-blue-500 fill-blue-500/10" />}
                                             </h2>
-                                            <div className="text-xl text-primary font-medium mb-4">{profile?.role || "Member"}</div>
+                                            <div className="text-sm md:text-xl text-primary font-medium mb-3 md:mb-4">{profile?.role || "Member"}</div>
 
                                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-6">
                                                 <span className="text-xs font-normal px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-full">
@@ -428,13 +428,13 @@ export default function ProfileDetailDialog({
                                                     </span>
                                                 )}
                                                 {userSettings?.advanced.openToCollaboration && (
-                                                    <span className="text-xs font-bold px-3 py-1 bg-primary text-black rounded-full flex items-center gap-1.5 shadow-lg shadow-primary/20">
+                                                    <span className="text-xs font-bold px-3 py-1 bg-primary text-foreground rounded-full flex items-center gap-1.5 shadow-lg shadow-primary/20">
                                                         <Sparkles size={11} fill="currentColor" /> Open to Collaboration
                                                     </span>
                                                 )}
                                             </div>
 
-                                            <p className="text-lg text-foreground/70 leading-relaxed mb-6 max-w-lg">
+                                            <p className="text-sm md:text-lg text-foreground/70 leading-relaxed mb-4 md:mb-6 max-w-lg">
                                                 {profile?.bio || "This user hasn't added a bio yet."}
                                             </p>
 
@@ -469,7 +469,7 @@ export default function ProfileDetailDialog({
                                                         className="flex flex-col items-center md:items-start hover:opacity-70 transition-opacity"
                                                     >
                                                         <span className="text-xl font-display text-foreground">{followCounts.followers.toLocaleString()}</span>
-                                                        <span className="text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
+                                                        <span className="text-[0.55rem] uppercase tracking-[0.2em] text-muted-foreground">Followers</span>
                                                     </button>
                                                     <div className="w-px h-8 bg-border" />
                                                     <button 
@@ -491,7 +491,7 @@ export default function ProfileDetailDialog({
                                             <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                                                 <button
                                                     onClick={() => setShowFullProfile(true)}
-                                                    className="bg-primary text-primary-foreground px-10 py-3.5 rounded-xl font-normal text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                                                    className="bg-primary text-primary-foreground px-6 md:px-10 py-2.5 md:py-3.5 rounded-xl font-normal text-[0.7rem] md:text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
                                                 >
                                                     View All Profile Details
                                                 </button>
@@ -500,7 +500,7 @@ export default function ProfileDetailDialog({
                                                     <button
                                                         onClick={handleToggleFollow}
                                                         disabled={followLoading}
-                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border shadow-lg ${
+                                                        className={`flex items-center justify-center gap-2 px-6 py-3 md:py-3.5 rounded-xl font-normal text-[0.7rem] md:text-sm transition-all border shadow-lg ${
                                                             isFollowingProfile
                                                                 ? 'bg-primary/10 border-primary text-primary hover:bg-red-500/10 hover:border-red-500 hover:text-red-400'
                                                                 : 'bg-primary border-primary text-primary-foreground hover:opacity-90 shadow-primary/20'
@@ -516,7 +516,7 @@ export default function ProfileDetailDialog({
                                                             if (onDirectMessage) onDirectMessage();
                                                             else setIsMessaging(!isMessaging);
                                                         }}
-                                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-foreground hover:border-primary shadow-lg shadow-black/20'}`}
+                                                        className={`flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3.5 rounded-xl font-normal text-[0.7rem] md:text-sm transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-foreground hover:border-primary shadow-lg shadow-black/20'}`}
                                                     >
                                                         <MessageCircle size={18} />
                                                         {onDirectMessage ? "Message Hub" : (isMessaging ? "Cancel Message" : "Send Quick Message")}
@@ -526,17 +526,17 @@ export default function ProfileDetailDialog({
                                                     {user?.id !== profile.user_id && (
                                                         <button
                                                             onClick={handleSubscribe}
-                                                            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-normal text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-amber-950 hover:bg-amber-400 font-bold shadow-lg shadow-amber-500/20'}`}
+                                                            className={`flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3.5 rounded-xl font-normal text-[0.7rem] md:text-sm transition-all border ${isSubscribed ? 'bg-green-500/20 border-green-500 text-green-500' : 'bg-amber-500 border-amber-500 text-amber-950 hover:bg-amber-400 font-bold shadow-lg shadow-amber-500/20'}`}
                                                         >
-                                                            {isSubscribed ? <Check size={18} /> : <Crown size={18} />}
-                                                            {isSubscribed ? "Active Fan Pass" : "Get Fan Pass"}
+                                                            {isSubscribed ? <Check size={14} /> : <Crown size={14} />}
+                                                            {isSubscribed ? "Fan Pass" : "Get Fan Pass"}
                                                         </button>
                                                     )}
 
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <button className="flex items-center justify-center w-12 h-12 rounded-xl bg-secondary border border-border text-foreground hover:border-primary transition-all outline-none">
-                                                                <MoreVertical size={20} />
+                                                            <button className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-xl bg-secondary border border-border text-foreground hover:border-primary transition-all outline-none">
+                                                                <MoreVertical size={16} />
                                                             </button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end" className="w-56 bg-card border-border p-1.5 shadow-2xl z-[501]">
@@ -769,7 +769,7 @@ export default function ProfileDetailDialog({
 
                                         <div className="lg:col-span-8 space-y-10">
                                             <div>
-                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4 flex items-center gap-2">
+                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-foreground/50 mb-4 flex items-center gap-2">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Photos
                                                 </h3>
                                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -792,7 +792,7 @@ export default function ProfileDetailDialog({
                                             </div>
 
                                             <div>
-                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-4 flex items-center gap-2">
+                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-foreground/50 mb-4 flex items-center gap-2">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Video Reel
                                                 </h3>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -816,7 +816,7 @@ export default function ProfileDetailDialog({
                                             {/* Digital Store Section */}
                                             {digitalProducts.length > 0 && (
                                                 <div className="pt-6 border-t border-border/20">
-                                                    <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-6 flex items-center gap-2">
+                                                    <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-foreground/50 mb-6 flex items-center gap-2">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Digital Hub Store
                                                     </h3>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -835,7 +835,7 @@ export default function ProfileDetailDialog({
                                                                     </div>
                                                                 </div>
                                                                 <div className="p-5">
-                                                                    <h4 className="text-white text-sm font-normal mb-1">{p.title}</h4>
+                                                                    <h4 className="text-foreground text-sm font-normal mb-1">{p.title}</h4>
                                                                     <p className="text-muted-foreground text-xs line-clamp-2 mb-4 leading-relaxed">{p.description}</p>
                                                                     <button
                                                                         onClick={() => handleBuyProduct(p)}
@@ -852,7 +852,7 @@ export default function ProfileDetailDialog({
                                             )}
 
                                             <div className="space-y-6 bg-secondary/10 p-8 rounded-3xl border border-border/50">
-                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-muted-foreground/50 mb-2">Basic Information</h3>
+                                                <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-foreground/50 mb-2">Basic Information</h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                     <Detail label="FULL NAME" value={profile?.name} />
                                                     <Detail label="PRIMARY ROLE" value={profile?.role} />
@@ -873,7 +873,7 @@ export default function ProfileDetailDialog({
                                                     <Detail label="BIO" value={profile?.bio || "No professional summary provided."} fullWidth />
                                                 </div>
                                                 <div className="pt-6 border-t border-border/20">
-                                                    <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-primary mb-4 flex items-center gap-2">
+                                                    <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground mb-4 flex items-center gap-2">
                                                         <Sparkles size={14} /> Smart Search Tags
                                                     </h4>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

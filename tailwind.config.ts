@@ -18,10 +18,10 @@ export default {
         // Primary UI font — readability, forms, navigation, body copy
         body: ['"Inter"', 'sans-serif'],
         sans: ['"Inter"', 'sans-serif'],
-        // Premium Display font — high-impact headlines
-        display: ['"Epilogue"', 'sans-serif'],
+        // Cinematic Display font — high-impact headlines
+        display: ['"Roboto"', 'sans-serif'],
         // Cinematic Accent font — labels, badges, and smaller headers
-        accent: ['"Outfit"', 'sans-serif'],
+        accent: ['"Inter"', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

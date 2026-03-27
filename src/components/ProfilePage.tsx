@@ -489,7 +489,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Smart Tags Section (View Mode) */}
         <div className="bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 rounded-2xl p-6 mb-6">
-          <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-primary/60 mb-4 flex items-center gap-2">
+          <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4 flex items-center gap-2">
             <Sparkles size={14} /> Smart Search Tags
           </h3>
           <div className="space-y-4">
@@ -523,7 +523,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Stats row */}
         {(profile?.height || profile?.age || profile?.gender || profile?.hair_color || profile?.eye_color) && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Physical Attributes</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Physical Attributes</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {profile?.height && <Stat label="Height" value={profile.height} />}
               {profile?.age != null && <Stat label="Age" value={`${profile.age} yrs`} />}
@@ -537,7 +537,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Skills */}
         {profile?.skills && profile.skills.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Skills & Specialties</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Skills & Specialties</h3>
             <div className="flex flex-wrap gap-2">
               {(profile.skills || []).map((skill) => (
                 <span key={skill} className="bg-primary/5 text-primary text-xs font-medium px-3 py-1.5 rounded-xl border border-primary/20">
@@ -551,7 +551,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Photos */}
         {(profile as any)?.photos?.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Portfolio Photos</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Portfolio Photos</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {((profile as any)?.photos || []).map((url: string, i: number) => (
                 <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border">
@@ -571,7 +571,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* Videos */}
         {(profile as any)?.videos?.length > 0 && (
           <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-4">Video Reel</h3>
+            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Video Reel</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {((profile as any)?.videos || []).map((url: string, i: number) => (
                 <div key={i} className="relative group rounded-xl overflow-hidden border border-border bg-black">
@@ -629,7 +629,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
                     <div className="flex items-center gap-2">
                       <Users size={18} className="text-primary" />
-                      <h3 className="font-display text-lg text-primary capitalize">{followModal}</h3>
+                      <h3 className="font-display text-lg text-foreground capitalize">{followModal}</h3>
                       <span className="text-sm text-foreground/60">
                         ({followModal === "followers" ? followCounts.followers : followCounts.following})
                       </span>
@@ -704,7 +704,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       {/* Edit Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-4xl text-primary">Edit Profile</h1>
+          <h1 className="font-display text-4xl text-foreground">Edit Profile</h1>
           <p className="text-foreground/60 text-sm mt-1">Update your professional casting profile</p>
         </div>
         <button
@@ -719,7 +719,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       <div className="space-y-6">
         {/* Profile Photo Section */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Profile Photo</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60 mb-5">Profile Photo</h3>
           <div className="flex items-center gap-6">
             <div className="flex flex-col items-center gap-3">
               <div className="w-32 h-32 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0 flex items-center justify-center font-display text-4xl text-primary shadow-lg shadow-primary/10">
@@ -803,7 +803,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* ── Photos Section ── */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40">Portfolio Photos</h3>
+            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60">Portfolio Photos</h3>
             <span className="text-[0.65rem] font-normal text-foreground/60/50">
               {(profile as any)?.photos?.length || 0} / {profile?.plan === 'pro' ? '∞' : '3'}
             </span>
@@ -940,7 +940,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* ── Video Reel Section ── */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40">Video Reel</h3>
+            <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60">Video Reel</h3>
             <span className="text-[0.65rem] font-normal text-foreground/60/50">
               {(profile as any)?.videos?.length || 0} / {profile?.plan === 'pro' ? '∞' : '1'}
             </span>
@@ -1029,7 +1029,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Basic Info */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Basic Information</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60 mb-5">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="FULL NAME" value={name} onChange={setName} />
             <Field label="PHONE (FOR SMS ALERTS)" value={phone} onChange={setPhone} placeholder="+977..." />
@@ -1051,7 +1051,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Smart Tags Section (Edit Mode) */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5 flex items-center justify-between">
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60 mb-5 flex items-center justify-between">
             Smart Search Tags
             <Sparkles size={14} className="text-primary/40" />
           </h3>
@@ -1208,7 +1208,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Physical Attributes */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Physical Attributes</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60 mb-5">Physical Attributes</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field label="HEIGHT" value={height} onChange={setHeight} placeholder="e.g. 5'10" />
             <Field label="AGE" value={age} onChange={setAge} type="number" placeholder="Years" />
@@ -1220,7 +1220,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Professional */}
         <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60/40 mb-5">Professional Experience</h3>
+          <h3 className="text-[0.7rem] font-normal tracking-[1.5px] uppercase text-foreground/60 mb-5">Professional Experience</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Field label="YEARS OF EXPERIENCE" value={experienceYears} onChange={setExperienceYears} type="number" />
             <Field label="PORTFOLIO / IMDB URL" value={portfolioUrl} onChange={setPortfolioUrl} placeholder="https://..." />
@@ -1254,7 +1254,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
             </div>
 
             <div className="space-y-5 bg-secondary/20 p-5 rounded-2xl border border-border/50">
-              <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60/60">Quick Add Skills</h4>
+              <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60">Quick Add Skills</h4>
               {Object.entries(RECOMMENDED_SKILLS).map(([category, categorySkills]) => {
                 const catKey = category.toLowerCase();
                 const isExpanded = expandedSkillCategories.includes(catKey);

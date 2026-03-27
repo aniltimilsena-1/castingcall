@@ -78,7 +78,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             <div className="font-display text-lg text-foreground font-bold leading-tight truncate">
               {loading ? t('settings.profile.processing') : (profile?.name || (user ? "Account" : "Guest"))}
             </div>
-            <div className="text-[0.7rem] text-primary/80 dark:text-primary font-bold uppercase tracking-[0.12em] mt-1 truncate">
+            <div className="text-[0.7rem] text-foreground/80 font-bold uppercase tracking-[0.12em] mt-1 truncate">
               {loading ? "Please wait" : (profile?.role === 'Admin' ? 'Member' : (profile?.role || (user ? "Member" : "Not signed in")))}
             </div>
           </div>
@@ -118,7 +118,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
           <Section label="Support">
             <Item onClick={() => go("help")}>Help & Support</Item>
             <Item onClick={() => go("terms")}>Terms & Privacy</Item>
-            <a href="/CastingCall.apk" download className="block w-full text-left text-primary font-accent text-[0.7rem] font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-primary/10 transition-all border border-transparent hover:border-primary/20 ghost-border mt-2">
+            <a href="/CastingCall.apk" download className="block w-full text-left text-foreground font-accent text-[0.7rem] font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-foreground/10 transition-all border border-transparent hover:border-foreground/20 ghost-border mt-2">
               Download App
             </a>
           </Section>
@@ -143,7 +143,7 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="px-8 pt-6 pb-2">
-      <div className="text-sm font-black tracking-[0.3em] uppercase text-foreground/40 dark:text-primary/60 mb-3 ml-2">
+      <div className="text-sm font-black tracking-[0.3em] uppercase text-foreground/40 mb-3 ml-2">
         {label}
       </div>
       {children}
@@ -155,7 +155,7 @@ function Item({ children, onClick }: { children: React.ReactNode; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="block w-full text-left text-foreground/70 font-accent text-[0.7rem] font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20 ghost-border mb-1"
+      className="block w-full text-left text-foreground/70 font-accent text-[0.7rem] font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl hover:bg-foreground/10 hover:text-foreground transition-all border border-transparent hover:border-foreground/20 ghost-border mb-1"
     >
       {children}
     </button>

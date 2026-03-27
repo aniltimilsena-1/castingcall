@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6 text-white text-center">
+        <div className="min-h-screen bg-background flex items-center justify-center p-6 text-foreground text-center">
           <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in duration-500">
             <div className="flex justify-center">
               <div className="w-24 h-24 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center shadow-2xl shadow-red-500/10">
@@ -69,7 +69,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
             
             <div className="space-y-4">
-              <h1 className="text-4xl font-display uppercase tracking-widest text-white">System <span className="text-red-500">Stability</span> Issue</h1>
+              <h1 className="text-4xl font-display uppercase tracking-widest text-foreground">System <span className="text-red-500">Stability</span> Issue</h1>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 CaastingCall encountered an unexpected runtime error. A diagnostic report has been sent to our command center for inspection.
               </p>
@@ -83,13 +83,13 @@ export class ErrorBoundary extends Component<Props, State> {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button 
                 onClick={() => window.location.reload()}
-                className="flex-1 bg-white text-black py-4 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white/90 transition-all"
+                className="flex-1 bg-foreground text-background py-4 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-foreground/90 transition-all"
               >
                 <RefreshCcw size={14} /> Restart System
               </button>
               <button 
                 onClick={() => window.location.href = '/'}
-                className="flex-1 bg-white/5 border border-white/10 py-4 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
+                className="flex-1 bg-secondary border border-border py-4 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all text-foreground"
               >
                 <Home size={14} /> Back Home
               </button>

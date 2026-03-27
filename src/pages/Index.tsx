@@ -51,7 +51,15 @@ const Index = () => {
   const { id } = params;
   const routerNavigate = useNavigate();
   const location = useLocation();
-  const [page, setPage] = useState<PageName>("home");
+
+  // Derived page state from URL params
+  const { page: pageParam } = params;
+  const page: PageName = (pageParam === "auth" || location.pathname === "/auth" || pageParam === "login") ? "auth" : 
+                         (location.pathname === "/" || location.pathname === "") ? "home" :
+                         (location.pathname === "/search") ? "search" :
+                         (location.pathname.startsWith("/profile")) ? "profile" :
+                         (pageParam as PageName) || "home";
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchRole, setSearchRole] = useState("");
@@ -175,8 +183,8 @@ const Index = () => {
       LocalNotifications.addListener('localNotificationActionPerformed', (notification) => {
         const senderId = notification.notification.extra?.sender_id;
         if (senderId) {
-           setPage('messages');
            setActiveMessagePartnerId(senderId);
+           routerNavigate('/messages');
         }
       }).then(l => clickListener = l);
     }
@@ -213,7 +221,7 @@ const Index = () => {
       }).then(l => receiveListener = l);
 
       PushNotifications.addListener('pushNotificationActionPerformed', notification => {
-        setPage('messages');
+        routerNavigate('/messages');
         if (notification.notification.data?.sender_id) {
           setActiveMessagePartnerId(notification.notification.data.sender_id);
         }
@@ -360,7 +368,7 @@ const Index = () => {
                description: content.startsWith('[') ? "File shared" : content,
                action: {
                  label: "View",
-                 onClick: () => setPage('messages')
+                 onClick: () => routerNavigate('/messages')
                },
              });
           }, 100);
@@ -547,13 +555,11 @@ const Index = () => {
 
   const handleMessageClick = (userId: string) => {
     setActiveMessagePartnerId(userId);
-    setPage("messages");
     routerNavigate("/messages");
   };
 
   const navigate = (p: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => {
     if (AUTH_REQUIRED.includes(p) && !user) {
-      setPage("auth");
       routerNavigate("/auth");
       return;
     }
@@ -561,7 +567,6 @@ const Index = () => {
     if (options?.searchType) {
       setSearchInitialType(options.searchType);
     } else if (p === 'search') {
-      // Default search type if not specified
       setSearchInitialType('talents');
     }
 
@@ -571,52 +576,24 @@ const Index = () => {
       setProjectFormInitiallyOpen(false);
     }
 
-    setPage(p);
-
     // Sync URL - important for persistence on refresh
     if (p === "home") routerNavigate("/");
     else if (p === "auth") routerNavigate("/auth");
-    else if (location.pathname.startsWith("/profile") && id === (user?.id || '')) {
-       // Already on own profile path
-    }
     else if (p === "profile" && user) routerNavigate(`/profile/${user.id}`);
-    else if (p === "search") {
-       // Support search params if needed
-       routerNavigate("/search");
-    }
+    else if (p === "search") routerNavigate("/search");
     else routerNavigate(`/${p}`);
   };
 
-  // Sync state with URL on load and path changes
+  // Auth Guard Logic
   useEffect(() => {
-    if (loading) return; 
-
-    const path = location.pathname;
-    const { page: pageParam } = (params as any);
-
-    if (path === "/" || path === "") {
-      setPage("home");
-    } else if (path === "/auth") {
-      if (user) navigate("home");
-      else setPage("auth");
-    } else if (path.startsWith("/profile")) {
-      const profileId = id || path.split('/').pop();
-      if (profileId && user && profileId === user.id) {
-        setPage("profile");
-      }
-    } else {
-      const p = (pageParam || path.substring(1).split('/')[0]) as PageName;
-      if (p) {
-        if (AUTH_REQUIRED.includes(p) && !user) {
-          setPage("auth");
-          routerNavigate("/auth", { replace: true });
-        } else {
-          setPage(p);
-        }
-      }
+    if (loading) return;
+    if (AUTH_REQUIRED.includes(page) && !user) {
+      routerNavigate("/auth", { replace: true });
     }
-    // Stabilized dependencies ensure this doesn't loop when user object refreshes in background.
-  }, [location.pathname, user?.id, loading, id, routerNavigate]);
+    if (page === "auth" && user) {
+      routerNavigate("/", { replace: true });
+    }
+  }, [page, user, loading, routerNavigate]);
 
   // Handle viewing specific profiles via URL
   useEffect(() => {
@@ -681,7 +658,7 @@ const Index = () => {
     if (user) {
       navigate("profile");
     } else {
-      setPage("auth");
+      routerNavigate("/auth");
     }
   };
 
@@ -702,21 +679,9 @@ const Index = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {page !== 'messages' && page !== 'feed' && (
-        <Navbar
-          onSearch={handleSearch}
-          onAuthClick={handleAuthClick}
-          onMenuClick={() => setDrawerOpen(true)}
-          onLogoClick={() => setPage("home")}
-          onPremiumClick={() => navigate("premium")}
-          onNotificationClick={() => navigate("notifications")}
-          onMessagesClick={() => navigate("messages")}
-          onNavigate={navigate}
-          activePage={page}
-          searchType={searchInitialType}
-        />
-      )}
+    <div className="flex flex-col min-h-screen film-grain relative">
+      {/* Global Technical Grid Background */}
+      <div className="ambient-glow" />
 
       <AppDrawer
         open={drawerOpen}
@@ -724,11 +689,25 @@ const Index = () => {
         onNavigate={navigate}
       />
 
-      <main className={`flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' ? 'pb-0' : 'pb-16 md:pb-0'}`}>
-        {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => setPage("terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
+      <main className={`relative flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' ? 'pb-0' : 'pb-16 md:pb-0'} ${page !== 'home' ? 'pt-32 md:pt-20' : ''}`}>
+        {page !== 'messages' && page !== 'feed' && (
+          <Navbar
+            onSearch={handleSearch}
+            onAuthClick={handleAuthClick}
+            onMenuClick={() => setDrawerOpen(true)}
+            onLogoClick={() => routerNavigate("/")}
+            onPremiumClick={() => navigate("premium")}
+            onNotificationClick={() => navigate("notifications")}
+            onMessagesClick={() => navigate("messages")}
+            onNavigate={navigate}
+            activePage={page}
+            searchType={searchInitialType}
+          />
+        )}
+        {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
         {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
-        {page === "profile" && <ProfilePage onBack={() => setPage("home")} />}
-        {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => setPage("home")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
+        {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
+        {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
         {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />}
         {page === "projects" && <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
         {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}

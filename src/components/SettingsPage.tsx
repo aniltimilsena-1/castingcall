@@ -122,13 +122,13 @@ export default function SettingsPage() {
     <motion.div className="max-w-[720px] mx-auto px-4 py-12" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
       {isRecovering && (
         <div className="bg-primary/10 border border-primary/30 rounded-2xl p-6 mb-8 text-center animate-pulse">
-          <h2 className="text-primary font-display text-xl mb-1">Password Recovery Active</h2>
+          <h2 className="text-foreground font-display text-xl mb-1">Password Recovery Active</h2>
           <p className="text-xs text-primary/70">Please set a new password for your account below. No current password is required.</p>
         </div>
       )}
 
       <div className="mb-10 text-center md:text-left">
-        <h1 className="font-accent text-4xl text-foreground mb-1 tracking-tight">{t('settings.title').split(' ')[0]} <span className="text-primary italic">{t('settings.title').split(' ')[1]}</span></h1>
+        <h1 className="font-accent text-4xl text-foreground mb-1 tracking-tight">{t('settings.title').split(' ')[0]} <span className="text-foreground italic">{t('settings.title').split(' ')[1]}</span></h1>
         <p className="text-muted-foreground text-sm font-normal">{t('settings.subtitle')}</p>
       </div>
 
@@ -150,7 +150,7 @@ export default function SettingsPage() {
 
         <TabsContent value="profile" className="space-y-6">
           <div className="bg-card border-[1.5px] border-card-border rounded-3xl p-6 md:p-8 mb-6 shadow-sm">
-            <h3 className="font-accent text-[0.7rem] tracking-[1.5px] uppercase text-muted-foreground mb-8 flex items-center gap-2">
+            <h3 className="font-accent text-[0.7rem] tracking-[1.5px] uppercase text-foreground/60 mb-8 flex items-center gap-2">
               <Globe size={14} /> {t('settings.profile.identity')}
             </h3>
             
@@ -328,7 +328,7 @@ export default function SettingsPage() {
             {settings && (
               <>
                 <div className="space-y-6">
-                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-primary/70 mb-6 flex items-center gap-2">
+                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-6 flex items-center gap-2">
                     <Eye size={16} /> Visibility Controls
                   </h3>
                   
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-6 pt-6 border-t border-border">
-                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-primary/70 mb-6 flex items-center gap-2">
+                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-6 flex items-center gap-2">
                     <Shield size={16} /> {t('settings.privacy.permissions')}
                   </h3>
                   
@@ -426,7 +426,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-6 pt-6 border-t border-border">
-                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-primary/70 mb-6 flex items-center gap-2">
+                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-6 flex items-center gap-2">
                     <Lock size={16} /> {t('settings.privacy.protection.title')}
                   </h3>
                   
@@ -453,7 +453,7 @@ export default function SettingsPage() {
         <TabsContent value="security" className="space-y-6">
           <div className="bg-card border border-card-border rounded-3xl p-6 md:p-8 space-y-10">
             <div className="space-y-6">
-              <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-primary/70 mb-2">Access Credentials</h3>
+              <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-2">Access Credentials</h3>
               {!isRecovering && (
                 <InputField label={t('settings.security.currentPass')} type="password" value={oldPassword} onChange={setOldPassword} placeholder="Verification required" />
               )}
@@ -479,7 +479,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-6 pt-10 border-t border-border">
-              <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-primary/70 mb-4">Device Sessions</h3>
+              <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-4">Device Sessions</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-2xl border border-border/50">
                   <div className="flex items-center gap-4">
@@ -518,7 +518,7 @@ export default function SettingsPage() {
             {settings && (
               <>
                 <div className="space-y-6">
-                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-primary/70 mb-2">{t('settings.comms.engagement')}</h3>
+                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-2">{t('settings.comms.engagement')}</h3>
                   <div>
                     <label className="block text-[0.65rem] text-muted-foreground font-bold tracking-[1.5px] uppercase mb-2 ml-1">{t('settings.comms.autoResponse')}</label>
                     <textarea 
@@ -537,7 +537,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-6 pt-10 border-t border-border">
-                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-primary/70 mb-4">{t('settings.comms.preferences')}</h3>
+                  <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-4">{t('settings.comms.preferences')}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div>
                       <label className="block text-[0.65rem] text-muted-foreground font-bold tracking-[1.5px] uppercase mb-2 ml-1">{t('settings.comms.language')}</label>

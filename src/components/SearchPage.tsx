@@ -243,7 +243,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   <Badge
                     key={m}
                     variant={selectedMoods.includes(m) ? "default" : "outline"}
-                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedMoods.includes(m) ? 'bg-primary text-black' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
+                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedMoods.includes(m) ? 'bg-primary text-foreground' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
                     onClick={() => setSelectedMoods(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])}
                   >
                     {m}
@@ -259,7 +259,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   <Badge
                     key={s}
                     variant={selectedStyles.includes(s) ? "default" : "outline"}
-                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedStyles.includes(s) ? 'bg-primary text-black' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
+                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedStyles.includes(s) ? 'bg-primary text-foreground' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
                     onClick={() => setSelectedStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
                   >
                     {s}
@@ -275,7 +275,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   <Badge
                     key={t}
                     variant={selectedTraits.includes(t) ? "default" : "outline"}
-                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedTraits.includes(t) ? 'bg-primary text-black' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
+                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedTraits.includes(t) ? 'bg-primary text-foreground' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
                     onClick={() => setSelectedTraits(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])}
                   >
                     {t}
@@ -299,14 +299,14 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             <div className="absolute -inset-4 rounded-full border border-primary/10 animate-pulse" />
           </div>
           <div>
-            <h4 className="font-display text-3xl text-primary mb-3">Visionary AI Discovery</h4>
+            <h4 className="font-display text-3xl text-foreground mb-3">Visionary AI Discovery</h4>
             <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
               Our AI analyzes facial structures, style archetypes, and visual vibes to find your perfect match.
               <span className="block mt-2 text-primary/60 font-medium">Upload a celebrity photo or a moodboard to begin.</span>
             </p>
           </div>
           <div className="flex gap-4">
-            <button className="bg-primary text-black px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest flex items-center gap-3">
+            <button className="bg-primary text-foreground px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest flex items-center gap-3">
               <ImageIcon size={18} /> Upload Image
             </button>
             <button
@@ -333,13 +333,20 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="flex-shrink-0 w-40 md:w-64 group cursor-pointer"
+                className="flex-shrink-0 w-32 md:w-52 group cursor-pointer"
               >
-                <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-4 border border-white/5 shadow-2xl">
+                <div className="stitched-card relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-4 shadow-2xl">
+                  <div className="stitched-card-scanner" />
                   {p.photo_url ? (
-                    <img src={p.photo_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={p.name} />
+                    <motion.img 
+                      whileHover={{ scale: 1.1, x: 5, y: 5 }}
+                      transition={{ duration: 0.8 }}
+                      src={p.photo_url} 
+                      className="w-full h-full object-cover" 
+                      alt={p.name} 
+                    />
                   ) : (
-                    <div className="w-full h-full bg-secondary flex items-center justify-center font-display text-4xl text-primary">
+                    <div className="w-full h-full bg-secondary flex items-center justify-center font-display text-2xl text-primary">
                       {p.name?.[0]}
                     </div>
                   )}
@@ -360,7 +367,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         </div>
       )}
 
-      <h2 className="font-display text-3xl md:text-5xl text-primary mb-8 md:mb-12 tracking-tight flex items-center gap-4 md:gap-6">
+      <h2 className="font-display text-3xl md:text-5xl text-foreground mb-8 md:mb-12 tracking-tight flex items-center gap-4 md:gap-6">
         {searchType === 'talents' ? (
           <>
             {title}
@@ -386,11 +393,12 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="group relative flex flex-row items-center gap-4 bg-card border-[1.5px] border-card-border rounded-2xl px-3 md:px-6 py-3 md:py-5 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5"
+                className="stitched-card group relative flex flex-row items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl px-2.5 md:px-6 py-2.5 md:py-5 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5"
               >
                 <div className="flex flex-col items-center flex-shrink-0 relative">
                   <div className="relative group/search-avatar">
-                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-base md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
+                    <div className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-sm md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
+                      <div className="stitched-card-scanner" />
                       {p.photo_url ? (
                         <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
                       ) : (
@@ -402,7 +410,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                     )}
                   </div>
                   {(p.plan === "pro" || p.role === "Admin") && (
-                    <div className="absolute -top-1.5 -left-1 md:bottom-[-6px] md:top-auto md:left-auto bg-amber-500 text-black text-[0.4rem] md:text-[0.5rem] font-bold px-1.5 md:px-2.5 py-0.5 rounded shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>
+                    <div className="absolute -top-1.5 -left-1 md:bottom-[-6px] md:top-auto md:left-auto bg-amber-500 text-foreground text-[0.4rem] md:text-[0.5rem] font-bold px-1.5 md:px-2.5 py-0.5 rounded shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>
                   )}
                 </div>
 
@@ -633,11 +641,18 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.98, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      className="bg-card border-[1.5px] border-card-border rounded-[3rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2"
+      className="stitched-card rounded-2xl md:rounded-[3rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2"
     >
+      <div className="stitched-card-scanner" />
       <div className="aspect-[16/10] bg-secondary relative overflow-hidden">
         {project.thumbnail_url ? (
-          <img src={project.thumbnail_url} className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110" alt="" />
+          <motion.img 
+            whileHover={{ scale: 1.15, x: 5, y: 5 }}
+            transition={{ duration: 1.2 }}
+            src={project.thumbnail_url} 
+            className="w-full h-full object-cover" 
+            alt="" 
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-primary/10">
             <Layout className="w-24 h-24" />
@@ -654,8 +669,8 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
           )}
         </div>
       </div>
-      <div className="p-6">
-        <h4 className="font-display text-xl text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">{project.title}</h4>
+      <div className="p-4 md:p-6">
+        <h4 className="font-display text-xl text-foreground mb-3 group-hover:text-foreground/80 transition-colors leading-tight">{project.title}</h4>
         <div className="flex flex-wrap items-center gap-4 text-[0.6rem] text-foreground/60 mb-5 font-bold uppercase tracking-[1.5px]">
           <span className="flex items-center gap-2"><MapPin size={14} className="text-primary" /> {project.location || 'Remote'}</span>
           <span className="flex items-center gap-2"><DollarSign size={14} className="text-primary" /> {project.salary_range || 'Competitive'}</span>

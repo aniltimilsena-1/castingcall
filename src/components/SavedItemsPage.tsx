@@ -196,9 +196,9 @@ export default function SavedItemsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background pb-20 pt-4">
+        <div className="min-h-screen bg-transparent pb-20 pt-4 relative">
             <div className="max-w-4xl mx-auto px-4">
-                <h1 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                <h1 className="text-2xl font-bold mb-6 flex items-center gap-3 text-foreground">
                     <Bookmark className="text-primary" /> Saved Items
                 </h1>
 
@@ -237,10 +237,16 @@ export default function SavedItemsPage() {
                                     </div>
                                 ) : (
                                     savedTalents.map(talent => (
-                                        <div key={talent.id} className="bg-card border border-border p-4 rounded-3xl flex items-center gap-4 group hover:border-primary/50 transition-all shadow-sm">
-                                            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-secondary border border-border flex-shrink-0">
+                                        <div key={talent.id} className="stitched-card bg-card p-4 rounded-3xl flex items-center gap-4 group hover:border-primary transition-all shadow-sm relative overflow-hidden">
+                                            <div className="stitched-card-scanner" />
+                                            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-secondary border border-border flex-shrink-0 relative">
                                                 {talent.photo_url ? (
-                                                    <img src={talent.photo_url} className="w-full h-full object-cover" alt="" />
+                                                    <motion.img 
+                                                        whileHover={{ scale: 1.1 }}
+                                                        src={talent.photo_url} 
+                                                        className="w-full h-full object-cover" 
+                                                        alt="" 
+                                                    />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-xl font-bold text-primary/50">
                                                         {(talent.name?.[0] || talent.email?.[0] || "?").toUpperCase()}
@@ -272,13 +278,20 @@ export default function SavedItemsPage() {
                                     </div>
                                 ) : (
                                     savedPosts.map(post => (
-                                        <div key={post.id} className="relative aspect-square rounded-2xl overflow-hidden group cursor-pointer border border-border hover:border-primary/50 transition-all shadow-sm" onClick={() => openPostDetails(post)}>
+                                        <div key={post.id} className="stitched-card relative aspect-square rounded-2xl overflow-hidden group cursor-pointer border border-border hover:border-primary transition-all shadow-sm" onClick={() => openPostDetails(post)}>
+                                            <div className="stitched-card-scanner" />
                                             {post.type === "photo" ? (
-                                                <img src={post.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                                                <motion.img 
+                                                    whileHover={{ scale: 1.1, x: 5, y: 5 }}
+                                                    transition={{ duration: 0.8 }}
+                                                    src={post.url} 
+                                                    className="w-full h-full object-cover" 
+                                                    alt="" 
+                                                />
                                             ) : (
                                                 <video src={post.url} className="w-full h-full object-cover" muted />
                                             )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3 z-10">
                                                 <div className="flex items-center gap-2 text-white text-[10px] font-bold">
                                                     <img src={post.owner.photo_url || ""} className="w-4 h-4 rounded-full border border-white/20" alt="" />
                                                     <span className="truncate">{post.owner.name}</span>

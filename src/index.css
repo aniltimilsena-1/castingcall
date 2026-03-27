@@ -4,141 +4,89 @@
    - Epilogue: Cinematic Display Headlines
    - Outfit: Elegant Subheadings & Accents
 ───────────────────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Epilogue:wght@700;800;900&family=Outfit:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   DESIGN TOKENS — Cinema Gold System
+   DESIGN TOKENS — IMDb Cinematic System
    Color System:
-     Light → Sophisticated Ivory (#FDFBF9), Deep Charcoal text, Cinema Gold accent
-     Dark  → Deep Charcoal (#131313), Warm Ivory text, Spotlight Gold accent
-
-   Cinema Gold accent: #D4AF37 / hsl(46 91% 53%)
+     Light → Neutral Ivory foundation
+     Dark  → True Cinema Black (#121212), High Contrast text
+   
+   IMDb Yellow accent: #F5C518 / hsl(47 92% 52%)
 ───────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --radius: 0.75rem;
+    --radius: 0.375rem;
 
-    /* ── Cinema Gold Palette (Premium) ── */
-    --gold: 46 91% 53%;            /* Branding Gold #D4AF37 */
-    --gold-glow: 46 91% 53% / 0.18;
-    --gold-fixed: #F2CA50;         /* Highlight Gold */
-    --gold-dim: #E9C349;           /* Secondary Gold */
-  }
+    /* ── IMDb Color Palette (High Fidelity) ── */
+    --gold: 47 92% 52%;            /* #F5C518 */
+    --link: 214 84% 64%;           /* #5799EF IMDb Cinematic Blue */
+    --gold-glow: 47 92% 52% / 0.15;
+    --gold-fixed: #F5C518;
+    --gold-dim: #E2B616;
 
-  /* ── LIGHT MODE ────────────────────────────────────────── */
-  .light, :root:not(.dark) {
-    /* Base - Sophisticated Ivory/Milk foundation */
-    --background: 27 30% 98%;      /* #FDFBF9 - Clean ivory */
-    --foreground: 0 0% 12%;        /* #1E1E1E - Deep Charcoal */
+    /* ── CINEMA DARK SYSTEM ── */
+    --background: 0 0% 0%;         /* Pure Black #000000 */
+    --foreground: 0 0% 100%;       /* Pure White text */
 
-    /* Cards - Soft elevation via neutral clay shifts */
-    --card: 27 20% 95%;            /* #F5F3F1 */
-    --card-foreground: 0 0% 12%;
-    --card-border: 0 0% 0% / 0.05;
+    /* Cards - Flat Cinema Style */
+    --card: 0 0% 2%;               /* Almost pure black */
+    --card-foreground: 0 0% 100%;
+    --card-border: 0 0% 0% / 0;    /* Invisible borders by default */
 
     /* Popover */
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Primary - Inherit the Cinema Gold Branding */
-    --primary: 46 91% 45%;         /* Darker gold for light mode legibility */
-    --primary-foreground: 27 20% 98%;
+    /* Primary - IMDb Yellow */
+    --primary: 47 92% 52%;
+    --primary-foreground: 0 0% 5%;
 
     /* Secondary surface */
-    --secondary: 27 15% 92%;       /* Soft neutral clay */
-    --secondary-foreground: 0 0% 25%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Muted */
-    --muted: 27 15% 90%;
-    --muted-foreground: 0 0% 18%;  /* Darkened for 4.5:1 core contrast */
+    /* Muted Text - IMDb Grey */
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;  /* #8C8C8C */
 
-    /* Accent - Clean Gold highlights */
-    --accent: 46 91% 53%;
-    --accent-foreground: 0 0% 12%;
+    /* Accent - Blue for links/actions */
+    --accent: 214 84% 64%;
+    --accent-foreground: 0 0% 100%;
 
     /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
     /* Borders & inputs */
-    --border: 0 0% 0% / 0.08;
-    --input: 0 0% 0% / 0.08;
-    --ring: 46 91% 45%;
+    --border: 0 0% 100% / 0.08;
+    --input: 0 0% 100% / 0.08;
+    --ring: 47 92% 52%;
 
-    /* Sidebar - Premium neutral depth */
-    --sidebar-background: 27 10% 94%;
-    --sidebar-foreground: 0 0% 30%;
-    --sidebar-primary: 46 91% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 27 15% 90%;
-    --sidebar-accent-foreground: 46 91% 40%;
-    --sidebar-border: 27 10% 88%;
-    --sidebar-ring: 46 91% 45%;
+    /* Sidebar - Vault feel */
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 60%;
+    --sidebar-primary: 47 92% 52%;
+    --sidebar-primary-foreground: 0 0% 5%;
+    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent-foreground: 47 92% 52%;
+    --sidebar-border: 0 0% 10%;
+    --sidebar-ring: 47 92% 52%;
 
-    /* Surface Depth (Light) */
-    --surface-low: 27 10% 94%;
-    --surface-high: 27 10% 90%;
-    --surface-bright: 27 10% 86%;
+    /* Surface Depth */
+    --surface-low: 0 0% 5%;
+    --surface-high: 0 0% 10%;
+    --surface-bright: 0 0% 18%;
   }
 
-  /* ── DARK MODE ───────────────────────────────────────── */
+  /* Force Dark Utility (Just in case components rely on .dark class) */
   .dark {
-    /* Base - Deep Charcoal cinematic foundation */
-    --background: 0 0% 7%;         /* #131313 */
-    --foreground: 27 20% 90%;      /* #E5E2E1 warm ivory text */
-
-    /* Cards - Layered depth via tonal shifts */
-    --card: 0 0% 11%;              /* surface-low */
-    --card-foreground: 27 20% 90%;
-    --card-border: 0 0% 14% / 0.3;
-
-    /* Popover - Elevated glass */
-    --popover: 0 0% 9%;
-    --popover-foreground: 27 20% 90%;
-
-    /* Primary - Spotlight Gold */
-    --primary: 46 80% 63%;         /* #F2CA50 Gold */
-    --primary-foreground: 0 0% 10%;
-
-    /* Secondary */
-    --secondary: 0 0% 13%;
-    --secondary-foreground: 27 20% 90%;
-
-    /* Muted */
-    --muted: 0 0% 13%;
-    --muted-foreground: 0 0% 55%;
-
-    /* Accent */
-    --accent: 46 80% 63%;
-    --accent-foreground: 0 0% 10%;
-
-    /* Destructive */
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 94%;
-
-    /* Borders & Inputs - "Ghost" Style */
-    --border: 0 0% 100% / 0.08;   /* Invisible boundaries rule */
-    --input: 0 0% 100% / 0.08;
-    --ring: 46 80% 63%;
-
-    /* Sidebar - In-set dashboard feel */
-    --sidebar-background: 0 0% 7%;
-    --sidebar-foreground: 0 0% 58%;
-    --sidebar-primary: 46 80% 63%;
-    --sidebar-primary-foreground: 0 0% 10%;
-    --sidebar-accent: 0 0% 14%;
-    --sidebar-accent-foreground: 46 80% 63%;
-    --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 46 80% 63%;
-
-    /* Surface Depth (Dark) */
-    --surface-low: 0 0% 11%;
-    --surface-high: 0 0% 16%;
-    --surface-bright: 0 0% 22%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
   }
 }
 
@@ -185,27 +133,29 @@
      Do NOT bold everything — structure comes from size + weight contrast.
   ─────────────────────────────────────────────────────── */
 
-  /* h1–h3: Cinematic Display (Epilogue) */
+  /* h1–h3: Cinematic Authoritative (Roboto) */
   h1, h2, h3 {
-    font-family: 'Epilogue', sans-serif;
-    font-weight: 800;
+    @apply text-foreground;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
     line-height: 1.1;
-    letter-spacing: -0.025em;
-    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    text-transform: none;
   }
 
-  /* h4–h6: Sophisticated Accent (Outfit) */
+  /* h4–h6: Clean UI (Inter) */
   h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
+    @apply text-foreground;
+    font-family: 'Inter', sans-serif;
     font-weight: 600;
     line-height: 1.3;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
   }
 
   /* Headings scale */
-  h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
-  h2 { font-size: clamp(1.5rem, 4vw, 2.75rem); }
-  h3 { font-size: clamp(1.25rem, 3vw, 2rem); }
+  h1 { font-size: clamp(2.25rem, 6vw, 4rem); font-weight: 900; }
+  h2 { font-size: clamp(1.75rem, 5vw, 3rem); border-left: 2px solid hsl(var(--gold)); padding-left: 1rem; margin-bottom: 1.5rem; }
+  h3 { font-size: clamp(1.25rem, 4vw, 2rem); }
   h4 { font-size: 1.25rem; }
   h5 { font-size: 1.125rem; }
   h6 { font-size: 1rem; }
@@ -217,13 +167,12 @@
     line-height: 1.6;
   }
 
-  /* Labels — Outfit for character, not bold by default */
+  /* Labels — Roboto for IMDb feel */
   label {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-weight: 500;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    color: hsl(var(--primary));
   }
 
   /* Form inputs — Inter for readability */
@@ -237,17 +186,18 @@
     flex-direction: column;
   }
 
-  /* Touch optimisations */
-  [data-scroll],
-  .overflow-y-auto,
-  .overflow-x-auto,
-  .overflow-y-scroll {
-    -webkit-overflow-scrolling: touch;
-  }
-
   button, a, [role="button"] {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+  }
+
+  a {
+    color: hsl(var(--link));
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  a:hover {
+    opacity: 0.8;
   }
 }
 
@@ -258,15 +208,24 @@
 
   /* ── Font helpers ── */
   .font-ui      { font-family: 'Inter', sans-serif; }
-  .font-accent  { font-family: 'Outfit', sans-serif; }
+  .font-accent  { font-family: 'Roboto', sans-serif; }
+  .font-display { 
+    @apply font-black italic tracking-tighter uppercase;
+    font-family: 'Roboto', sans-serif;
+    font-stretch: condensed;
+  }
 
-  /* ── Cinema Glassmorphism ── */
+  .text-title-yellow {
+    color: hsl(var(--gold));
+  }
+
+  /* ── Cinema IMDb Glass (Semi-solid) ── */
   .glass {
-    @apply bg-background/60 backdrop-blur-xl border border-foreground/5;
+    @apply bg-background/90 backdrop-blur-md border border-foreground/10;
   }
   
   .glass-card {
-    @apply bg-card/40 backdrop-blur-2xl border border-foreground/5;
+    @apply bg-card border border-foreground/10;
   }
 
   /* ── Cinematic Accent glow (Gold) ── */
@@ -295,13 +254,13 @@
   /* ── Log / highlight text blocks ── */
   .text-log,
   .text-highlight-block {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     line-height: 1.55;
-    background: hsl(var(--muted));
-    border-left: 3px solid hsl(var(--gold));
+    background: hsl(var(--secondary));
+    border-left: 4px solid hsl(var(--gold));
     padding: 0.75rem 1rem;
-    border-radius: 0 0.375rem 0.375rem 0;
+    border-radius: 0;
   }
 
   /* ── Form / input baseline (single-column, clean) ── */
@@ -312,10 +271,10 @@
   }
 
   .form-field label {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 0.72rem;
-    font-weight: 400;
-    letter-spacing: 0.06em;
+    font-weight: 500;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: hsl(var(--muted-foreground));
   }
@@ -347,6 +306,90 @@
   .form-field input::placeholder {
     color: hsl(var(--muted-foreground) / 0.5);
   }
+
+  /* ── Stitched Technical Accents ── */
+  .stitched-card {
+    @apply relative border-[0.5px] border-foreground/5 bg-card/40 backdrop-blur-sm transition-all duration-700 overflow-hidden;
+  }
+  
+  /* Film Grain Overlay */
+  .film-grain::after {
+    content: '';
+    position: fixed;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 9999;
+    animation: noise 8s steps(10) infinite;
+  }
+
+  /* Scanner Sweep Effect */
+  .stitched-card::before, .stitched-card::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-color: transparent;
+    pointer-events: none;
+    transition: border-color 0.5s;
+    z-index: 20;
+  }
+  /* Corner markings */
+  .stitched-card::before {
+    top: 4px; left: 4px;
+    border-top: 1.5px solid hsl(var(--gold) / 0.4);
+    border-left: 1.5px solid hsl(var(--gold) / 0.4);
+  }
+  .stitched-card::after {
+    bottom: 4px; right: 4px;
+    border-bottom: 1.5px solid hsl(var(--gold) / 0.4);
+    border-right: 1.5px solid hsl(var(--gold) / 0.4);
+  }
+  
+  .stitched-card-scanner {
+    position: absolute;
+    top: -50%;
+    left: 0;
+    width: 100%;
+    height: 10%;
+    background: linear-gradient(180deg, transparent, hsl(var(--gold) / 0.3), transparent);
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .stitched-card:hover .stitched-card-scanner {
+    opacity: 1;
+    animation: scanner 2s linear infinite;
+  }
+
+  .stitched-card:hover::before { border-color: hsl(var(--gold)); }
+  .stitched-card:hover::after { border-color: hsl(var(--gold)); }
+
+  /* Soft Gradient Dark Background */
+  .ambient-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, #111111 0%, #000000 100%);
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(var(--primary-hsl), 0.05) 0, transparent 50%), 
+      radial-gradient(at 100% 100%, hsla(var(--primary-hsl), 0.03) 0, transparent 50%),
+      linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .tech-line {
+    @apply h-[0.5px] w-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-4;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -366,4 +409,18 @@
   from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes scanner {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+
+@keyframes gridScroll {
+  from { transform: translate(0, 0); }
+  to { transform: translate(40px, 40px); }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .mask-fade-right { mask-image: linear-gradient(to right, black 80%, transparent 100%); width: 100%; }
 .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .mask-fade-right { mask-image: linear-gradient(to right, black 80%, transparent 100%); width: 100%; }

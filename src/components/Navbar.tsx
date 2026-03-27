@@ -1,13 +1,14 @@
-import { Search, Moon, Sun, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase } from "lucide-react";
+import { Search, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase, Clock, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "next-themes";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { PageName } from "./AppDrawer";
+import { type Profile } from "@/services/profileService";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface NavbarProps {
-  onSearch: (term: string) => void;
+  onSearch: (term: string, type?: "talents" | "projects") => void;
   onAuthClick: () => void;
   onMenuClick: () => void;
   onLogoClick: () => void;
@@ -24,11 +25,25 @@ export default function Navbar({
   onNotificationClick, onMessagesClick, onNavigate, activePage, searchType
 }: NavbarProps) {
   const { user, profile } = useAuth();
-  const { theme, setTheme } = useTheme();
   const { t } = useTranslation();
   const [searchValue, setSearchValue] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
+
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [suggestions, setSuggestions] = useState<Profile[]>([]);
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    return JSON.parse(localStorage.getItem('search_history') || '[]');
+  });
+
+  const handleSearchCommit = (term: string) => {
+    if (!term.trim()) return;
+    const newHistory = [term, ...searchHistory.filter(h => h !== term)].slice(0, 5);
+    setSearchHistory(newHistory);
+    localStorage.setItem('search_history', JSON.stringify(newHistory));
+    onSearch(term, searchType);
+    setShowAutocomplete(false);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -67,9 +82,27 @@ export default function Navbar({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && searchValue.trim()) {
-      onSearch(searchValue.trim());
+      handleSearchCommit(searchValue.trim());
     }
   };
+
+  useEffect(() => {
+    if (!searchValue.trim()) {
+      setSuggestions([]);
+      return;
+    }
+    const fetchSuggestions = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('name', `%${searchValue}%`)
+        .neq('role', 'Admin')
+        .limit(5);
+      if (data) setSuggestions(data as Profile[]);
+    };
+    const timer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timer);
+  }, [searchValue]);
 
   const navItemClass = (id: PageName, currentSearchType?: string) => `
     flex items-center gap-2 px-5 py-2 rounded-full text-[0.65rem] uppercase tracking-[0.12em] font-semibold transition-all duration-500
@@ -88,49 +121,117 @@ export default function Navbar({
   }, []);
 
   return (
-    <nav className="sticky top-0 glass z-[100] border-b border-foreground/5 shadow-2xl shadow-black/5 dark:shadow-black/20">
+    <nav className="absolute top-0 left-0 w-full z-[100] bg-transparent transition-all duration-500">
       <div className="flex items-center justify-between px-4 md:px-8 h-20 max-w-[2000px] mx-auto">
         <button 
           onClick={onLogoClick} 
-          className={`relative group flex items-center flex-shrink-0 transition-all duration-700 p-2 rounded-[1.8rem] ${activePage === 'home' ? 'bg-primary/10 shadow-[0_0_40px_rgba(212,175,55,0.15)] scale-105 border-[1.5px] border-primary/20' : 'hover:bg-foreground/5 dark:hover:bg-white/5 border-[1.5px] border-transparent'}`}
+          className="relative group flex items-center flex-shrink-0 transition-all duration-700 font-accent text-2xl font-black italic tracking-tighter text-primary active:scale-95"
           title="Home"
         >
           {activePage === 'home' && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(212,175,55,1)] animate-in fade-in duration-500" />
+            <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-[2px] bg-primary rounded-full shadow-[0_0_8px_rgba(245,197,24,0.8)] animate-in fade-in duration-500" />
           )}
-          <img
-            src="/logo.png"
-            alt="CaastingCall Logo"
-            className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = '<span class="font-accent text-2xl text-primary tracking-tight">CaastingCall</span>';
-            }}
-          />
+          CaastingCall
         </button>
 
         {/* Right Section */}
         <div className="flex items-center gap-2 lg:gap-4">
-          <div className="hidden md:flex items-center gap-2 bg-background border-[1.5px] border-border rounded-full px-4 py-1.5 w-60 focus-within:border-primary transition-colors">
-            <Search className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-            <input
-              type="text"
-              placeholder={t('nav.searchPlaceholder')}
-              className="bg-transparent border-none outline-none text-foreground font-body text-xs w-full placeholder:text-muted-foreground/50"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
+          <div className="hidden md:block relative">
+            <div className="flex items-center gap-2 bg-background border-[1.5px] border-border rounded-full px-4 py-1.5 w-72 focus-within:border-primary transition-colors">
+              <Search className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+              <input
+                type="text"
+                placeholder={t('nav.searchPlaceholder')}
+                className="bg-transparent border-none outline-none text-foreground font-body text-xs w-full placeholder:text-muted-foreground/50"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onFocus={() => setShowAutocomplete(true)}
+                onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
+
+            {/* Autocomplete Dropdown */}
+            <AnimatePresence>
+              {showAutocomplete && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full mt-2 left-0 w-full glass-card border border-border shadow-2xl rounded-2xl overflow-hidden z-[200] p-1 shadow-primary/10"
+                >
+                  {/* Suggestions Section */}
+                  {suggestions.length > 0 && (
+                    <div className="p-2">
+                       <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 px-2">Suggestions</div>
+                       {suggestions.map(s => (
+                         <button
+                           key={s.user_id}
+                           onClick={() => {
+                             if (onNavigate) {
+                               onNavigate('profile');
+                               // We actually want to open their details or view specific profile
+                               // For simplicity, we search their name
+                               handleSearchCommit(s.name!);
+                             }
+                           }}
+                           className="w-full flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-xl transition-all group"
+                         >
+                           <div className="w-8 h-8 rounded-full bg-secondary border border-border overflow-hidden">
+                             {s.photo_url ? <img src={s.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px]">{s.name?.[0]}</div>}
+                           </div>
+                           <div className="text-left">
+                             <div className="text-xs text-foreground font-bold group-hover:text-primary transition-colors">{s.name}</div>
+                             <div className="text-[9px] text-muted-foreground uppercase tracking-widest leading-none">{s.role || "Talent"}</div>
+                           </div>
+                         </button>
+                       ))}
+                    </div>
+                  )}
+
+                  {/* History Section */}
+                  {searchValue.length === 0 && searchHistory.length > 0 && (
+                    <div className="p-2 border-t border-border/10">
+                       <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 px-2">Recent Searches</div>
+                       {searchHistory.map((term, i) => (
+                         <button
+                           key={i}
+                           onClick={() => {
+                             setSearchValue(term);
+                             handleSearchCommit(term);
+                           }}
+                           className="w-full flex items-center justify-between p-2 hover:bg-foreground/5 rounded-xl transition-all group"
+                         >
+                           <div className="flex items-center gap-3">
+                              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                              <span className="text-xs text-foreground group-hover:text-primary transition-colors">{term}</span>
+                           </div>
+                           <X 
+                             size={12} 
+                             className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               const newHist = searchHistory.filter(h => h !== term);
+                               setSearchHistory(newHist);
+                               localStorage.setItem('search_history', JSON.stringify(newHist));
+                             }}
+                            />
+                         </button>
+                       ))}
+                    </div>
+                  )}
+
+                  {suggestions.length === 0 && (searchValue.length > 0 || searchHistory.length === 0) && (
+                    <div className="p-4 text-center text-muted-foreground text-[10px] uppercase tracking-widest font-light italic">
+                      {searchValue.length > 0 ? "Searching worldwide..." : "No recent searches"}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="hidden md:flex p-1.5 rounded-lg text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all duration-300 border border-transparent hover:border-foreground/10"
-              title="Toggle color theme"
-            >
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
 
             {user && (
               <div className="flex items-center gap-1 sm:gap-2">
@@ -191,14 +292,14 @@ export default function Navbar({
       </div>
 
       {/* Mobile-only search bar */}
-      <div className="md:hidden px-4 pb-3">
-        <div className="flex items-center gap-2 bg-secondary/30 border border-border rounded-full px-4 py-2 focus-within:border-primary transition-all">
-          <Search className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+      <div className="md:hidden px-6 pb-3 flex justify-center">
+        <div className="flex items-center gap-2 bg-secondary/30 border border-border rounded-full px-3 py-1.5 focus-within:border-primary transition-all max-w-[280px] w-full">
+          <Search className="w-3 h-3 text-muted-foreground flex-shrink-0" />
           <input
             type="search"
             enterKeyHint="search"
             placeholder={t('nav.searchPlaceholder')}
-            className="bg-transparent border-none outline-none text-foreground font-body text-xs w-full placeholder:text-muted-foreground/50"
+            className="bg-transparent border-none outline-none text-foreground font-body text-[0.65rem] w-full placeholder:text-muted-foreground/50"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={handleKeyDown}

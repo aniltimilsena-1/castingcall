@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
         <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-amber-500/20">
           <Crown className="w-10 h-10 text-amber-500" />
         </div>
-        <h2 className="font-display text-4xl text-primary mb-4 italic">Advanced Analytics</h2>
+        <h2 className="font-display text-4xl text-black mb-4 italic">Advanced Analytics</h2>
         <p className="text-muted-foreground text-lg mb-10 max-w-md mx-auto leading-relaxed">
           See who's viewing your profile, track your project reach, and get insights to grow your career.
         </p>
@@ -151,7 +151,7 @@ export default function AnalyticsPage() {
 
   return (
     <motion.div className="max-w-[900px] mx-auto px-4 py-12" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
-      <h1 className="font-display text-4xl text-primary mb-8">Analytics</h1>
+      <h1 className="font-display text-4xl text-foreground mb-8">Analytics</h1>
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         {stats.map((s) => (
@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
               <s.icon className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <div className="font-display text-2xl text-primary">{s.value}</div>
+              <div className="font-display text-2xl text-foreground">{s.value}</div>
               <div className="text-xs text-muted-foreground">{s.label}</div>
             </div>
           </div>
@@ -172,7 +172,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary" />
-              <h3 className="font-normal text-sm">Engagement Overview</h3>
+              <h3 className="font-normal text-sm text-foreground">Engagement Overview</h3>
             </div>
             <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[0.6rem] font-normal tracking-widest">WEEKLY</Badge>
           </div>
@@ -202,7 +202,7 @@ export default function AnalyticsPage() {
               <span className="text-3xl font-display text-foreground">{viewStats.successRate}%</span>
             </div>
           </div>
-          <h3 className="text-sm font-normal mb-1">Casting Success Rate</h3>
+          <h3 className="text-sm font-normal mb-1 text-black">Casting Success Rate</h3>
           <p className="text-[0.65rem] text-muted-foreground max-w-[180px]">Based on your last {viewStats.projectCount} applications.</p>
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Sparkles className="text-primary" size={20} />
-          <h2 className="font-display text-xl text-primary italic">AI Talent Growth Feedback</h2>
+          <h2 className="font-display text-xl text-black italic">AI Talent Growth Feedback</h2>
         </div>
         <div className="grid sm:grid-cols-2 gap-4">
           {aiInsights.map((insight, idx) => (
@@ -221,7 +221,7 @@ export default function AnalyticsPage() {
                 </div>
                 <Badge className="bg-primary/5 text-primary border-primary/20 text-[0.55rem] font-normal">{insight.impact}</Badge>
               </div>
-              <h4 className="text-sm font-normal text-foreground mb-2">{insight.title}</h4>
+              <h4 className="text-sm font-normal text-black mb-2">{insight.title}</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">{insight.desc}</p>
             </div>
           ))}
@@ -242,7 +242,7 @@ function StatsCard({ label, value, icon: Icon, desc }: { label: string; value: s
         <Icon size={16} />
         <span className="text-[0.65rem] font-normal uppercase tracking-widest">{label}</span>
       </div>
-      <div className="text-3xl font-display text-primary mb-1">{value}</div>
+      <div className="text-3xl font-display text-black mb-1">{value}</div>
       <div className="text-[0.6rem] text-muted-foreground italic font-normal tracking-wide">{desc}</div>
     </div>
   );

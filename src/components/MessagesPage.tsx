@@ -614,8 +614,8 @@ export default function MessagesPage({
   };
 
   return (
-    <div className="w-screen h-[100dvh] flex bg-background overflow-hidden fixed inset-0 z-[200]">
-      <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[380px] bg-sidebar-background border-r border-border/10 flex-col shadow-2xl relative z-10`}>
+    <div className="w-screen h-[100dvh] flex bg-transparent overflow-hidden fixed inset-0 z-[200]">
+      <div className={`${selectedPartner ? "hidden md:flex" : "flex"} w-full md:w-[380px] bg-sidebar-background/80 backdrop-blur-3xl border-r border-border/10 flex-col shadow-2xl relative z-10`}>
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl text-foreground font-normal flex items-center gap-3">
@@ -652,7 +652,8 @@ export default function MessagesPage({
                 }}
                 className="relative cursor-pointer hover:scale-105 active:scale-95 transition-transform"
               >
-                <div className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-secondary border border-border/10 overflow-hidden flex items-center justify-center relative">
+                  <div className="stitched-card-scanner" />
                   {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
                 </div>
                 {onlineUsers?.has(c.partnerId) && (
@@ -678,7 +679,7 @@ export default function MessagesPage({
                   <p className="text-[0.65rem] text-muted-foreground uppercase tracking-widest leading-normal">{isNepal ? "Unlock local & global limits" : "Go Global Pro"}</p>
                 </div>
               </div>
-              <button onClick={() => onNavigate?.("premium")} className="w-full bg-primary text-black py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px]">
+              <button onClick={() => onNavigate?.("premium")} className="w-full bg-primary text-foreground py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px]">
                 {isNepal ? "Pay with eSewa/Khalti" : "Upgrade via Stripe"}
               </button>
             </div>
@@ -706,7 +707,8 @@ export default function MessagesPage({
                   onClick={() => openProfile(selectedPartner!)}
                   className="relative cursor-pointer group/header-avatar"
                 >
-                  <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border group-hover/header-avatar:border-primary/50 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden border border-border group-hover/header-avatar:border-primary/50 transition-colors relative">
+                    <div className="stitched-card-scanner" />
                     {partnerProfile?.photo_url ? <img src={partnerProfile.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-primary">{partnerProfile?.name?.[0]}</div>}
                   </div>
                   {onlineUsers?.has(selectedPartner!) && (
@@ -772,7 +774,7 @@ export default function MessagesPage({
                             setActiveMenu({ id: m.id, x: e.clientX, y: e.clientY });
                           }}
                           className={`rounded-2xl overflow-hidden cursor-pointer transition-all active:scale-[0.98] relative ${
-                            m.content.startsWith('[CALL]:') ? "" : (isMine ? "bg-primary text-black rounded-br-none" : "bg-card text-foreground border border-border rounded-bl-none shadow-lg")
+                            m.content.startsWith('[CALL]:') ? "" : (isMine ? "bg-primary text-foreground rounded-br-none" : "bg-card text-foreground border border-border rounded-bl-none shadow-lg")
                           }`}
                         >
                           {m.content.startsWith('[CALL]:') ? (
@@ -826,7 +828,7 @@ export default function MessagesPage({
                                 link.click();
                                 document.body.removeChild(link);
                               }}
-                              className="p-2 bg-primary/90 text-black rounded-full shadow-lg hover:scale-110 transition-transform"
+                              className="p-2 bg-primary/90 text-foreground rounded-full shadow-lg hover:scale-110 transition-transform"
                               title="Save Photo"
                             >
                               <Download size={18} />
@@ -852,7 +854,7 @@ export default function MessagesPage({
                                 link.click();
                                 document.body.removeChild(link);
                               }}
-                              className="p-2 bg-black/60 text-white rounded-full hover:bg-primary hover:text-black transition-all"
+                              className="p-2 bg-black/60 text-white rounded-full hover:bg-primary hover:text-foreground transition-all"
                               title="Save Video"
                             >
                               <Download size={16} />
@@ -996,7 +998,7 @@ export default function MessagesPage({
                   onChange={e => setNewMessage(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && sendMessage()}
                   placeholder={pendingFile ? "Add a caption..." : "Send global message..."}
-                  className="flex-1 bg-black/5 dark:bg-white/5 border border-primary/20 rounded-full px-5 py-2.5 text-sm text-black dark:text-white focus:ring-1 focus:ring-primary/40 outline-none"
+                  className="flex-1 bg-black/5 dark:bg-white/5 border border-primary/20 rounded-full px-5 py-2.5 text-sm text-foreground focus:ring-1 focus:ring-primary/40 outline-none"
                 />
 
                 {(newMessage.trim() || pendingFile) && (
@@ -1005,7 +1007,7 @@ export default function MessagesPage({
                     animate={{ opacity: 1, scale: 1 }}
                     onClick={sendMessage}
                     disabled={uploading}
-                    className="p-2.5 bg-primary text-black rounded-full hover:scale-110 active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                    className="p-2.5 bg-primary text-foreground rounded-full hover:scale-110 active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                   >
                     <Send size={18} fill="currentColor" />
                   </motion.button>

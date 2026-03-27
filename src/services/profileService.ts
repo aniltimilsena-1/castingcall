@@ -93,7 +93,8 @@ export const profileService = {
             if (uuidFromQuery) {
                 q = q.or(`id.eq.${uuidFromQuery},user_id.eq.${uuidFromQuery}`);
             } else {
-                q = q.or(`name.ilike.%${params.query}%,role.ilike.%${params.query}%,bio.ilike.%${params.query}%,visual_search_keywords.ilike.%${params.query}%`);
+                // Focus search primarily on NAME as requested, ignoring role/bio for general text matches
+                q = q.ilike('name', `%${params.query}%`);
             }
         }
 

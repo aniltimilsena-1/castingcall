@@ -63,7 +63,7 @@ export function ConfirmationDialog({
             className={`w-full sm:w-auto rounded-2xl transition-all px-8 py-2.5 text-[0.6rem] uppercase tracking-[0.2em] font-black shadow-2xl ${
               variant === "destructive" 
                 ? "bg-red-500 text-white hover:bg-red-600 shadow-red-500/20" 
-                : "bg-primary text-black hover:bg-primary/90 shadow-primary/20"
+                : "bg-primary text-foreground hover:bg-primary/90 shadow-primary/20"
             }`}
           >
             {confirmText}
