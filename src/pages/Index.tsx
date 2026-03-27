@@ -392,7 +392,7 @@ const Index = () => {
              description: "Someone started following you!",
              action: {
                label: "View",
-               onClick: () => setPage('profile')
+               onClick: () => routerNavigate(`/profile/${user.id}`)
              },
            });
         }
@@ -689,7 +689,7 @@ const Index = () => {
         onNavigate={navigate}
       />
 
-      <main className={`relative flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' ? 'pb-0' : 'pb-16 md:pb-0'} ${page !== 'home' ? 'pt-32 md:pt-20' : ''}`}>
+      <main className={`relative flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' ? 'pb-0' : 'pb-24 md:pb-0'} ${page !== 'home' ? 'pt-24 md:pt-24' : ''}`}>
         {page !== 'messages' && page !== 'feed' && (
           <Navbar
             onSearch={handleSearch}

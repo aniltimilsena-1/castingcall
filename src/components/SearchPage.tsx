@@ -172,7 +172,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
 
   return (
     <motion.div
-      className="max-w-[1000px] mx-auto px-6 md:px-4 py-12"
+      className="max-w-[740px] mx-auto px-10 md:px-4 py-8 md:py-16"
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
     >
@@ -388,16 +388,16 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             <p className="text-muted-foreground font-body text-lg">No matching talent profiles found.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
             {results.map((p) => (
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="stitched-card group relative flex flex-row items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl px-2.5 md:px-6 py-2.5 md:py-5 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5"
+                className="stitched-card group relative flex flex-row items-center gap-2 md:gap-4 rounded-lg md:rounded-2xl px-2 md:px-6 py-2 md:py-4 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 max-w-[400px] mx-auto w-full"
               >
                 <div className="flex flex-col items-center flex-shrink-0 relative">
                   <div className="relative group/search-avatar">
-                    <div className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-sm md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
+                    <div className="w-9 h-9 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-xs md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
                       <div className="stitched-card-scanner" />
                       {p.photo_url ? (
                         <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
@@ -490,7 +490,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             <p className="text-muted-foreground font-body text-lg">No open casting calls found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
             {projectResults.map((p) => (
               <ProjectCard key={p.id} project={p} />
             ))}
@@ -641,10 +641,10 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.98, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      className="stitched-card rounded-2xl md:rounded-[3rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2"
+      className="stitched-card rounded-xl md:rounded-[2rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2 h-full flex flex-col max-w-[400px] mx-auto w-full"
     >
       <div className="stitched-card-scanner" />
-      <div className="aspect-[16/10] bg-secondary relative overflow-hidden">
+      <div className="aspect-[16/10] md:aspect-[16/9] bg-secondary relative overflow-hidden">
         {project.thumbnail_url ? (
           <motion.img 
             whileHover={{ scale: 1.15, x: 5, y: 5 }}
@@ -655,28 +655,28 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-primary/10">
-            <Layout className="w-24 h-24" />
+            <Layout className="w-12 h-12" />
           </div>
         )}
-        <div className="absolute top-6 left-6 flex gap-2">
-          <div className="bg-primary/90 backdrop-blur-md text-primary-foreground px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-border">
-            {project.role_category || 'Talent'} Call
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+          <div className="bg-primary text-primary-foreground px-2.5 py-1 rounded-full text-[0.55rem] font-bold uppercase tracking-[1px] shadow-2xl border border-border/20">
+            {project.role_category || 'Talent'}
           </div>
           {applied && (
-            <div className="bg-green-500/90 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-[0.7rem] font-normal uppercase tracking-[2px] shadow-2xl border border-border animate-in fade-in zoom-in duration-300">
+            <div className="bg-green-500/90 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[0.55rem] font-bold uppercase tracking-[1px] shadow-2xl border border-border/20 animate-in fade-in zoom-in duration-300">
               Applied
             </div>
           )}
         </div>
       </div>
-      <div className="p-4 md:p-6">
-        <h4 className="font-display text-xl text-foreground mb-3 group-hover:text-foreground/80 transition-colors leading-tight">{project.title}</h4>
-        <div className="flex flex-wrap items-center gap-4 text-[0.6rem] text-foreground/60 mb-5 font-bold uppercase tracking-[1.5px]">
-          <span className="flex items-center gap-2"><MapPin size={14} className="text-primary" /> {project.location || 'Remote'}</span>
-          <span className="flex items-center gap-2"><DollarSign size={14} className="text-primary" /> {project.salary_range || 'Competitive'}</span>
+      <div className="p-3 md:p-4 flex-1 flex flex-col">
+        <h4 className="font-display text-sm md:text-lg text-foreground mb-1.5 group-hover:text-foreground/80 transition-colors leading-tight line-clamp-1">{project.title}</h4>
+        <div className="flex flex-wrap items-center gap-2 text-[0.5rem] text-foreground/60 mb-3 font-bold uppercase tracking-[1px]">
+          <span className="flex items-center gap-1 text-primary">📍 {project.location || 'Remote'}</span>
+          <span className="flex items-center gap-1 text-primary">💰 {project.salary_range || 'Comp.'}</span>
         </div>
-        <p className="text-sm text-foreground/60 line-clamp-2 mb-6 leading-relaxed font-body">
-          {project.description || "No detailed description provided for this casting call."}
+        <p className="text-[0.65rem] text-foreground/60 line-clamp-2 md:line-clamp-3 mb-4 leading-relaxed font-body flex-1">
+          {project.description || "No detailed description provided."}
         </p>
 
         {!applied && (

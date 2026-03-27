@@ -134,14 +134,13 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.85 }}
-            className="flex flex-nowrap items-center lg:justify-center gap-3 mt-12 overflow-x-auto no-scrollbar pb-6 px-4 md:px-0 mask-fade-right lg:mask-none"
+            className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mt-12 px-6"
           >
-            <span className="text-[0.7rem] md:text-[0.75rem] uppercase tracking-[0.3em] text-foreground/50 mr-2 font-medium">Browse by role:</span>
             {["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"].map((role) => (
               <button
                 key={role}
                 onClick={() => onCategoryClick(role)}
-                className="px-7 py-3.5 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/80 hover:bg-foreground/10 hover:border-foreground/50 hover:text-foreground text-[0.8rem] md:text-[0.75rem] font-black uppercase tracking-[0.15em] transition-all duration-300 backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95"
+                className="px-6 py-3 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/80 hover:bg-foreground/10 hover:border-foreground/50 hover:text-foreground text-[0.7rem] md:text-[0.75rem] font-bold uppercase tracking-[0.15em] transition-all duration-300 backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95 whitespace-nowrap"
               >
                 {role}
               </button>
@@ -224,8 +223,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-12 md:py-24 px-4 md:px-6 max-w-7xl mx-auto relative z-30">
-        <div className="bg-card border border-border rounded-[2.5rem] md:rounded-[4rem] p-8 md:p-20 overflow-hidden relative">
+      <section className="py-20 md:py-24 px-8 md:px-12 max-w-7xl mx-auto relative z-30">
+        <div className="bg-card border border-border rounded-[3.5rem] md:rounded-[4rem] p-12 md:p-20 overflow-hidden relative">
           {/* Abstract Background Glows */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
@@ -473,7 +472,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── FOOTER ── */}
       <footer className="mt-12 border-t border-border py-16 relative z-30 bg-card/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 text-left">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12 text-center md:text-left">
           <div className="col-span-2 md:col-span-2 space-y-8 text-center md:text-left mb-8 md:mb-0">
             <div className="flex justify-center md:justify-start">
               <h2 className="font-display text-3xl tracking-widest text-foreground hover:text-foreground/80 transition-all cursor-pointer uppercase italic">CaastingCall</h2>
@@ -486,22 +485,22 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
           <div className="space-y-6">
             <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-foreground font-bold">Platform</h4>
-            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-foreground">
-              <button onClick={() => onNavigate("search", { searchType: "projects" })} className="hover:text-foreground/70 transition-all text-left">Casting Calls</button>
-              <button onClick={() => onNavigate("search", { searchType: "talents" })} className="hover:text-foreground/70 transition-all text-left">Find Talent</button>
-              <button onClick={() => onNavigate("feed")} className="hover:text-foreground/70 transition-all text-left">Community Feed</button>
-              <button onClick={() => onNavigate("premium")} className="hover:text-foreground/70 transition-all text-left">Upgrade to PRO</button>
-              <a href="/CastingCall.apk" download className="hover:text-foreground/70 transition-all text-left text-foreground">Download Android App</a>
+            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-foreground items-center md:items-start">
+              <button onClick={() => onNavigate("search", { searchType: "projects" })} className="hover:text-foreground/70 transition-all">Casting Calls</button>
+              <button onClick={() => onNavigate("search", { searchType: "talents" })} className="hover:text-foreground/70 transition-all">Find Talent</button>
+              <button onClick={() => onNavigate("feed")} className="hover:text-foreground/70 transition-all">Community Feed</button>
+              <button onClick={() => onNavigate("premium")} className="hover:text-foreground/70 transition-all">Upgrade to PRO</button>
+              <a href="/CastingCall.apk" download className="hover:text-foreground/70 transition-all text-foreground">Download Android App</a>
             </div>
           </div>
 
           <div className="space-y-6">
             <h4 className="text-[0.7rem] uppercase tracking-[0.4em] text-foreground font-bold">Company</h4>
-            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-foreground">
-              <button onClick={() => onNavigate("help")} className="hover:text-foreground/70 transition-all text-left">About Us</button>
-              <button onClick={() => onNavigate("help")} className="hover:text-foreground/70 transition-all text-left">Contact Support</button>
-              <button onClick={() => onNavigate("terms")} className="hover:text-foreground/70 transition-all text-left">Terms of Service</button>
-              <button onClick={() => onNavigate("terms")} className="hover:text-foreground/70 transition-all text-left">Privacy Policy</button>
+            <div className="flex flex-col gap-4 text-[0.6rem] uppercase tracking-[0.2em] font-bold text-foreground items-center md:items-start">
+              <button onClick={() => onNavigate("help")} className="hover:text-foreground/70 transition-all">About Us</button>
+              <button onClick={() => onNavigate("help")} className="hover:text-foreground/70 transition-all">Contact Support</button>
+              <button onClick={() => onNavigate("terms")} className="hover:text-foreground/70 transition-all">Terms of Service</button>
+              <button onClick={() => onNavigate("terms")} className="hover:text-foreground/70 transition-all">Privacy Policy</button>
             </div>
           </div>
         </div>

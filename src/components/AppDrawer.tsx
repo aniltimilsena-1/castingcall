@@ -82,51 +82,50 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 custom-scrollbar" style={{ WebkitOverflowScrolling: "touch" }}>
           <Section label="Explore">
-            <Item icon={<Home size={16}/>} onClick={() => go("home")}>{t('nav.home')}</Item>
-            <Item icon={<SearchIcon size={16}/>} onClick={() => go("search", { searchType: "projects" })}>Casting Calls</Item>
-            <Item icon={<Users size={16}/>} onClick={() => go("search", { searchType: "talents" })}>Actors</Item>
-            <Item icon={<Play size={16}/>} onClick={() => go("feed")}>{t('nav.feed')}</Item>
+            <Item onClick={() => go("home")}>{t('nav.home')}</Item>
+            <Item onClick={() => go("search", { searchType: "projects" })}>Casting Calls</Item>
+            <Item onClick={() => go("search", { searchType: "talents" })}>Actors</Item>
+            <Item onClick={() => go("feed")}>{t('nav.feed')}</Item>
           </Section>
           
           <Hr />
           
           <Section label="Workspace">
-            <Item icon={<PlusCircle size={16}/>} onClick={() => go("projects", { openForm: true })}>Post a Casting</Item>
-            <Item icon={<Briefcase size={16}/>} onClick={() => go("projects")}>Manage Applications</Item>
+            <Item onClick={() => go("projects", { openForm: true })}>Post a Casting</Item>
+            <Item onClick={() => go("projects")}>Manage Applications</Item>
           </Section>
 
           <Hr />
 
           <Section label="Account">
-            <Item icon={<User size={16}/>} onClick={() => go("profile")}>{t('nav.profile')}</Item>
-            {!isPremium && <Item icon={<Crown size={16}/>} onClick={() => go("premium")} highlight>Premium Upgrade</Item>}
-            <Item icon={<Bell size={16}/>} onClick={() => go("notifications")}>Notifications</Item>
-            <Item icon={<MessageSquare size={16}/>} onClick={() => go("messages")}>Messages</Item>
+            <Item onClick={() => go("profile")}>{t('nav.profile')}</Item>
+            {!isPremium && <Item onClick={() => go("premium")} highlight>Premium Upgrade</Item>}
+            <Item onClick={() => go("notifications")}>Notifications</Item>
+            <Item onClick={() => go("messages")}>Messages</Item>
           </Section>
 
           <Hr />
 
           <Section label="System">
             {profile?.role === "Admin" && (
-              <Item icon={<ShieldCheck size={16}/>} onClick={() => go("admin")}>Admin Panel</Item>
+              <Item onClick={() => go("admin")}>Admin Panel</Item>
             )}
-            <Item icon={<Settings size={16}/>} onClick={() => go("settings")}>{t('nav.settings')}</Item>
-            <Item icon={<Bookmark size={16}/>} onClick={() => go("saved")}>Saved Items</Item>
+            <Item onClick={() => go("settings")}>{t('nav.settings')}</Item>
+            <Item onClick={() => go("saved")}>Saved Items</Item>
           </Section>
 
           <Hr />
 
           <Section label="Support">
-            <Item icon={<HelpCircle size={16}/>} onClick={() => go("help")}>Help & Support</Item>
-            <Item icon={<Monitor size={16}/>} onClick={() => go("terms")}>Terms & Privacy</Item>
+            <Item onClick={() => go("help")}>Help & Support</Item>
+            <Item onClick={() => go("terms")}>Terms & Privacy</Item>
             
             <a 
               href="/CastingCall.apk" 
               download 
-              className="flex items-center gap-4 w-full text-left text-primary font-accent text-[0.7rem] font-bold uppercase tracking-[0.2em] px-5 py-4 mt-6 rounded-2xl bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-all active:scale-95 shadow-lg shadow-primary/5"
+              className="block w-full text-left text-primary font-accent text-[0.7rem] font-bold uppercase tracking-[0.2em] px-5 py-4.5 mt-4 rounded-2xl bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-all active:scale-98 shadow-lg shadow-primary/5"
             >
-              <Download size={16} />
-              <span>Download App</span>
+              Download App
             </a>
           </Section>
         </div>
@@ -149,10 +148,10 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="pt-6 pb-2">
-      <div className="text-[10px] font-black tracking-[0.3em] uppercase text-foreground/30 mb-4 px-2">
+      <div className="text-[10px] font-black tracking-[0.3em] uppercase text-foreground/30 mb-4 px-8">
         {label}
       </div>
-      <div className="space-y-1.5 px-1">
+      <div className="space-y-1 px-4">
         {children}
       </div>
     </div>
@@ -162,30 +161,26 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 interface ItemProps {
   children: React.ReactNode;
   onClick: () => void;
-  icon?: React.ReactNode;
   highlight?: boolean;
 }
 
-function Item({ children, onClick, icon, highlight }: ItemProps) {
+function Item({ children, onClick, highlight }: ItemProps) {
   return (
     <motion.button
-      whileTap={{ scale: 0.96 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={`
-        flex items-center gap-4 w-full text-left font-accent text-[0.7rem] font-bold uppercase tracking-[0.16em] px-5 py-4.5 rounded-2xl transition-all border border-transparent
+        block w-full text-left font-accent text-[0.7rem] font-bold uppercase tracking-[0.2em] px-5 py-4.5 rounded-2xl transition-all border border-transparent
         ${highlight 
           ? 'bg-primary/10 text-primary border-primary/20 shadow-lg shadow-primary/5' 
           : 'text-foreground/70 hover:bg-foreground/5 hover:text-foreground hover:border-foreground/10'}
       `}
     >
-      <span className={highlight ? "text-primary" : "text-foreground/40 group-hover:text-primary"}>
-        {icon}
-      </span>
-      <span>{children}</span>
+      {children}
     </motion.button>
   );
 }
 
 function Hr() {
-  return <div className="h-px bg-foreground/5 mx-4 my-2" />;
+  return <div className="h-px bg-foreground/5 mx-8 my-2" />;
 }

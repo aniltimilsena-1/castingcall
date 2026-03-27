@@ -122,119 +122,113 @@ export default function Navbar({
 
   return (
     <nav className="absolute top-0 left-0 w-full z-[100] bg-transparent transition-all duration-500">
-      <div className="flex items-center justify-between px-4 md:px-8 h-20 max-w-[2000px] mx-auto">
+      <div className="flex items-center justify-between px-8 md:px-12 h-16 max-w-[2000px] mx-auto">
         <button 
           onClick={onLogoClick} 
-          className="relative group flex items-center flex-shrink-0 transition-all duration-700 font-accent text-2xl font-black italic tracking-tighter text-primary active:scale-95"
+          className="relative group flex items-center flex-shrink-0 transition-all duration-700 font-accent text-lg md:text-xl font-black italic tracking-tighter text-primary active:scale-95"
           title="Home"
         >
-          {activePage === 'home' && (
-            <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-[2px] bg-primary rounded-full shadow-[0_0_8px_rgba(245,197,24,0.8)] animate-in fade-in duration-500" />
-          )}
           CaastingCall
         </button>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-2 lg:gap-4">
-          <div className="hidden md:block relative">
-            <div className="flex items-center gap-2 bg-background border-[1.5px] border-border rounded-full px-4 py-1.5 w-72 focus-within:border-primary transition-colors">
-              <Search className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-              <input
-                type="text"
-                placeholder={t('nav.searchPlaceholder')}
-                className="bg-transparent border-none outline-none text-foreground font-body text-xs w-full placeholder:text-muted-foreground/50"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={() => setShowAutocomplete(true)}
-                onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
-                onKeyDown={handleKeyDown}
-              />
-            </div>
-
-            {/* Autocomplete Dropdown */}
-            <AnimatePresence>
-              {showAutocomplete && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute top-full mt-2 left-0 w-full glass-card border border-border shadow-2xl rounded-2xl overflow-hidden z-[200] p-1 shadow-primary/10"
-                >
-                  {/* Suggestions Section */}
-                  {suggestions.length > 0 && (
-                    <div className="p-2">
-                       <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 px-2">Suggestions</div>
-                       {suggestions.map(s => (
-                         <button
-                           key={s.user_id}
-                           onClick={() => {
-                             if (onNavigate) {
-                               onNavigate('profile');
-                               // We actually want to open their details or view specific profile
-                               // For simplicity, we search their name
-                               handleSearchCommit(s.name!);
-                             }
-                           }}
-                           className="w-full flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-xl transition-all group"
-                         >
-                           <div className="w-8 h-8 rounded-full bg-secondary border border-border overflow-hidden">
-                             {s.photo_url ? <img src={s.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px]">{s.name?.[0]}</div>}
-                           </div>
-                           <div className="text-left">
-                             <div className="text-xs text-foreground font-bold group-hover:text-primary transition-colors">{s.name}</div>
-                             <div className="text-[9px] text-muted-foreground uppercase tracking-widest leading-none">{s.role || "Talent"}</div>
-                           </div>
-                         </button>
-                       ))}
-                    </div>
-                  )}
-
-                  {/* History Section */}
-                  {searchValue.length === 0 && searchHistory.length > 0 && (
-                    <div className="p-2 border-t border-border/10">
-                       <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 px-2">Recent Searches</div>
-                       {searchHistory.map((term, i) => (
-                         <button
-                           key={i}
-                           onClick={() => {
-                             setSearchValue(term);
-                             handleSearchCommit(term);
-                           }}
-                           className="w-full flex items-center justify-between p-2 hover:bg-foreground/5 rounded-xl transition-all group"
-                         >
-                           <div className="flex items-center gap-3">
-                              <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                              <span className="text-xs text-foreground group-hover:text-primary transition-colors">{term}</span>
-                           </div>
-                           <X 
-                             size={12} 
-                             className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               const newHist = searchHistory.filter(h => h !== term);
-                               setSearchHistory(newHist);
-                               localStorage.setItem('search_history', JSON.stringify(newHist));
-                             }}
-                            />
-                         </button>
-                       ))}
-                    </div>
-                  )}
-
-                  {suggestions.length === 0 && (searchValue.length > 0 || searchHistory.length === 0) && (
-                    <div className="p-4 text-center text-muted-foreground text-[10px] uppercase tracking-widest font-light italic">
-                      {searchValue.length > 0 ? "Searching worldwide..." : "No recent searches"}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
+        <div className="flex-1 max-w-[180px] mx-2 sm:mx-4 md:mx-6 relative group">
+          <div className="flex items-center gap-1.5 bg-background/40 backdrop-blur-md border border-border/60 rounded-full px-3 py-1 w-full focus-within:border-primary transition-all shadow-sm">
+            <Search className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+            <input
+              type="text"
+              placeholder={t('nav.searchPlaceholder')}
+              className="bg-transparent border-none outline-none text-foreground font-body text-[0.6rem] w-full placeholder:text-muted-foreground/30"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onFocus={() => setShowAutocomplete(true)}
+              onBlur={() => setTimeout(() => setShowAutocomplete(false), 200)}
+              onKeyDown={handleKeyDown}
+            />
           </div>
 
-          <div className="flex items-center gap-1">
+          {/* Autocomplete Dropdown */}
+          <AnimatePresence>
+            {showAutocomplete && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute top-full mt-2 left-0 w-full glass-card border border-border shadow-2xl rounded-2xl overflow-hidden z-[200] p-1 shadow-primary/10"
+              >
+                {/* Suggestions Section */}
+                {suggestions.length > 0 && (
+                  <div className="p-2">
+                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 px-2">Suggestions</div>
+                     {suggestions.map(s => (
+                       <button
+                         key={s.user_id}
+                         onClick={() => {
+                           if (onNavigate) {
+                             onNavigate('profile');
+                             handleSearchCommit(s.name!);
+                           }
+                         }}
+                         className="w-full flex items-center gap-3 p-2 hover:bg-foreground/5 rounded-xl transition-all group"
+                       >
+                         <div className="w-8 h-8 rounded-full bg-secondary border border-border overflow-hidden">
+                           {s.photo_url ? <img src={s.photo_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px]">{s.name?.[0]}</div>}
+                         </div>
+                         <div className="text-left">
+                           <div className="text-xs text-foreground font-bold group-hover:text-primary transition-colors">{s.name}</div>
+                           <div className="text-[9px] text-muted-foreground uppercase tracking-widest leading-none">{s.role || "Talent"}</div>
+                         </div>
+                       </button>
+                     ))}
+                  </div>
+                )}
 
+                {/* History Section */}
+                {searchValue.length === 0 && searchHistory.length > 0 && (
+                  <div className="p-2 border-t border-border/10">
+                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 px-2">Recent Searches</div>
+                     {searchHistory.map((term, i) => (
+                       <button
+                         key={i}
+                         onClick={() => {
+                           setSearchValue(term);
+                           handleSearchCommit(term);
+                         }}
+                         className="w-full flex items-center justify-between p-2 hover:bg-foreground/5 rounded-xl transition-all group"
+                       >
+                         <div className="flex items-center gap-3">
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span className="text-xs text-foreground group-hover:text-primary transition-colors">{term}</span>
+                         </div>
+                         <X 
+                           size={12} 
+                           className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             const newHist = searchHistory.filter(h => h !== term);
+                             setSearchHistory(newHist);
+                             localStorage.setItem('search_history', JSON.stringify(newHist));
+                           }}
+                          />
+                       </button>
+                     ))}
+                  </div>
+                )}
+
+                {suggestions.length === 0 && (searchValue.length > 0 || searchHistory.length === 0) && (
+                  <div className="p-4 text-center text-muted-foreground text-[10px] uppercase tracking-widest font-light italic">
+                    {searchValue.length > 0 ? "Searching worldwide..." : "No recent searches"}
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Right Section */}
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-1">
             {user && (
-              <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={onMessagesClick}
                   className="flex p-2 md:p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
@@ -272,38 +266,21 @@ export default function Navbar({
 
           <button
             onClick={onAuthClick}
-            className={`relative px-4 py-2 sm:px-6 sm:py-2.5 rounded-full font-accent font-bold text-[0.6rem] sm:text-[0.65rem] uppercase tracking-[0.15em] transition-all duration-500 flex items-center gap-2 ${isPro
+            className={`relative px-4 py-2 sm:px-6 sm:py-2.5 rounded-full font-accent font-bold text-[0.65rem] uppercase tracking-[0.15em] transition-all duration-500 flex items-center gap-2 whitespace-nowrap ${isPro
               ? "border border-amber-500/40 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
               : "bg-primary text-primary-foreground hover:opacity-90 hover:scale-105 shadow-xl shadow-primary/30"
               }`}
           >
             {isPro && <Crown size={12} className="animate-pulse" />}
-            {user ? (isPro ? (isMobile ? "PRO" : "PRO DASHBOARD") : "MY STAGE") : "JOIN"}
+            {user ? (isPro ? (isMobile ? "PRO" : "DASHBOARD") : "STAGE") : "JOIN"}
           </button>
 
           <button
             onClick={onMenuClick}
-            className="px-3 py-1.5 rounded-full bg-secondary/20 text-muted-foreground hover:text-primary transition-colors hover:bg-secondary flex items-center gap-2"
+            className="p-2 sm:px-3 sm:py-1.5 rounded-full bg-secondary/20 text-muted-foreground hover:text-primary transition-colors hover:bg-secondary flex items-center justify-center"
           >
-            <Menu className="w-4 h-4" />
-            <span className="hidden lg:inline text-[0.65rem] font-medium uppercase tracking-widest">More</span>
+            <Menu className="w-5 h-5" />
           </button>
-        </div>
-      </div>
-
-      {/* Mobile-only search bar */}
-      <div className="md:hidden px-6 pb-3 flex justify-center">
-        <div className="flex items-center gap-2 bg-secondary/30 border border-border rounded-full px-3 py-1.5 focus-within:border-primary transition-all max-w-[280px] w-full">
-          <Search className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-          <input
-            type="search"
-            enterKeyHint="search"
-            placeholder={t('nav.searchPlaceholder')}
-            className="bg-transparent border-none outline-none text-foreground font-body text-[0.65rem] w-full placeholder:text-muted-foreground/50"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
         </div>
       </div>
     </nav>

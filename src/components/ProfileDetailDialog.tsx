@@ -411,7 +411,7 @@ export default function ProfileDetailDialog({
 
                                         </div>
                                         <div className="flex-1 text-center md:text-left pt-4">
-                                            <h2 className="font-display text-2xl md:text-4xl text-foreground mb-1 md:mb-2 flex items-center gap-2 md:gap-3">
+                                            <h2 className="font-display text-2xl md:text-4xl text-foreground mb-1 md:mb-2 flex items-center justify-center md:justify-start gap-2 md:gap-3">
                                                 {profile?.name || "Unknown"}
                                                 {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={24} className="text-amber-500 fill-amber-500/10" />}
                                                 {(profile as any).is_verified && <CheckCircle2 size={20} className="text-blue-500 fill-blue-500/10" />}
@@ -457,7 +457,7 @@ export default function ProfileDetailDialog({
 
                                             {/* ── Follow counts ── */}
                                             {userSettings?.visibility.showConnections !== "No one" && (
-                                                <div className="flex items-center gap-6 mb-6">
+                                                <div className="flex items-center justify-center md:justify-start gap-6 mb-6">
                                                     <button 
                                                         onClick={() => {
                                                             if (userSettings?.visibility.showConnections === "Followers" && !isFollowingProfile && user?.id !== profile.user_id) {
