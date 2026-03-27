@@ -134,7 +134,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.85 }}
-            className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mt-12 px-6"
+            className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mt-8 px-6"
           >
             {["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"].map((role) => (
               <button
@@ -150,16 +150,16 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
         {/* Floating Indicator */}
         <motion.div
-          animate={{ y: [0, 10, 0] }}
+          animate={{ y: [0, 6, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 text-foreground/20"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 text-foreground/20"
         >
-          <div className="w-px h-16 bg-gradient-to-b from-foreground/20 to-transparent" />
+          <div className="w-px h-10 bg-gradient-to-b from-foreground/20 to-transparent" />
         </motion.div>
       </section>
 
       {/* ── STATS SECTION ── */}
-      <section className="py-8 sm:py-12 px-8 max-w-7xl mx-auto border-y border-border relative z-30">
+      <section className="py-6 sm:py-8 px-8 max-w-7xl mx-auto border-y border-border relative z-30">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           {[
             { label: "Talents Registered", value: statsData.talents },

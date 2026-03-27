@@ -32,8 +32,12 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
         .slice(0, 2);
 
   const go = (page: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => {
+    // Primary navigation action
     onNavigate(page, options);
-    onClose();
+    // Slight delay before closing to ensure the tap is registered and nav starts
+    setTimeout(() => {
+      onClose();
+    }, 100);
   };
 
   const handleLogout = async () => {
@@ -120,13 +124,19 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             <Item onClick={() => go("help")}>Help & Support</Item>
             <Item onClick={() => go("terms")}>Terms & Privacy</Item>
             
-            <a 
-              href="/CastingCall.apk" 
-              download 
-              className="block w-full text-left text-foreground/70 font-accent text-[0.7rem] font-bold uppercase tracking-[0.2em] px-5 py-4.5 mt-2 rounded-2xl hover:bg-foreground/5 hover:text-foreground hover:border-foreground/10 transition-all active:scale-98"
+            <Item 
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = "/CastingCall.apk";
+                link.download = "CastingCall.apk";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                onClose();
+              }}
             >
-              Download App
-            </a>
+              Download App (APK)
+            </Item>
           </Section>
         </div>
 
