@@ -130,6 +130,7 @@ export default function MessagesPage({
 
   // 1. Core Scroll management - ensures we see the latest messages
   useEffect(() => {
+    let timeoutId: any;
     if (scrollRef.current && thread.length > 0) {
       const el = scrollRef.current;
       const { scrollTop, scrollHeight, clientHeight } = el;
@@ -140,20 +141,27 @@ export default function MessagesPage({
       // Logic: Scroll if I just sent a message, or if I am already looking at the bottom.
       // We use a small timeout to let the DOM paint fully (important for images/videos).
       if (isNearBottom || sentByMe) {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           el.scrollTop = el.scrollHeight;
         }, 100);
       }
     }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [thread, user?.id]);
 
   // 2. Force scroll to bottom when switching conversations 
   useEffect(() => {
+    let timeoutId: any;
     if (selectedPartner && scrollRef.current) {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
             if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }, 500); // Higher delay for initial load to account for API results
     }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [selectedPartner]);
 
   useEffect(() => {

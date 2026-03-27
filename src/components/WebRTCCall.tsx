@@ -65,6 +65,7 @@ export default function WebRTCCall({
   useEffect(() => {
     if (!streamReady || !isAccepted) return;
 
+    let timeoutId: any;
     const iceCandidateQueue: RTCIceCandidateInit[] = [];
     const channel = supabase.channel(`webrtc-${roomId}`);
     channelRef.current = channel;
@@ -200,8 +201,9 @@ export default function WebRTCCall({
         // Only the caller throws the first pitch
         if (status === 'SUBSCRIBED' && isCaller) {
           // Add deterministic buffer to ensure the receiver's Supabase channel accurately finished hooking its backend socket.
-          setTimeout(async () => {
+          timeoutId = setTimeout(async () => {
             try {
+              if (pc.signalingState === 'closed') return;
               const offer = await pc.createOffer();
               await pc.setLocalDescription(offer);
               channel.send({
@@ -217,6 +219,7 @@ export default function WebRTCCall({
       });
 
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       // PC should be closed properly
       pc.close();
       if (channelRef.current) {
@@ -254,8 +257,12 @@ export default function WebRTCCall({
       playMedia();
       
       // Also try again after a brief delay to ensure hardware is warm
-      const timer = setTimeout(playMedia, 1000);
-      return () => clearTimeout(timer);
+      const timeoutId = setTimeout(playMedia, 1000);
+      return () => {
+        clearTimeout(timeoutId);
+        // Clean up event listener when stream becomes stale
+        remoteStream.onaddtrack = null;
+      };
     }
   }, [remoteStream, isAccepted]);
 
