@@ -111,10 +111,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-display text-[clamp(1.2rem,5vw,4.5rem)] leading-none tracking-[-0.04em] text-white mb-8 uppercase font-black flex flex-nowrap justify-center items-center gap-x-3 md:gap-x-5"
+            className="font-accent text-[clamp(1.2rem,4.8vw,4rem)] leading-none tracking-[-0.04em] text-white mb-8 uppercase flex flex-nowrap justify-center items-center gap-x-3 md:gap-x-5"
           >
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-primary to-amber-500 italic font-medium whitespace-nowrap">Casting</span> 
-            <span className="text-white whitespace-nowrap">for Actors & Creators</span>
+            <span className="text-white font-black italic whitespace-nowrap">Casting</span> 
+            <span className="text-white font-light whitespace-nowrap">for Actors & Creators</span>
           </motion.h1>
 
           <motion.p
