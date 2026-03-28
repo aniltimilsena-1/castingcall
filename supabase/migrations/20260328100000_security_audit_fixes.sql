@@ -4,6 +4,19 @@
 -- LOW-3: Add rate limiting trigger for comments
 
 -- ══════════════════════════════════════════════════════════════════════
+-- Create missing table: photo_purchases (referenced by adminService)
+-- ══════════════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS public.photo_purchases (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    buyer_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    photo_url TEXT NOT NULL,
+    amount_paid FLOAT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(buyer_id, photo_url)
+);
+ALTER TABLE public.photo_purchases ENABLE ROW LEVEL SECURITY;
+
+-- ══════════════════════════════════════════════════════════════════════
 -- HIGH-3: Messages DELETE policy (was missing entirely)
 -- ══════════════════════════════════════════════════════════════════════
 DO $$ 
@@ -30,44 +43,39 @@ END $$;
 -- ══════════════════════════════════════════════════════════════════════
 
 -- transactions: Only admins (or service role) should insert
-ALTER TABLE IF EXISTS public.transactions ENABLE ROW LEVEL SECURITY;
-
 DO $$ 
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'transactions' AND policyname = 'Users can view own transactions') THEN
-        CREATE POLICY "Users can view own transactions" ON public.transactions
-            FOR SELECT USING (user_id = auth.uid());
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'transactions' AND policyname = 'Admins can manage all transactions') THEN
-        CREATE POLICY "Admins can manage all transactions" ON public.transactions
-            FOR ALL USING (
-                EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
-            );
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'transactions') THEN
+        ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+        
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'transactions' AND policyname = 'Users can view own transactions') THEN
+            CREATE POLICY "Users can view own transactions" ON public.transactions
+                FOR SELECT USING (user_id = auth.uid());
+        END IF;
+        
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'transactions' AND policyname = 'Admins can manage all transactions') THEN
+            CREATE POLICY "Admins can manage all transactions" ON public.transactions
+                FOR ALL USING (
+                    EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
+                );
+        END IF;
     END IF;
 END $$;
 
--- tips: Users can view, only admins can insert via approval
-ALTER TABLE IF EXISTS public.tips ENABLE ROW LEVEL SECURITY;
-
+-- tips: Additional admin policy
 DO $$ 
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'tips' AND policyname = 'Users can view own tips') THEN
-        CREATE POLICY "Users can view own tips" ON public.tips
-            FOR SELECT USING (sender_id = auth.uid() OR receiver_id = auth.uid());
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'tips' AND policyname = 'Admins can manage all tips') THEN
-        CREATE POLICY "Admins can manage all tips" ON public.tips
-            FOR ALL USING (
-                EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
-            );
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'tips') THEN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'tips' AND policyname = 'Admins can manage all tips') THEN
+            CREATE POLICY "Admins can manage all tips" ON public.tips
+                FOR ALL USING (
+                    EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
+                );
+        END IF;
     END IF;
 END $$;
 
--- photo_purchases: Users can view own, admins can insert
-ALTER TABLE IF EXISTS public.photo_purchases ENABLE ROW LEVEL SECURITY;
-
+-- photo_purchases: Users can view own, admins can manage
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'photo_purchases' AND policyname = 'Users can view own purchases') THEN
@@ -83,39 +91,29 @@ BEGIN
     END IF;
 END $$;
 
--- product_purchases: Users can view own, admins can insert
-ALTER TABLE IF EXISTS public.product_purchases ENABLE ROW LEVEL SECURITY;
-
+-- product_purchases: Additional admin policy
 DO $$ 
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_purchases' AND policyname = 'Users can view own product purchases') THEN
-        CREATE POLICY "Users can view own product purchases" ON public.product_purchases
-            FOR SELECT USING (buyer_id = auth.uid());
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_purchases' AND policyname = 'Admins can manage all product purchases') THEN
-        CREATE POLICY "Admins can manage all product purchases" ON public.product_purchases
-            FOR ALL USING (
-                EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
-            );
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'product_purchases') THEN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'product_purchases' AND policyname = 'Admins can manage all product purchases') THEN
+            CREATE POLICY "Admins can manage all product purchases" ON public.product_purchases
+                FOR ALL USING (
+                    EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
+                );
+        END IF;
     END IF;
 END $$;
 
--- fan_subscriptions: Users can view own, admins can manage
-ALTER TABLE IF EXISTS public.fan_subscriptions ENABLE ROW LEVEL SECURITY;
-
+-- fan_subscriptions: Additional admin policy
 DO $$ 
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'fan_subscriptions' AND policyname = 'Users can view own subscriptions') THEN
-        CREATE POLICY "Users can view own subscriptions" ON public.fan_subscriptions
-            FOR SELECT USING (subscriber_id = auth.uid() OR talent_id = auth.uid());
-    END IF;
-    
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'fan_subscriptions' AND policyname = 'Admins can manage all subscriptions') THEN
-        CREATE POLICY "Admins can manage all subscriptions" ON public.fan_subscriptions
-            FOR ALL USING (
-                EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
-            );
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'fan_subscriptions') THEN
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'fan_subscriptions' AND policyname = 'Admins can manage all subscriptions') THEN
+            CREATE POLICY "Admins can manage all subscriptions" ON public.fan_subscriptions
+                FOR ALL USING (
+                    EXISTS (SELECT 1 FROM public.profiles WHERE user_id = auth.uid() AND role = 'Admin')
+                );
+        END IF;
     END IF;
 END $$;
 
