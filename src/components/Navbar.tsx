@@ -253,13 +253,15 @@ export default function Navbar({
               </button>
             )}
 
-            <button
-               onClick={onDownloadClick}
-               className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 text-primary hover:bg-primary/5 transition-colors font-body font-normal text-[0.6rem] uppercase tracking-wider"
-            >
-               <Smartphone className="w-3.5 h-3.5" />
-               Get App
-            </button>
+            {onDownloadClick && (
+              <button
+                 onClick={onDownloadClick}
+                 className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 text-primary hover:bg-primary/5 transition-colors font-body font-normal text-[0.6rem] uppercase tracking-wider"
+              >
+                 <Smartphone className="w-3.5 h-3.5" />
+                 Get App
+              </button>
+            )}
           </div>
 
           <button
