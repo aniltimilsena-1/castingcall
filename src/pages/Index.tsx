@@ -686,7 +686,7 @@ const Index = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen film-grain relative">
+    <div className="flex flex-col min-h-screen relative">
       {/* Global Technical Grid Background */}
       <div className="ambient-glow" />
 

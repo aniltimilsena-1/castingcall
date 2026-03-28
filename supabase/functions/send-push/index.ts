@@ -5,6 +5,7 @@ import { create, getNumericDate } from "https://deno.land/x/djwt@v2.8/mod.ts"
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Content-Security-Policy': "default-src 'self'; object-src 'none'; base-uri 'self';",
 }
 
 // Full Private Key Configuration for FCM

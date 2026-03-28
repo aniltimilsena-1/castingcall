@@ -389,12 +389,12 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             <p className="text-muted-foreground font-body text-lg">No matching talent profiles found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-6">
+          <div className="grid grid-cols-1 gap-6">
             {results.map((p) => (
               <div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="stitched-card group relative flex flex-row items-center gap-2 md:gap-4 rounded-lg md:rounded-2xl px-2 md:px-6 py-2 md:py-4 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 max-w-[400px] mx-auto w-full"
+                className="stitched-card group relative flex flex-row items-center gap-2 md:gap-4 rounded-lg md:rounded-2xl px-2 md:px-6 py-2 md:py-4 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 mx-auto w-full"
               >
                 <div className="flex flex-col items-center flex-shrink-0 relative">
                   <div className="relative group/search-avatar">
@@ -491,7 +491,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             <p className="text-muted-foreground font-body text-lg">No open casting calls found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+          <div className="grid grid-cols-1 gap-8">
             {projectResults.map((p) => (
               <ProjectCard key={p.id} project={p} />
             ))}
@@ -642,7 +642,7 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.98, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      className="stitched-card rounded-xl md:rounded-[2rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2 h-full flex flex-col max-w-[400px] mx-auto w-full"
+      className="stitched-card rounded-xl md:rounded-[2rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2 h-full flex flex-col mx-auto w-full"
     >
       <div className="stitched-card-scanner" />
       <div className="aspect-[16/10] md:aspect-[16/9] bg-secondary relative overflow-hidden">
