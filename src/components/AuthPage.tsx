@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Phone, Mail } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Eye, EyeOff, Phone, Mail, ArrowRight, ChevronLeft } from "lucide-react";
 import { loggingService } from "@/services/loggingService";
 
 interface AuthPageProps {
@@ -113,205 +113,229 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
     }
   };
 
+  const buttonLabel = loading
+    ? "Please wait…"
+    : tab === "reset"
+    ? "Send Reset Link"
+    : tab === "login"
+    ? authMethod === "phone"
+      ? otpSent ? "Verify Code" : "Send OTP"
+      : "Sign In"
+    : "Create Account";
+
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-6 py-16">
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
       <motion.div
-        className="bg-card border-[1.5px] border-card-border rounded-2xl p-8 w-full max-w-[420px]"
-        initial={{ opacity: 0, y: 18 }}
+        className="w-full max-w-[380px]"
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.35 }}
       >
-        <div className="flex flex-col items-center text-center mb-8">
-          <h1 className="font-accent text-3xl text-foreground tracking-tight">CaastingCall</h1>
-          <p className="text-muted-foreground text-sm mt-2 font-medium">
-            {tab === "reset" ? "Recover your account password" : "Connect with top talent and industry professionals"}
+        {/* ── Header ── */}
+        <div className="text-center mb-8">
+          <h1 className="font-accent text-2xl text-foreground tracking-tight">
+            {tab === "reset" ? "Reset Password" : tab === "login" ? "Welcome back" : "Create account"}
+          </h1>
+          <p className="text-muted-foreground/60 text-xs mt-1.5 tracking-wide">
+            {tab === "reset"
+              ? "We'll send a recovery link to your email"
+              : tab === "login"
+              ? "Sign in to continue to CaastingCall"
+              : "Join CaastingCall — it's free"}
           </p>
         </div>
 
-        {tab !== "reset" && (
-          <>
-            {/* OAuth Buttons */}
-            <div className="mb-7">
+        {/* ── Card ── */}
+        <div className="bg-card/60 backdrop-blur-sm border border-white/[0.06] rounded-2xl p-6 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)]">
+          
+          {tab !== "reset" && (
+            <>
+              {/* Google OAuth */}
               <button
                 onClick={() => handleOAuthClick('google')}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border-[1.5px] border-border rounded-lg bg-background hover:bg-muted/50 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2.5 py-2.5 border border-white/[0.08] rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-all text-sm text-foreground/80 disabled:opacity-50"
               >
-                <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-                <span className="text-xs font-normal uppercase tracking-wider">Continue with Google</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                Continue with Google
               </button>
-            </div>
 
-            <div className="relative mb-7">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-              <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-normal tracking-widest">Or continue with</span></div>
-            </div>
+              {/* Divider */}
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/[0.06]" /></div>
+                <div className="relative flex justify-center"><span className="bg-card/60 px-3 text-[10px] text-muted-foreground/40 uppercase tracking-[0.2em]">or</span></div>
+              </div>
 
-            <div className="flex gap-2 mb-7">
-              {(["login", "signup"] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => { setTab(t); setOtpSent(false); }}
-                  className={`flex-1 py-2.5 border-[1.5px] rounded-lg font-body text-sm font-normal transition-all ${tab === t
-                    ? "border-primary text-primary bg-primary/5"
-                    : "border-border text-muted-foreground"
-                    }`}
-                >
-                  {t === "login" ? "Sign In" : "Sign Up"}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex bg-secondary/30 p-1 rounded-xl mb-6 border border-white/5">
-              <button
-                onClick={() => { setAuthMethod("email"); setOtpSent(false); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-normal tracking-widest transition-all ${authMethod === "email" ? "bg-primary text-foreground" : "text-muted-foreground hover:text-white"}`}
-              >
-                <Mail size={16} /> EMAIL
-              </button>
-              <button
-                onClick={() => { setAuthMethod("phone"); setOtpSent(false); }}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-normal tracking-widest transition-all ${authMethod === "phone" ? "bg-primary text-foreground" : "text-muted-foreground hover:text-white"}`}
-              >
-                <Phone size={16} /> PHONE
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* Forms */}
-        {tab === "reset" ? (
-          <div className="space-y-4">
-            <Field label="EMAIL ADDRESS" type="email" value={resetEmail} onChange={setResetEmail} placeholder="Enter your registered email" />
-            <button
-              onClick={() => setTab("login")}
-              className="text-[0.7rem] text-primary hover:underline transition-all block mt-1 uppercase tracking-wider font-medium"
-            >
-              Back to Login
-            </button>
-          </div>
-        ) : tab === "login" ? (
-          <div className="space-y-4">
-            {authMethod === "email" ? (
-              <>
-                <Field label="EMAIL" type="email" value={loginEmail} onChange={setLoginEmail} placeholder="you@example.com" />
-                <div>
-                  <Field
-                    label="PASSWORD"
-                    type={showPass ? "text" : "password"}
-                    value={loginPass}
-                    onChange={setLoginPass}
-                    placeholder="••••••••"
-                    rightElement={
-                      <button
-                        type="button"
-                        onClick={() => setShowPass(!showPass)}
-                        className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                      >
-                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    }
-                  />
+              {/* Tab toggle — compact pill */}
+              <div className="flex bg-white/[0.03] p-0.5 rounded-lg mb-5 border border-white/[0.04]">
+                {(["login", "signup"] as const).map((t) => (
                   <button
-                    onClick={() => setTab("reset")}
-                    className="text-[0.7rem] text-muted-foreground hover:text-primary transition-colors block mt-2 ml-auto uppercase tracking-wider font-medium"
+                    key={t}
+                    onClick={() => { setTab(t); setOtpSent(false); }}
+                    className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      tab === t
+                        ? "bg-primary text-black shadow-sm"
+                        : "text-muted-foreground/60 hover:text-muted-foreground"
+                    }`}
                   >
-                    Forgot Password?
+                    {t === "login" ? "Sign In" : "Sign Up"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Auth method toggle — subtle underline style */}
+              <div className="flex gap-4 mb-5">
+                {([
+                  { id: "email" as const, icon: Mail, label: "Email" },
+                  { id: "phone" as const, icon: Phone, label: "Phone" },
+                ]).map(({ id, icon: Icon, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => { setAuthMethod(id); setOtpSent(false); }}
+                    className={`flex items-center gap-1.5 pb-1.5 text-xs transition-all border-b-2 ${
+                      authMethod === id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-muted-foreground/40 hover:text-muted-foreground/60"
+                    }`}
+                  >
+                    <Icon size={13} />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ── Forms ── */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${tab}-${authMethod}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+            >
+              {tab === "reset" ? (
+                <div className="space-y-3">
+                  <Field label="Email" type="email" value={resetEmail} onChange={setResetEmail} placeholder="you@example.com" />
+                  <button
+                    onClick={() => setTab("login")}
+                    className="flex items-center gap-1 text-[11px] text-muted-foreground/50 hover:text-primary transition-colors mt-1"
+                  >
+                    <ChevronLeft size={12} /> Back to sign in
                   </button>
                 </div>
-              </>
-            ) : (
-              <>
-                <Field
-                  label="PHONE NUMBER"
-                  type="tel"
-                  value={phone}
-                  onChange={setPhone}
-                  placeholder="+977 123456789"
-                />
-                {otpSent && (
-                  <Field
-                    label="verification code"
-                    type="text"
-                    value={otp}
-                    onChange={setOtp}
-                    placeholder="Enter OTP code"
-                  />
-                )}
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <Field label="FULL NAME" value={signupName} onChange={setSignupName} placeholder="Your name" />
-            {authMethod === "email" ? (
-              <>
-                <Field label="EMAIL" type="email" value={signupEmail} onChange={setSignupEmail} placeholder="you@example.com" />
-                <Field
-                  label="PASSWORD"
-                  type={showPass ? "text" : "password"}
-                  value={signupPass}
-                  onChange={setSignupPass}
-                  placeholder="Min 6 characters"
-                  rightElement={
-                    <button
-                      type="button"
-                      onClick={() => setShowPass(!showPass)}
-                      className="p-2 text-muted-foreground hover:text-primary transition-colors"
+              ) : tab === "login" ? (
+                <div className="space-y-3">
+                  {authMethod === "email" ? (
+                    <>
+                      <Field label="Email" type="email" value={loginEmail} onChange={setLoginEmail} placeholder="you@example.com" />
+                      <Field
+                        label="Password"
+                        type={showPass ? "text" : "password"}
+                        value={loginPass}
+                        onChange={setLoginPass}
+                        placeholder="••••••••"
+                        rightElement={
+                          <button
+                            type="button"
+                            onClick={() => setShowPass(!showPass)}
+                            className="p-1.5 text-muted-foreground/30 hover:text-muted-foreground transition-colors"
+                          >
+                            {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        }
+                      />
+                      <button
+                        onClick={() => setTab("reset")}
+                        className="text-[11px] text-muted-foreground/40 hover:text-primary transition-colors block ml-auto"
+                      >
+                        Forgot password?
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Field label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="+977 123456789" />
+                      {otpSent && <Field label="Verification Code" type="text" value={otp} onChange={setOtp} placeholder="Enter OTP" />}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Field label="Full Name" value={signupName} onChange={setSignupName} placeholder="Your name" />
+                  {authMethod === "email" ? (
+                    <>
+                      <Field label="Email" type="email" value={signupEmail} onChange={setSignupEmail} placeholder="you@example.com" />
+                      <Field
+                        label="Password"
+                        type={showPass ? "text" : "password"}
+                        value={signupPass}
+                        onChange={setSignupPass}
+                        placeholder="Min 6 characters"
+                        rightElement={
+                          <button type="button" onClick={() => setShowPass(!showPass)} className="p-1.5 text-muted-foreground/30 hover:text-muted-foreground transition-colors">
+                            {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        }
+                      />
+                      <Field
+                        label="Confirm Password"
+                        type={showPass ? "text" : "password"}
+                        value={signupConfirmPass}
+                        onChange={setSignupConfirmPass}
+                        placeholder="Repeat password"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Field label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="+977 123456789" />
+                      {otpSent && <Field label="Verification Code" type="text" value={otp} onChange={setOtp} placeholder="Enter OTP" />}
+                    </>
+                  )}
+                  <div>
+                    <label className="block text-[11px] text-muted-foreground/50 mb-1.5">Role</label>
+                    <select
+                      value={signupRole}
+                      onChange={(e) => setSignupRole(e.target.value)}
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-foreground text-sm outline-none focus:border-primary/50 transition-colors appearance-none"
                     >
-                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  }
-                />
-                <Field
-                  label="CONFIRM PASSWORD"
-                  type={showPass ? "text" : "password"}
-                  value={signupConfirmPass}
-                  onChange={setSignupConfirmPass}
-                  placeholder="Repeat password"
-                />
-              </>
-            ) : (
-              <>
-                <Field
-                  label="PHONE NUMBER"
-                  type="tel"
-                  value={phone}
-                  onChange={setPhone}
-                  placeholder="+977 123456789"
-                />
-                {otpSent && (
-                  <Field
-                    label="verification code"
-                    type="text"
-                    value={otp}
-                    onChange={setOtp}
-                    placeholder="Enter OTP code"
-                  />
-                )}
-              </>
-            )}
-            <div>
-              <label className="block text-[0.76rem] text-muted-foreground font-normal tracking-wider mb-1">YOUR ROLE</label>
-              <select
-                value={signupRole}
-                onChange={(e) => setSignupRole(e.target.value)}
-                className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors"
-              >
-                <option value="">Select your role…</option>
-                {ROLES.map((r) => <option key={r}>{r}</option>)}
-              </select>
-            </div>
-          </div>
-        )}
+                      <option value="">Select your role…</option>
+                      {ROLES.map((r) => <option key={r}>{r}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full bg-primary text-primary-foreground rounded-lg py-3 font-body font-normal text-base mt-5 hover:opacity-85 transition-opacity disabled:opacity-50"
-        >
-          {loading ? "Please wait…" : tab === "reset" ? "Send Reset Link" : tab === "login" ? (authMethod === "phone" ? (otpSent ? "Verify Code" : "Send OTP") : "Sign In") : "Create Account"}
-        </button>
+          {/* Submit */}
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 bg-primary text-black rounded-xl py-2.5 text-sm font-semibold mt-5 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+          >
+            {buttonLabel}
+            {!loading && <ArrowRight size={14} />}
+          </button>
+        </div>
+
+        {/* Footer link */}
+        {tab !== "reset" && (
+          <p className="text-center text-[11px] text-muted-foreground/30 mt-5">
+            {tab === "login" ? "Don't have an account? " : "Already have an account? "}
+            <button
+              onClick={() => { setTab(tab === "login" ? "signup" : "login"); setOtpSent(false); }}
+              className="text-primary/70 hover:text-primary transition-colors"
+            >
+              {tab === "login" ? "Sign up" : "Sign in"}
+            </button>
+          </p>
+        )}
       </motion.div>
     </div>
   );
@@ -324,14 +348,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block font-accent text-[0.72rem] text-muted-foreground tracking-wider mb-1">{label}</label>
+      <label className="block text-[11px] text-muted-foreground/50 mb-1.5">{label}</label>
       <div className="relative flex items-center">
         <input
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-background border-[1.5px] border-border rounded-lg px-4 py-2.5 text-foreground font-body text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40 pr-10"
+          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-foreground text-sm outline-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground/20 pr-9"
         />
         {rightElement && (
           <div className="absolute right-1">
