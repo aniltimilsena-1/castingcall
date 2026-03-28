@@ -32,14 +32,14 @@
     /* ── CINEMA DARK SYSTEM ── */
     --background: 0 0% 0%;         /* Pure Black #000000 */
     --foreground: 0 0% 100%;       /* Pure White text */
-
-    /* Cards - Flat Cinema Style */
-    --card: 0 0% 2%;               /* Almost pure black */
+    
+    /* Cards - Pure Cinema Black */
+    --card: 0 0% 0%;               
     --card-foreground: 0 0% 100%;
-    --card-border: 0 0% 0% / 0;    /* Invisible borders by default */
+    --card-border: 0 0% 0% / 0;    
 
     /* Popover */
-    --popover: 0 0% 3%;
+    --popover: 0 0% 0%;
     --popover-foreground: 0 0% 100%;
 
     /* Primary - IMDb Yellow */
@@ -47,11 +47,11 @@
     --primary-foreground: 0 0% 5%;
 
     /* Secondary surface */
-    --secondary: 0 0% 10%;
+    --secondary: 0 0% 0%;
     --secondary-foreground: 0 0% 100%;
 
     /* Muted Text - IMDb Grey */
-    --muted: 0 0% 10%;
+    --muted: 0 0% 5%;
     --muted-foreground: 0 0% 55%;  /* #8C8C8C */
 
     /* Accent - Blue for links/actions */
@@ -67,20 +67,20 @@
     --input: 0 0% 100% / 0.08;
     --ring: 47 92% 52%;
 
-    /* Sidebar - Vault feel */
-    --sidebar-background: 0 0% 4%;
+    /* Sidebar - Pure Black */
+    --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 0% 60%;
     --sidebar-primary: 47 92% 52%;
     --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent: 0 0% 2%;
     --sidebar-accent-foreground: 47 92% 52%;
-    --sidebar-border: 0 0% 10%;
+    --sidebar-border: 0 0% 5%;
     --sidebar-ring: 47 92% 52%;
 
     /* Surface Depth */
-    --surface-low: 0 0% 5%;
-    --surface-high: 0 0% 10%;
-    --surface-bright: 0 0% 18%;
+    --surface-low: 0 0% 0%;
+    --surface-high: 0 0% 5%;
+    --surface-bright: 0 0% 8%;
   }
 
   /* Force Dark Utility (Just in case components rely on .dark class) */

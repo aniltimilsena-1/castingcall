@@ -891,36 +891,47 @@ const Index = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-black/60 backdrop-blur-xl pointer-events-auto"
           >
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="bg-card border border-border rounded-[2.5rem] p-8 max-w-sm w-full relative overflow-hidden shadow-2xl"
+              initial={{ scale: 0.9, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 1.1, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-[360px] bg-card/80 border border-white/10 rounded-[2.5rem] p-8 overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.9)] text-center"
             >
-              <div className="absolute top-0 right-0 p-4">
-                <button 
-                  onClick={() => {
-                    setShowDownloadPopup(false);
-                    localStorage.setItem('cc_dismissed_download', 'true');
-                  }}
-                  className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center text-primary border border-primary/20">
-                  <Smartphone size={40} />
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+              <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
+              
+              <button 
+                onClick={() => {
+                  setShowDownloadPopup(false);
+                  localStorage.setItem('cc_dismissed_download', 'true');
+                }}
+                className="absolute top-6 right-6 p-2 rounded-full bg-white/5 border border-white/10 text-muted-foreground hover:text-white hover:bg-white/10 transition-all active:scale-90"
+              >
+                <X size={16} />
+              </button>
+              
+              <div className="flex flex-col items-center gap-8 relative z-10">
+                <div className="relative">
+                  <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-primary/5 rounded-[2.5rem] flex items-center justify-center text-primary border border-primary/20 shadow-[0_0_40px_rgba(245,197,24,0.15)] transform -rotate-12 hover:rotate-0 transition-transform duration-500">
+                    <Smartphone size={48} strokeWidth={1} className="drop-shadow-[0_0_10px_rgba(245,197,24,0.5)]" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-black border-2 border-primary/50 rounded-full flex items-center justify-center animate-bounce">
+                    <div className="w-3 h-3 bg-primary rounded-full" />
+                  </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-display text-foreground uppercase tracking-wider font-black">Experience the Full App</h3>
-                  <p className="text-sm text-muted-foreground font-light leading-relaxed">Download our native Android app for a smoother experience, real-time notifications, and premium features.</p>
+                <div className="space-y-3">
+                  <h3 className="text-3xl font-display text-white tracking-tight leading-none italic uppercase">
+                    Cinema in <br />
+                    <span className="text-primary italic">Your Pocket</span>
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-black opacity-60">Mobile Experience v1.0.4</p>
                 </div>
 
-                <div className="w-full space-y-3 pt-4">
+                <div className="w-full space-y-4 pt-4">
                   <a
                     href="/CastingCall.apk"
                     download
@@ -928,18 +939,19 @@ const Index = () => {
                       setShowDownloadPopup(false);
                       localStorage.setItem('cc_dismissed_download', 'true');
                     }}
-                    className="flex items-center justify-center gap-2 w-full bg-primary text-primary-foreground py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+                    className="group relative flex items-center justify-center gap-3 w-full bg-primary text-black py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:scale-[1.02] active:scale-95 transition-all shadow-[0_20px_40px_-10px_rgba(245,197,24,0.3)]"
                   >
                     Download APK
                   </a>
+                  
                   <button
                     onClick={() => {
                       setShowDownloadPopup(false);
                       localStorage.setItem('cc_dismissed_download', 'true');
                     }}
-                    className="w-full text-[0.6rem] text-muted-foreground uppercase tracking-widest font-bold hover:text-foreground transition-colors"
+                    className="text-[10px] text-muted-foreground uppercase tracking-[0.5em] font-black hover:text-primary transition-colors opacity-30 hover:opacity-100 py-2"
                   >
-                    Continue in Web App
+                    Dismiss
                   </button>
                 </div>
               </div>
