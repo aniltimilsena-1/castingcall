@@ -199,6 +199,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         </div>
       </div>
 
+
       {searchType === 'talents' && (
         <div className="mb-8 md:mb-12 space-y-4 md:space-y-8 p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-card to-secondary/20 border border-border shadow-2xl overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">

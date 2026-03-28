@@ -39,8 +39,21 @@ export default function WebRTCCall({
 
   // 1. Boot up Camera/Audio immediately so user sees themselves ringing
   useEffect(() => {
+    const constraints = {
+      video: callType === 'video' ? {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        frameRate: { ideal: 24, max: 30 },
+      } : false,
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      }
+    };
+
     navigator.mediaDevices
-      .getUserMedia({ video: callType === 'video', audio: true })
+      .getUserMedia(constraints)
       .then((stream) => {
         localStreamRef.current = stream;
         if (localVideoRef.current) {
@@ -104,7 +117,17 @@ export default function WebRTCCall({
     // Pipe in our local hardware stream
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => {
-        pc.addTrack(track, localStreamRef.current!);
+        const sender = pc.addTrack(track, localStreamRef.current!);
+        
+        // Optimize video bitrate for long-distance stability
+        if (track.kind === 'video') {
+          const params = sender.getParameters();
+          if (!params.encodings) {
+            params.encodings = [{}];
+          }
+          params.encodings[0].maxBitrate = 1000000; // 1 Mbps limit
+          sender.setParameters(params).catch(e => console.warn("WebRTC: Bitrate limit failed:", e));
+        }
       });
     }
 
