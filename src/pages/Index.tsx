@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { profileService } from "@/services/profileService";
@@ -17,30 +17,46 @@ import {
   Smartphone
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import WebRTCCall from "@/components/WebRTCCall";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { App } from "@capacitor/app";
 import Navbar from "@/components/Navbar";
 import AppDrawer, { PageName } from "@/components/AppDrawer";
-import HomePage from "@/components/HomePage";
-import AuthPage from "@/components/AuthPage";
-import ProfilePage from "@/components/ProfilePage";
-import SearchPage, { PhotoViewer } from "@/components/SearchPage";
-import FeedPage from "@/components/FeedPage";
-import MyProjectsPage from "@/components/MyProjectsPage";
-import NotificationsPage from "@/components/NotificationsPage";
-import MessagesPage from "@/components/MessagesPage";
-import SettingsPage from "@/components/SettingsPage";
-import SavedItemsPage from "@/components/SavedItemsPage";
-import AnalyticsPage from "@/components/AnalyticsPage";
-import HelpSupportPage from "@/components/HelpSupportPage";
-import TermsPrivacyPage from "@/components/TermsPrivacyPage";
-import PremiumPage from "@/components/PremiumPage";
-import ProfileDetailDialog from "@/components/ProfileDetailDialog";
-import AdminPage from "@/components/AdminPage";
-import PiPPlayer from "@/components/PiPPlayer";
+
+// ── Lazy-loaded page components (code-splitting) ──
+// Each page loads its own JS chunk only when the user navigates to it
+const HomePage = lazy(() => import("@/components/HomePage"));
+const AuthPage = lazy(() => import("@/components/AuthPage"));
+const ProfilePage = lazy(() => import("@/components/ProfilePage"));
+const SearchPage = lazy(() => import("@/components/SearchPage"));
+const FeedPage = lazy(() => import("@/components/FeedPage"));
+const MyProjectsPage = lazy(() => import("@/components/MyProjectsPage"));
+const NotificationsPage = lazy(() => import("@/components/NotificationsPage"));
+const MessagesPage = lazy(() => import("@/components/MessagesPage"));
+const SettingsPage = lazy(() => import("@/components/SettingsPage"));
+const SavedItemsPage = lazy(() => import("@/components/SavedItemsPage"));
+const AnalyticsPage = lazy(() => import("@/components/AnalyticsPage"));
+const HelpSupportPage = lazy(() => import("@/components/HelpSupportPage"));
+const TermsPrivacyPage = lazy(() => import("@/components/TermsPrivacyPage"));
+const PremiumPage = lazy(() => import("@/components/PremiumPage"));
+const AdminPage = lazy(() => import("@/components/AdminPage"));
+const WebRTCCall = lazy(() => import("@/components/WebRTCCall"));
+const ProfileDetailDialog = lazy(() => import("@/components/ProfileDetailDialog"));
+const PiPPlayer = lazy(() => import("@/components/PiPPlayer"));
+
+// Lightweight loading fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-[60vh]">
+    <div className="flex flex-col items-center gap-4">
+      <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold">Loading</span>
+    </div>
+  </div>
+);
+
+// PhotoViewer is a lightweight overlay, keep it lazy
+const PhotoViewerLazy = lazy(() => import("@/components/SearchPage").then(mod => ({ default: mod.PhotoViewer })));
 
 const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "messages", "settings", "saved", "analytics", "admin"];
 
@@ -696,7 +712,7 @@ const Index = () => {
         onNavigate={navigate}
       />
 
-      <main className={`relative flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' ? 'pb-0' : 'pb-24 md:pb-0'} ${page !== 'home' ? 'pt-24 md:pt-24' : ''}`}>
+      <main className={`relative flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' || page === 'feed' ? 'pb-0' : 'pb-24 md:pb-0'} ${page !== 'home' && page !== 'feed' && page !== 'messages' ? 'pt-24 md:pt-24' : ''}`}>
         {page !== 'messages' && page !== 'feed' && (
           <Navbar
             onSearch={handleSearch}
@@ -712,6 +728,7 @@ const Index = () => {
             onDownloadClick={() => setShowDownloadPopup(true)}
           />
         )}
+          <Suspense fallback={<PageLoader />}>
           {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
           {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
           {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
@@ -747,6 +764,7 @@ const Index = () => {
                   </div>
                 </div>
           )}
+          </Suspense>
         </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
@@ -773,6 +791,7 @@ const Index = () => {
         </nav>
       )}
 
+      <Suspense fallback={null}>
       <ProfileDetailDialog
         profile={selectedProfileForDialog}
         open={profileDialogOpen}
@@ -795,16 +814,18 @@ const Index = () => {
         }}
       />
 
-      <PhotoViewer
+      <PhotoViewerLazy
         url={viewingPhoto}
         onClose={() => setViewingPhoto(null)}
         user={user}
         currentUserProfile={currentUserProfile}
       />
       <PiPPlayer />
+      </Suspense>
 
       {/* Global Real-time WebRTC Signaling UI Overlay */}
       {activeCall && activeCall.partnerId && user && (
+        <Suspense fallback={null}>
         <div className="fixed inset-0 z-[450]">
           <WebRTCCall
             isCaller={!!activeCall.isCaller}
@@ -817,6 +838,7 @@ const Index = () => {
             onEndCall={endCall}
           />
         </div>
+        </Suspense>
       )}
 
       {/* Global Incoming Call Full Screen Overlay */}
