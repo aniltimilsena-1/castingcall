@@ -252,7 +252,7 @@ export default function SettingsPage() {
               </div>
 
               {settings && (
-                <div className="pt-6 border-t border-border space-y-8">
+                <div className="pt-6 space-y-8">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-bold text-foreground mb-0.5">{t('settings.profile.availability')}</p>
@@ -360,7 +360,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6 pt-6 border-t border-border">
+                <div className="space-y-6 pt-6">
                   <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-6 flex items-center gap-2">
                     <Shield size={16} /> {t('settings.privacy.permissions')}
                   </h3>
@@ -425,7 +425,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6 pt-6 border-t border-border">
+                <div className="space-y-6 pt-6">
                   <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-6 flex items-center gap-2">
                     <Lock size={16} /> {t('settings.privacy.protection.title')}
                   </h3>
@@ -463,7 +463,7 @@ export default function SettingsPage() {
               </button>
             </div>
 
-            <div className="space-y-6 pt-10 border-t border-border">
+            <div className="space-y-6 pt-10">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-foreground mb-1">Two-Factor Authentication (2FA)</h3>
@@ -478,7 +478,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-6 pt-10 border-t border-border">
+            <div className="space-y-6 pt-10">
               <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-4">Device Sessions</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-2xl border border-border/50">
@@ -536,7 +536,7 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <div className="space-y-6 pt-10 border-t border-border">
+                <div className="space-y-6 pt-10">
                   <h3 className="text-[0.7rem] font-bold tracking-[2px] uppercase text-foreground/70 mb-4">{t('settings.comms.preferences')}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div>
@@ -572,7 +572,7 @@ export default function SettingsPage() {
               </>
             )}
 
-            <div className="pt-10 border-t border-border">
+            <div className="pt-10">
                <button 
                 onClick={() => {
                   confirmAction({
@@ -616,7 +616,7 @@ function ToggleItem({ label, enabled, onToggle }: { label: string; enabled: bool
 
 function LargeToggle({ title, description, enabled, onToggle }: { title: string; description: string; enabled: boolean; onToggle: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-6 p-4 rounded-2xl bg-secondary/10 border border-border/40 hover:border-primary/20 transition-all group">
+    <div className="flex items-center justify-between gap-6 p-4 rounded-2xl bg-secondary/20 transition-all group">
       <div className="flex-1">
         <p className="text-sm font-bold text-foreground mb-0.5">{title}</p>
         <p className="text-[0.65rem] text-muted-foreground leading-relaxed">{description}</p>

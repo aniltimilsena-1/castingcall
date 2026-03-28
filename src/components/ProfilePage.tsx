@@ -1253,13 +1253,13 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               </button>
             </div>
 
-            <div className="space-y-5 bg-secondary/20 p-5 rounded-2xl border border-border/50">
-              <h4 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60">Quick Add Skills</h4>
+            <div className="space-y-5">
+              <h4 className="text-[0.65rem] font-bold tracking-[2px] uppercase text-primary mb-2">Quick Add Skills</h4>
               {Object.entries(RECOMMENDED_SKILLS).map(([category, categorySkills]) => {
                 const catKey = category.toLowerCase();
                 const isExpanded = expandedSkillCategories.includes(catKey);
                 return (
-                  <div key={category} className="border-b border-border/10 last:border-0 pb-2 mb-2">
+                  <div key={category} className="pb-1">
                     <button 
                       onClick={() => toggleSkillCategory(catKey)}
                       className="w-full flex items-center justify-between py-1.5 group"

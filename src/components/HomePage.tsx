@@ -99,7 +99,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-accent text-[clamp(1.2rem,4.8vw,4rem)] leading-none tracking-[-0.04em] text-foreground mb-8 uppercase flex flex-nowrap justify-center items-center gap-x-3 md:gap-x-5"
+            className="font-accent text-[clamp(1.5rem,7vw,5.5rem)] leading-none tracking-[-0.08em] text-foreground mb-10 uppercase flex flex-col md:flex-row justify-center items-center gap-x-3 md:gap-x-6"
           >
             <span className="text-foreground font-black italic whitespace-nowrap">Casting</span> 
             <span className="text-foreground font-light whitespace-nowrap">for Actors & Creators</span>
@@ -122,7 +122,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           >
             <button
                onClick={() => onCategoryClick("post")}
-               className="group relative px-16 py-6 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.8rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95 shadow-[0_20px_50px_rgba(245,197,24,0.3)]"
+               className="group relative px-10 py-4 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95 shadow-[0_20px_50px_rgba(245,197,24,0.3)]"
              >
                <span className="relative z-10 flex items-center gap-2">Post a Casting Call <ChevronRight size={20} /></span>
                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -183,10 +183,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── CATEGORIES (GLASSMORPHISM) ── */}
-      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto relative z-30">
-        <div className="text-center mb-10 md:mb-24 space-y-4 md:space-y-6">
+      <section className="py-12 md:py-16 px-6 max-w-7xl mx-auto relative z-30">
+        <div className="text-center mb-10 md:mb-16 space-y-4 md:space-y-6">
           <h2 className="text-[0.65rem] md:text-[0.75rem] uppercase tracking-[0.5em] text-primary font-black">Select Your Discipline</h2>
-          <h3 className="text-4xl md:text-7xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-foreground font-medium">Elite</span></h3>
+          <h3 className="text-3xl md:text-5xl font-display text-foreground tracking-tight uppercase leading-none">The Global<br/><span className="italic text-foreground font-medium">Elite</span></h3>
           <div className="w-12 md:w-16 h-[2px] bg-gradient-to-r from-transparent via-foreground/20 to-transparent mx-auto rounded-full" />
         </div>
 
@@ -223,7 +223,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="py-20 md:py-24 px-8 md:px-12 max-w-7xl mx-auto relative z-30">
+      <section className="py-12 md:py-16 px-8 md:px-12 max-w-7xl mx-auto relative z-30">
         <div className="bg-card border border-border rounded-[3.5rem] md:rounded-[4rem] p-12 md:p-20 overflow-hidden relative">
           {/* Abstract Background Glows */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
@@ -304,10 +304,10 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       {/* ── FEATURED TALENTS ── */}
       {featured.length > 0 && (
         <section className="py-12 md:py-16 px-6 max-w-7xl mx-auto bg-secondary/10 rounded-[2.5rem] md:rounded-[4rem] border border-border relative z-30">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 mb-10 md:mb-20 px-2 md:px-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 mb-10 md:mb-16 px-2 md:px-4">
             <div className="space-y-3 md:space-y-4 text-center md:text-left">
               <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Wall of Excellence</h2>
-              <h3 className="text-3xl md:text-5xl font-display text-foreground">Spotlight Performers</h3>
+              <h3 className="text-2xl md:text-3xl font-display text-foreground">Spotlight Performers</h3>
             </div>
             <button className="text-xs uppercase tracking-[0.2em] text-foreground/40 hover:text-foreground border-b border-border pb-2 transition-colors">View Directory</button>
           </div>
@@ -378,9 +378,9 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
       {/* ── CASTING CALLS ── */}
       {recentProjects.length > 0 && (
         <section className="py-12 md:py-16 px-6 max-w-7xl mx-auto relative z-30">
-          <div className="text-center mb-10 md:mb-20 space-y-3 md:space-y-4">
+          <div className="text-center mb-10 md:mb-16 space-y-3 md:space-y-4">
             <h2 className="text-[0.65rem] md:text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold">Open Opportunities</h2>
-            <h3 className="text-3xl md:text-5xl font-display text-foreground">Live Casting Calls</h3>
+            <h3 className="text-2xl md:text-3xl font-display text-foreground">Live Casting Calls</h3>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
@@ -392,7 +392,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => onCategoryClick(proj.role_category || 'Actor')}
-                className="stitched-card group relative h-full rounded-2xl md:rounded-[1.2rem] p-3 md:p-7 transition-all cursor-pointer flex flex-col justify-between"
+                className="stitched-card group relative h-auto rounded-2xl md:rounded-[1.2rem] p-3 md:p-5 transition-all cursor-pointer flex flex-col justify-between"
               >
                 <div className="stitched-card-scanner" />
                 <div className="relative aspect-[4/3] md:aspect-video rounded-xl overflow-hidden bg-secondary/50 mb-3 md:mb-8">
@@ -417,7 +417,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 </div>
 
                 <div>
-                  <h4 className="font-display text-sm md:text-2xl text-foreground mb-2 md:mb-4 group-hover:text-foreground transition-all duration-300 line-clamp-1">{proj.title}</h4>
+                  <h4 className="font-display text-sm md:text-lg text-foreground mb-2 md:mb-3 group-hover:text-foreground transition-all duration-300 line-clamp-1">{proj.title}</h4>
                   <p className="text-[0.6rem] md:text-xs text-foreground/70 mb-4 md:mb-10 font-light italic leading-relaxed">Looking for: <span className="text-primary font-medium">{proj.role_category}</span></p>
                 </div>
 

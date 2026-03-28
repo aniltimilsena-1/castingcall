@@ -145,15 +145,11 @@ const Index = () => {
   }, [activeCall?.isAccepted, activeCall?.isCaller, incomingCall]);
 
   useEffect(() => {
-    // Show download popup on web if not dismissed
     const isNative = (window as any).Capacitor?.isNative;
     const hasDismissed = localStorage.getItem('cc_dismissed_download');
     
-    // Only show for mobile web users
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    if (!isNative && !hasDismissed && isMobile) {
-      const timer = setTimeout(() => setShowDownloadPopup(true), 1500);
+    if (!isNative && !hasDismissed) {
+      const timer = setTimeout(() => setShowDownloadPopup(true), 2000);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -713,6 +709,7 @@ const Index = () => {
             onNavigate={navigate}
             activePage={page}
             searchType={searchInitialType}
+            onDownloadClick={() => setShowDownloadPopup(true)}
           />
         )}
           {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
@@ -925,10 +922,13 @@ const Index = () => {
                 
                 <div className="space-y-3">
                   <h3 className="text-3xl font-display text-white tracking-tight leading-none italic uppercase">
-                    Cinema in <br />
-                    <span className="text-primary italic">Your Pocket</span>
+                    New <br />
+                    <span className="text-primary italic">Android App</span>
                   </h3>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-black opacity-60">Mobile Experience v1.0.4</p>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-black opacity-60">Mobile Experience v1.1.0</p>
+                    <p className="text-[9px] text-primary/80 uppercase tracking-[0.2em] font-bold">Now with Real-time Push Notifications</p>
+                  </div>
                 </div>
 
                 <div className="w-full space-y-4 pt-4">

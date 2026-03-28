@@ -1,4 +1,4 @@
-import { Search, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase, X } from "lucide-react";
+import { Search, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase, X, Smartphone } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,11 +18,12 @@ interface NavbarProps {
   onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects", openForm?: boolean }) => void;
   activePage: PageName;
   searchType?: "talents" | "projects";
+  onDownloadClick?: () => void;
 }
 
 export default function Navbar({
   onSearch, onAuthClick, onMenuClick, onLogoClick, onPremiumClick,
-  onNotificationClick, onMessagesClick, onNavigate, activePage, searchType
+  onNotificationClick, onMessagesClick, onNavigate, activePage, searchType, onDownloadClick
 }: NavbarProps) {
   const { user, profile } = useAuth();
   const { t } = useTranslation();
@@ -251,6 +252,14 @@ export default function Navbar({
                 Upgrade
               </button>
             )}
+
+            <button
+               onClick={onDownloadClick}
+               className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 text-primary hover:bg-primary/5 transition-colors font-body font-normal text-[0.6rem] uppercase tracking-wider"
+            >
+               <Smartphone className="w-3.5 h-3.5" />
+               Get App
+            </button>
           </div>
 
           <button
