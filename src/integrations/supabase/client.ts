@@ -9,21 +9,32 @@ if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_PUBLISH
   console.error("🚨 CRITICAL ERROR: Supabase Environment Variables are missing! You must add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY locally in your Vercel Project Settings.");
   if (typeof window !== "undefined") {
     setTimeout(() => {
-      document.body.innerHTML = `
-        <div style="padding: 40px; text-align: center; font-family: sans-serif; background: #111; color: white; height: 100vh; display: flex; flex-direction: column; justify-content: center;">
-          <h1 style="color: #ff4444; margin-bottom: 20px;">Vercel Environment Variables Missing</h1>
-          <p style="font-size: 18px; line-height: 1.6;">Your site is trying to load, but it cannot connect to the database.</p>
-          <p style="font-size: 18px; line-height: 1.6;">To fix this white screen, go to your <b>Vercel Dashboard &gt; Settings &gt; Environment Variables</b> and add:</p>
-          <ul style="list-style: none; padding: 20px; background: #222; border-radius: 8px; display: inline-block; text-align: left; margin: 20px auto;">
-            <li><code style="color: #72f1b8;">VITE_SUPABASE_URL</code></li>
-            <li><code style="color: #72f1b8;">VITE_SUPABASE_PUBLISHABLE_KEY</code></li>
-            <li><code style="color: #72f1b8;">VITE_SUPABASE_PROJECT_ID</code> (optional but recommended)</li>
-          </ul>
-          <p style="font-size: 16px; color: #aaa;">You can find these values in your local <code style="color: white; background: #333; padding: 2px 6px; border-radius: 4px;">.env</code> file.</p>
-          <p style="font-size: 16px; color: #ffeb3b; margin-top: 20px;">After adding them, you must <b>Redeploy</b> in Vercel for changes to take effect.</p>
-        </div>
-      `;
-    }, 100); // Overlay the root div shortly after load
+      const el = document.createElement('div');
+      el.style.cssText = 'padding:40px;text-align:center;font-family:sans-serif;background:#111;color:white;height:100vh;display:flex;flex-direction:column;justify-content:center;';
+      
+      const h1 = document.createElement('h1');
+      h1.style.cssText = 'color:#ff4444;margin-bottom:20px;';
+      h1.textContent = 'Vercel Environment Variables Missing';
+      
+      const p1 = document.createElement('p');
+      p1.style.cssText = 'font-size:18px;line-height:1.6;';
+      p1.textContent = 'Your site is trying to load, but it cannot connect to the database.';
+      
+      const p2 = document.createElement('p');
+      p2.style.cssText = 'font-size:18px;line-height:1.6;';
+      p2.textContent = 'To fix this, go to Vercel Dashboard > Settings > Environment Variables and add VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.';
+      
+      const p3 = document.createElement('p');
+      p3.style.cssText = 'font-size:16px;color:#ffeb3b;margin-top:20px;';
+      p3.textContent = 'After adding them, you must Redeploy in Vercel for changes to take effect.';
+      
+      el.appendChild(h1);
+      el.appendChild(p1);
+      el.appendChild(p2);
+      el.appendChild(p3);
+      
+      document.body.replaceChildren(el);
+    }, 100);
   }
 }
 

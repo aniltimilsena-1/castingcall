@@ -2,10 +2,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { create, getNumericDate } from "https://deno.land/x/djwt@v2.8/mod.ts"
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Content-Security-Policy': "default-src 'self'; object-src 'none'; base-uri 'self';",
+const ALLOWED_ORIGINS = [
+    'https://caastingcall.me',
+    'https://www.caastingcall.me',
+    'http://localhost:3000',
+];
+
+function getCorsHeaders(req: Request) {
+    const origin = req.headers.get('Origin') || '';
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    return {
+        'Access-Control-Allow-Origin': allowedOrigin,
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Content-Security-Policy': "default-src 'self'; object-src 'none'; base-uri 'self';",
+    };
 }
 
 // Full Private Key Configuration for FCM
@@ -62,6 +72,8 @@ async function getAccessToken() {
 }
 
 serve(async (req) => {
+    const corsHeaders = getCorsHeaders(req);
+
     // Handle CORS
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
@@ -85,7 +97,7 @@ serve(async (req) => {
             senderId = record.sender_id;
             
             // Fetch sender name
-            const senderResp = await fetch(`${SUPABASE_URL}/rest/v1/profiles?user_id=eq.${senderId}&select=name`, {
+            const senderResp = await fetch(`${SUPABASE_URL}/rest/v1/profiles?user_id=eq.${encodeURIComponent(senderId)}&select=name`, {
               headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
             });
             const senderProfile = await senderResp.json();
@@ -106,7 +118,7 @@ serve(async (req) => {
         if (!receiverId) throw new Error("Missing receiver_id");
 
         // 1. Fetch user's FCM token from profiles
-        const profileResp = await fetch(`${SUPABASE_URL}/rest/v1/profiles?user_id=eq.${receiverId}&select=fcm_token`, {
+        const profileResp = await fetch(`${SUPABASE_URL}/rest/v1/profiles?user_id=eq.${encodeURIComponent(receiverId)}&select=fcm_token`, {
           headers: {
             'apikey': SUPABASE_SERVICE_ROLE_KEY,
             'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`

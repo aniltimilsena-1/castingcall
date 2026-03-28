@@ -1,41 +1,76 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Content-Security-Policy': "default-src 'self'; object-src 'none'; base-uri 'self';",
+const ALLOWED_ORIGINS = [
+    'https://caastingcall.me',
+    'https://www.caastingcall.me',
+    'http://localhost:3000',
+];
+
+function getCorsHeaders(req: Request) {
+    const origin = req.headers.get('Origin') || '';
+    const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    return {
+        'Access-Control-Allow-Origin': allowedOrigin,
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Content-Security-Policy': "default-src 'self'; object-src 'none'; base-uri 'self';",
+    };
 }
 
 serve(async (req) => {
-    // Handle CORS
+    const corsHeaders = getCorsHeaders(req);
+
+    // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
+        // ── AUTH CHECK: Verify the caller is a logged-in user ──
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader) {
+            return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 401,
+            });
+        }
+
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+            global: { headers: { Authorization: authHeader } },
+        });
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 401,
+            });
+        }
+
+        // ── Validate Twilio secrets ──
         const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID')
         const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN')
         const TWILIO_PHONE_NUMBER = Deno.env.get('TWILIO_PHONE_NUMBER')
 
-        // Validate that all required secrets are set
         if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-            const missing = []
+            const missing: string[] = []
             if (!TWILIO_ACCOUNT_SID) missing.push('TWILIO_ACCOUNT_SID')
             if (!TWILIO_AUTH_TOKEN) missing.push('TWILIO_AUTH_TOKEN')
             if (!TWILIO_PHONE_NUMBER) missing.push('TWILIO_PHONE_NUMBER')
-            throw new Error(`Missing Twilio secrets: ${missing.join(', ')}. Add them in Supabase Dashboard → Edge Functions → Secrets.`)
+            throw new Error(`Missing Twilio secrets: ${missing.join(', ')}`)
         }
 
         const { to, body } = await req.json()
 
         if (!to || !body) {
-            throw new Error('Missing required fields: "to" (phone number) and "body" (message)')
+            throw new Error('Missing required fields: "to" and "body"')
         }
 
-        console.log(`Sending SMS to ${to}: ${body}`)
-        console.log(`Using Twilio SID: ${TWILIO_ACCOUNT_SID.slice(0, 8)}...`)
-        console.log(`Using From number: ${TWILIO_PHONE_NUMBER}`)
+        // Sanitized log — no PII
+        console.log(`SMS request by user ${user.id.slice(0, 8)}...`)
 
         const response = await fetch(
             `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,
@@ -54,11 +89,8 @@ serve(async (req) => {
         )
 
         const data = await response.json()
-        console.log('Twilio response status:', response.status)
-        console.log('Twilio response data:', JSON.stringify(data))
 
         if (!response.ok) {
-            // Twilio error responses have code + message fields
             const errorMsg = data.message || data.error_message || `Twilio error (status ${data.code || response.status})`
             throw new Error(errorMsg)
         }

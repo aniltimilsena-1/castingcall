@@ -86,7 +86,22 @@ export const settingsService = {
       return DEFAULT_SETTINGS;
     }
 
-    return { ...DEFAULT_SETTINGS, ...(data.content as any) };
+    // MED-3: Validate content structure before merging
+    const raw = data.content as Record<string, unknown> | null;
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return DEFAULT_SETTINGS;
+    }
+
+    // Only allow known top-level keys to prevent injection of unexpected properties
+    const allowedKeys = new Set(Object.keys(DEFAULT_SETTINGS));
+    const sanitized: Record<string, unknown> = {};
+    for (const key of Object.keys(raw)) {
+      if (allowedKeys.has(key)) {
+        sanitized[key] = raw[key];
+      }
+    }
+
+    return { ...DEFAULT_SETTINGS, ...sanitized } as UserSettings;
   },
 
   async updateSettings(userId: string, settings: Partial<UserSettings>): Promise<void> {
