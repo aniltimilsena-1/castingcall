@@ -56,6 +56,9 @@ const App = () => {
                           <Route path="/terms" element={<Index />} />
                           <Route path="/premium" element={<Index />} />
                           <Route path="/admin" element={<Index />} />
+                          <Route path="/auth" element={<Index />} />
+                          <Route path="/login" element={<Index />} />
+                          <Route path="/signup" element={<Index />} />
                           <Route path="/:page" element={<Index />} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>

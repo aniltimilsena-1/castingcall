@@ -70,7 +70,7 @@ const Index = () => {
 
   // Derived page state from URL params
   const { page: pageParam } = params;
-  const page: PageName = (pageParam === "auth" || location.pathname === "/auth" || pageParam === "login") ? "auth" : 
+  const page: PageName = (pageParam === "auth" || location.pathname === "/auth" || pageParam === "login" || pageParam === "signup") ? "auth" : 
                          (location.pathname === "/" || location.pathname === "") ? "home" :
                          (location.pathname === "/search") ? "search" :
                          (location.pathname === "/feed") ? "feed" :
@@ -127,30 +127,38 @@ const Index = () => {
       // Modern digital dial tone/outgoing ring
       dialToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/1350/1350-preview.mp3");
       dialToneRef.current.loop = true;
+      dialToneRef.current.volume = 0;
     }
     if (!ringToneRef.current) {
       // Melodic modern ringtone for incoming calls
       ringToneRef.current = new Audio("https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3");
       ringToneRef.current.loop = true;
+      ringToneRef.current.volume = 0;
     }
     
     // Handle Dial Tone (Caller)
     if (activeCall && activeCall.isCaller && !activeCall.isAccepted) {
+      dialToneRef.current.muted = false;
+      dialToneRef.current.volume = 1.0;
       dialToneRef.current.play().catch(e => {
         console.warn("Audio play blocked for dial tone. Waiting for user interaction.", e);
       });
     } else {
       dialToneRef.current.pause();
+      dialToneRef.current.volume = 0;
       dialToneRef.current.currentTime = 0;
     }
 
     // Handle Ring Tone (Recipient)
     if (incomingCall) {
+      ringToneRef.current.muted = false;
+      ringToneRef.current.volume = 1.0;
       ringToneRef.current.play().catch(e => {
         console.warn("Audio play blocked for ring tone. Waiting for user interaction.", e);
       });
     } else {
       ringToneRef.current.pause();
+      ringToneRef.current.volume = 0;
       ringToneRef.current.currentTime = 0;
     }
 
@@ -259,14 +267,23 @@ const Index = () => {
     };
   }, [user?.id]);
 
-  // Unlock Audio on first interaction
+  // Unlock Audio on first interaction (Required for mobile browsers to allow automated play)
   useEffect(() => {
     const unlock = () => {
-        if (dialToneRef.current) dialToneRef.current.load();
-        if (ringToneRef.current) ringToneRef.current.load();
-        // Also try to play/pause immediately to satisfy some browsers
-        dialToneRef.current?.play().then(() => dialToneRef.current?.pause()).catch(() => {});
-        ringToneRef.current?.play().then(() => ringToneRef.current?.pause()).catch(() => {});
+        if (dialToneRef.current) {
+          dialToneRef.current.muted = true;
+          dialToneRef.current.volume = 0;
+          dialToneRef.current.play().then(() => {
+            dialToneRef.current?.pause();
+          }).catch(() => {});
+        }
+        if (ringToneRef.current) {
+          ringToneRef.current.muted = true;
+          ringToneRef.current.volume = 0;
+          ringToneRef.current.play().then(() => {
+            ringToneRef.current?.pause();
+          }).catch(() => {});
+        }
         
         window.removeEventListener('click', unlock);
         window.removeEventListener('touchstart', unlock);

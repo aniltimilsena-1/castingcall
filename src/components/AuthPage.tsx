@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Phone, Mail, ArrowRight, ChevronLeft } from "lucide-react";
 import { loggingService } from "@/services/loggingService";
+import { rateLimitService } from "@/services/rateLimitService";
 
 interface AuthPageProps {
   onSuccess: () => void;
@@ -32,6 +33,11 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
   const [signupConfirmPass, setSignupConfirmPass] = useState("");
   const [signupRole, setSignupRole] = useState("");
   const [showPass, setShowPass] = useState(false);
+  
+  // security / rate limiting
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [securityCheck, setSecurityCheck] = useState<{ equation: string, answer: number } | null>(null);
+  const [securityAnswer, setSecurityAnswer] = useState("");
 
   // phone fields
   const [phone, setPhone] = useState("");
@@ -67,6 +73,34 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
       return;
     }
 
+    const identifier = authMethod === "email" 
+      ? (tab === "login" ? loginEmail : signupEmail)
+      : phone;
+
+    if (!identifier) { toast.error("Please enter email or phone"); return; }
+
+    // 1. Rate Limit Check (Server-side RPC)
+    const isLimited = await rateLimitService.checkRateLimit(identifier);
+    if (isLimited) return;
+
+    // 2. Security Check (Simple CAPTCHA if failed before)
+    if (failedAttempts >= 3 && !securityCheck) {
+        const a = Math.floor(Math.random() * 10) + 1;
+        const b = Math.floor(Math.random() * 10) + 1;
+        setSecurityCheck({ equation: `${a} + ${b}`, answer: a + b });
+        toast.info("Security Check required after failed attempts.");
+        return;
+    }
+    
+    if (securityCheck) {
+        if (parseInt(securityAnswer) !== securityCheck.answer) {
+            toast.error("Incorrect security answer.");
+            return;
+        }
+        setSecurityCheck(null);
+        setSecurityAnswer("");
+    }
+
     setLoading(true);
     try {
       if (authMethod === "phone") {
@@ -80,6 +114,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         } else {
           if (!otp) { toast.error("Enter verification code"); return; }
           await verifyOTP(phone, otp);
+          await rateLimitService.recordAttempt(identifier, true, 'login_phone');
           toast.success(`Welcome ${tab === "login" ? "back" : ""}! 🎉`);
           onSuccess();
         }
@@ -87,6 +122,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         if (tab === "login") {
           if (!loginEmail || !loginPass) { toast.error("Please fill all fields"); return; }
           await signIn(loginEmail, loginPass);
+          await rateLimitService.recordAttempt(loginEmail, true, 'login_email');
           toast.success("Welcome back! 👋");
           onSuccess();
         } else {
@@ -94,12 +130,16 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
           if (signupPass !== signupConfirmPass) { toast.error("Passwords do not match"); return; }
           if (signupPass.length < 6) { toast.error("Password must be at least 6 characters"); return; }
           await signUp(signupEmail, signupPass, signupName, signupRole);
+          await rateLimitService.recordAttempt(signupEmail, true, 'signup');
           toast.success("Welcome to CaastingCall! 🎬");
           onSuccess();
         }
       }
     } catch (err: any) {
       await loggingService.logAuthFailure(tab, err);
+      await rateLimitService.recordAttempt(identifier, false, tab);
+      setFailedAttempts(prev => prev + 1);
+      
       console.error("Auth Error details:", err);
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred during auth";
       
@@ -308,6 +348,19 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
                       {ROLES.map((r) => <option key={r}>{r}</option>)}
                     </select>
                   </div>
+                </div>
+              )}
+
+              {securityCheck && (
+                <div className="mt-4 p-3 bg-red-500/5 border border-red-500/10 rounded-xl">
+                  <label className="block text-[11px] text-red-500/70 mb-1.5 uppercase tracking-wider font-bold">Security Check: {securityCheck.equation}</label>
+                  <input
+                    type="number"
+                    value={securityAnswer}
+                    onChange={(e) => setSecurityAnswer(e.target.value)}
+                    placeholder="Solve to continue"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-foreground text-sm outline-none focus:border-red-500/50 transition-colors"
+                  />
                 </div>
               )}
             </motion.div>

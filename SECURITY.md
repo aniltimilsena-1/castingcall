@@ -26,6 +26,12 @@ The application uses **Supabase Row Level Security (RLS)** to enforce a "least p
 *   **Identity-Based Policies**: Users can only read/write their own profiles, messages, and applications.
 *   **Role-Based Policies**: Administrative features (deleting comments, moderation) are restricted to users with the 'Admin' role in the `profiles` table.
 
+### 4. Rate Limiting and Brute-Force Protection
+Custom rate limiting is implemented to prevent brute-force attacks on sensitive authentication endpoints (Login, Signup, Password Reset).
+*   **Attempt Limits**: Maximum 5 attempts per minute per identifier (email or phone).
+*   **Security Lockout**: After 3 consecutive failed attempts, a "Security Check" (Simple Math CAPTCHA) is triggered to introduce additional friction.
+*   **Persistence**: Authentication attempts are tracked securely in the `auth_attempts` database table for server-side verification via RPC functions.
+
 ---
 
 ## Threat Model (Simplified)
@@ -41,6 +47,7 @@ The application uses **Supabase Row Level Security (RLS)** to enforce a "least p
 | Threat | Risk | Mitigation |
 | :--- | :--- | :--- |
 | **XSS (Cross-Site Scripting)** | High | Manual CSP implementation and React's automatic string escaping. |
+| **Brute-Force Login** | Medium | Custom **Rate Limiting (5/min)** and Math CAPTCHA after failure. |
 | **Broken Access Control** | High | Database-enforced Row Level Security (RLS) on all sensitive tables. |
 | **SQL Injection** | Low | Managed by Supabase PostgREST (all queries are parameterized). |
 | **Insecure Hashing** | Medium | Handled by Supabase Auth (using `bcrypt`). |
@@ -49,4 +56,4 @@ The application uses **Supabase Row Level Security (RLS)** to enforce a "least p
 
 ### Areas for Improvement
 *   **Security Scanning**: Integrate automated scans (e.g., OWASP ZAP) into the CI pipeline.
-*   **Rate Limiting**: Implement a custom edge function or use Supabase's built-in rate limits for sensitive API endpoints.
+*   **WAF (Web Application Firewall)**: Consider a WAF like Cloudflare for advanced DDoS and Layer 7 protection.
