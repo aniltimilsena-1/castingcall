@@ -57,6 +57,17 @@ const Index = () => {
   const page: PageName = (pageParam === "auth" || location.pathname === "/auth" || pageParam === "login") ? "auth" : 
                          (location.pathname === "/" || location.pathname === "") ? "home" :
                          (location.pathname === "/search") ? "search" :
+                         (location.pathname === "/feed") ? "feed" :
+                         (location.pathname === "/projects") ? "projects" :
+                         (location.pathname === "/messages") ? "messages" :
+                         (location.pathname === "/notifications") ? "notifications" :
+                         (location.pathname === "/settings") ? "settings" :
+                         (location.pathname === "/saved") ? "saved" :
+                         (location.pathname === "/analytics") ? "analytics" :
+                         (location.pathname === "/help") ? "help" :
+                         (location.pathname === "/terms") ? "terms" :
+                         (location.pathname === "/premium") ? "premium" :
+                         (location.pathname === "/admin") ? "admin" :
                          (location.pathname.startsWith("/profile")) ? "profile" :
                          (pageParam as PageName) || "home";
 
@@ -704,42 +715,42 @@ const Index = () => {
             searchType={searchInitialType}
           />
         )}
-        {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
-        {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
-        {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
-        {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
-        {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />}
-        {page === "projects" && <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
-        {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
-        {page === "messages" && (
-          <MessagesPage 
-            onNavigate={navigate} 
-            initialPartnerId={activeMessagePartnerId} 
-            onlineUsers={onlineUsers}
-            incomingCall={incomingCall}
-            activeCall={activeCall}
-            onStartCall={startCall}
-            onEndCall={endCall}
-          />
-        )}
-        {page === "settings" && <SettingsPage />}
-        {page === "saved" && <SavedItemsPage />}
-        {page === "analytics" && <AnalyticsPage />}
-        {page === "help" && <HelpSupportPage />}
-        {page === "terms" && <TermsPrivacyPage />}
-        {page === "premium" && <PremiumPage />}
-        {page === "admin" && (
-          currentUserProfile?.role === "Admin" 
-            ? <AdminPage /> 
-            : <div className="min-h-screen flex items-center justify-center text-muted-foreground bg-background">
-                <div className="text-center p-8 bg-card border border-border rounded-3xl max-w-sm">
-                  <h2 className="text-xl font-display mb-2 text-foreground">Unauthorized</h2>
-                  <p className="text-sm mb-6">You don't have permission to access the Command Center.</p>
-                  <button onClick={() => navigate('home')} className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-bold uppercase tracking-widest">Return Home</button>
+          {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
+          {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
+          {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
+          {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
+          {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />}
+          {page === "projects" && <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
+          {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
+          {page === "messages" && (
+            <MessagesPage 
+              onNavigate={navigate} 
+              initialPartnerId={activeMessagePartnerId} 
+              onlineUsers={onlineUsers}
+              incomingCall={incomingCall}
+              activeCall={activeCall}
+              onStartCall={startCall}
+              onEndCall={endCall}
+            />
+          )}
+          {page === "settings" && <SettingsPage />}
+          {page === "saved" && <SavedItemsPage />}
+          {page === "analytics" && <AnalyticsPage />}
+          {page === "help" && <HelpSupportPage />}
+          {page === "terms" && <TermsPrivacyPage />}
+          {page === "premium" && <PremiumPage />}
+          {page === "admin" && (
+            currentUserProfile?.role === "Admin" 
+              ? <AdminPage /> 
+              : <div className="min-h-screen flex items-center justify-center text-muted-foreground bg-background">
+                  <div className="text-center p-8 bg-card border border-border rounded-3xl max-w-sm">
+                    <h2 className="text-xl font-display mb-2 text-foreground">Unauthorized</h2>
+                    <p className="text-sm mb-6">You don't have permission to access the Command Center.</p>
+                    <button onClick={() => navigate('home')} className="bg-primary text-primary-foreground px-6 py-2 rounded-xl text-sm font-bold uppercase tracking-widest">Return Home</button>
+                  </div>
                 </div>
-              </div>
-        )}
-      </main>
+          )}
+        </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
       {page !== 'messages' && page !== 'feed' && (
