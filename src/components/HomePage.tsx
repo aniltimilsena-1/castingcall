@@ -200,10 +200,12 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               transition={{ delay: cat.delay, duration: 0.6 }}
               className="group relative"
             >
-              <div
+              <motion.div
                 onClick={() => onCategoryClick(cat.role)}
+                whileTap={{ scale: 0.96 }}
                 className="stitched-card relative z-10 h-44 md:h-56 rounded-3xl md:rounded-[2rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer hover-cinematic"
               >
+                <div className="shimmer-accent" />
                 <div className="stitched-card-scanner" />
                 {/* Decorative background element */}
                 <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
@@ -216,7 +218,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   <span className="block font-display text-[0.9rem] md:text-lg lg:text-xl text-foreground tracking-tight uppercase font-bold truncate w-full">{cat.role}</span>
                   <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-foreground/60 group-hover:text-foreground transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           ))}
         </div>
@@ -320,14 +322,16 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   key={p.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   whileInView={{ opacity: 1, scale: 1 }}
+                  whileTap={{ scale: 0.96 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                   onClick={() => onProfileClick(p)}
-                  className={`group relative bg-card border rounded-[1.8rem] p-6 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
+                  className={`group relative bg-card haptic-card border rounded-[1.8rem] p-6 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
                     ? "border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] hover:border-amber-500/60"
                     : "border-border hover:border-primary/20"
                     }`}
                 >
+                  <div className="shimmer-accent" />
                   {/* Elite Shimmer Overlay */}
                   {isElite && (
                     <div className="absolute inset-0 rounded-[2rem] overflow-hidden pointer-events-none">
@@ -342,14 +346,16 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   <div className="relative w-24 h-24 rounded-full mb-5 p-1 bg-gradient-to-tr from-primary/10 to-transparent group-hover:from-primary/40">
                     <div className="w-full h-full rounded-full bg-secondary overflow-hidden shadow-2xl relative border-2 border-border">
                       {p.photo_url ? (
-                        <img src={p.photo_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="" />
+                        <img src={p.photo_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ken-burns" alt="" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center font-display text-4xl text-primary/20">{p.name?.[0]}</div>
                       )}
                     </div>
 
                     {onlineUsers?.has(p.user_id) && (
-                      <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background shadow-lg shadow-green-500/30 z-20" />
+                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20">
+                        <span className="live-badge">LIVE</span>
+                      </div>
                     )}
 
                     {/* Elite Pulse for profile photo */}
@@ -366,7 +372,15 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-foreground/80" : "text-foreground/60"}`}>{p.role === 'Admin' ? 'Member' : p.role}</p>
                   <p className="text-[0.7rem] text-foreground/70 line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
 
-                  <div className="w-full h-px bg-border mb-6" />
+                  <div className="w-full h-px bg-border mb-4" />
+                  {/* Call Sheet mono metadata row */}
+                  <div className="w-full flex items-center justify-between mb-4">
+                    <span className="font-mono-tech">PROD#{p.id?.slice(0, 6).toUpperCase()}</span>
+                    {p.experience_years != null && (
+                      <span className="font-mono-tech">{p.experience_years}YR EXP</span>
+                    )}
+                    <span className="font-mono-tech">{p.location || 'REMOTE'}</span>
+                  </div>
                   <span className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] transition-colors ${isElite ? "text-foreground/40 group-hover:text-foreground" : "text-foreground/40 group-hover:text-foreground"}`}>Portfolio</span>
                 </motion.div>
               );
@@ -389,19 +403,19 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 key={proj.id}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
+                whileTap={{ scale: 0.96 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => onCategoryClick(proj.role_category || 'Actor')}
-                className="stitched-card group relative h-auto rounded-2xl md:rounded-[1.2rem] p-3 md:p-5 transition-all cursor-pointer flex flex-col justify-between"
+                className="stitched-card group haptic-card relative h-auto rounded-2xl md:rounded-[1.2rem] p-3 md:p-5 transition-all cursor-pointer flex flex-col justify-between"
               >
+                <div className="shimmer-accent" />
                 <div className="stitched-card-scanner" />
                 <div className="relative aspect-[4/3] md:aspect-video rounded-xl overflow-hidden bg-secondary/50 mb-3 md:mb-8">
                   {proj.thumbnail_url ? (
                     <motion.img 
-                      whileHover={{ scale: 1.15, x: 5, y: 5 }}
-                      transition={{ duration: 1.2, ease: "easeOut" }}
                       src={proj.thumbnail_url} 
-                      className="w-full h-full object-cover" 
+                      className="w-full h-full object-cover ken-burns" 
                       alt="" 
                     />
                   ) : (

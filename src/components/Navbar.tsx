@@ -1,4 +1,4 @@
-import { Search, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase, X, Smartphone } from "lucide-react";
+import { Search, Menu, Crown, Bell, MessageSquare, PlusCircle, Users, Briefcase, X, Smartphone, Command } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -110,9 +110,25 @@ export default function Navbar({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Breadcrumb path label per page
+  const breadcrumbLabel: Record<string, string> = {
+    home: 'HOME', search: 'SEARCH', feed: 'FEED', profile: 'PROFILE',
+    projects: 'PROJECTS', messages: 'MESSAGES', settings: 'SETTINGS',
+    analytics: 'ANALYTICS', admin: 'ADMIN', saved: 'SAVED', premium: 'PREMIUM',
+  };
+  const crumb = breadcrumbLabel[activePage] || activePage.toUpperCase();
+
   return (
     <nav className="absolute top-0 left-0 w-full z-[100] bg-transparent transition-all duration-500">
-      <div className="flex items-center justify-between px-8 md:px-12 h-20 max-w-[2000px] mx-auto">
+      {/* Breadcrumb technical path strip */}
+      <div className="px-8 md:px-12 pt-2 flex items-center max-w-[2000px] mx-auto">
+        <div className="breadcrumb-path">
+          <span>CAASTINGCALL</span>
+          <span className="sep">/</span>
+          <span className="current">{crumb}</span>
+        </div>
+      </div>
+      <div className="flex items-center justify-between px-8 md:px-12 h-16 max-w-[2000px] mx-auto">
         <button 
           onClick={onLogoClick} 
           className="relative group flex items-center flex-shrink-0 transition-all duration-700 font-accent text-2xl font-black italic tracking-tighter text-primary active:scale-95"
@@ -128,6 +144,19 @@ export default function Navbar({
             title="Open Search"
           >
             <Search size={22} />
+          </button>
+
+          {/* CMD+K shortcut hint */}
+          <button
+            onClick={() => {
+              // Trigger CMD+K - dispatch custom event
+              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true }));
+            }}
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/8 bg-white/4 text-muted-foreground/40 hover:text-muted-foreground hover:border-white/15 transition-all"
+            title="Command Center (CMD+K)"
+          >
+            <Command size={11} />
+            <span className="font-mono-tech text-[0.5rem]">K</span>
           </button>
 
           {/* Full Screen Search Overlay */}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, lazy, Suspense } from "react";
+import { useEffect, useState, useRef, lazy, Suspense, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { profileService } from "@/services/profileService";
@@ -44,6 +44,7 @@ const AdminPage = lazy(() => import("@/components/AdminPage"));
 const WebRTCCall = lazy(() => import("@/components/WebRTCCall"));
 const ProfileDetailDialog = lazy(() => import("@/components/ProfileDetailDialog"));
 const PiPPlayer = lazy(() => import("@/components/PiPPlayer"));
+const CommandCenter = lazy(() => import("@/components/CommandCenter"));
 
 // Lightweight loading fallback
 const PageLoader = () => (
@@ -104,6 +105,14 @@ const Index = () => {
   const [showDownloadPopup, setShowDownloadPopup] = useState(false);
   const isAppInBackgroundRef = useRef(false);
   const lastHomeClickRef = useRef<number>(0);
+
+  // CMD+K Command Center
+  const [cmdkOpen, setCmdkOpen] = useState(false);
+
+  // Spotlight cursor position
+  const [spotlightPos, setSpotlightPos] = useState({ x: -9999, y: -9999 });
+  const [spotlightVisible, setSpotlightVisible] = useState(false);
+  const spotlightRef = useRef<HTMLDivElement>(null);
   
   // Audio/Video Call Global State
   const [incomingCall, setIncomingCall] = useState<{ roomId: string, callerName: string, type: 'video' | 'audio', callerId: string } | null>(null);
@@ -167,6 +176,44 @@ const Index = () => {
       ringToneRef.current?.pause();
     };
   }, [activeCall?.isAccepted, activeCall?.isCaller, incomingCall]);
+
+  // CMD+K keyboard shortcut handler
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      // CMD+K or Ctrl+K — always open
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCmdkOpen(o => !o);
+        return;
+      }
+      // '/' key — open if not in input field
+      if (e.key === '/' && !isInput && !cmdkOpen) {
+        e.preventDefault();
+        setCmdkOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [cmdkOpen]);
+
+  // Spotlight cursor tracker (desktop only)
+  useEffect(() => {
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+    if (!isDesktop) return;
+    const move = (e: MouseEvent) => {
+      setSpotlightPos({ x: e.clientX, y: e.clientY });
+      setSpotlightVisible(true);
+    };
+    const leave = () => setSpotlightVisible(false);
+    window.addEventListener('mousemove', move, { passive: true });
+    window.addEventListener('mouseleave', leave);
+    return () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseleave', leave);
+    };
+  }, []);
 
   useEffect(() => {
     const isNative = (window as any).Capacitor?.isNative;
@@ -718,10 +765,29 @@ const Index = () => {
     );
   }
 
+  // Compute page-aware ambient glow class
+  const ambientClass = (() => {
+    if (page === 'messages' || page === 'feed') return 'ambient-glow-blue';
+    if (page === 'admin') return 'ambient-glow-ruby';
+    return 'ambient-glow-gold';
+  })();
+
   return (
     <div className="flex flex-col min-h-screen relative">
       {/* Global Technical Grid Background */}
-      <div className="ambient-glow" />
+      <div className={`ambient-glow ${ambientClass}`} />
+
+      {/* Spotlight cursor effect (desktop) */}
+      <div className="spotlight-container hidden lg:block" aria-hidden>
+        <div
+          className="spotlight"
+          style={{
+            left: spotlightPos.x,
+            top: spotlightPos.y,
+            opacity: spotlightVisible ? 1 : 0,
+          }}
+        />
+      </div>
 
       <AppDrawer
         open={drawerOpen}
@@ -838,7 +904,16 @@ const Index = () => {
         currentUserProfile={currentUserProfile}
       />
       <PiPPlayer />
+
+      {/* CMD+K Command Center */}
+      <CommandCenter
+        open={cmdkOpen}
+        onClose={() => setCmdkOpen(false)}
+        onNavigate={(p) => { navigate(p); setCmdkOpen(false); }}
+        onProfileClick={(profile) => { handleProfileClick(profile); setCmdkOpen(false); }}
+      />
       </Suspense>
+
 
       {/* Global Real-time WebRTC Signaling UI Overlay */}
       {activeCall && activeCall.partnerId && user && (

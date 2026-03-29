@@ -4,7 +4,7 @@
    - Epilogue: Cinematic Display Headlines
    - Outfit: Elegant Subheadings & Accents
 ───────────────────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -215,6 +215,15 @@
     font-stretch: condensed;
   }
 
+  /* ── Call Sheet Mono Technical ── */
+  .font-mono-tech {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+  }
+
   .text-title-yellow {
     color: hsl(var(--gold));
   }
@@ -371,10 +380,190 @@
     background-attachment: fixed;
     z-index: -1;
     pointer-events: none;
+    transition: background 1s ease;
+  }
+
+  /* ── Page-Aware Ambient Glow Overlays ── */
+  .ambient-glow-gold::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 0%, hsl(47 92% 52% / 0.08), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientPulse 8s ease-in-out infinite;
+  }
+  .ambient-glow-blue::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 0%, hsl(214 84% 64% / 0.10), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientPulse 8s ease-in-out infinite;
+  }
+  .ambient-glow-ruby::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 0%, hsl(0 84% 45% / 0.12), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientPulse 6s ease-in-out infinite;
+  }
+
+  /* ── Spotlight Cursor Effect (Desktop) ── */
+  .spotlight-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .spotlight {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, hsl(47 92% 52% / 0.04) 0%, transparent 65%);
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  /* ── Command Center (CMD+K) ── */
+  .cmd-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: clamp(60px, 15vh, 140px);
+  }
+  .cmd-panel {
+    width: min(640px, calc(100vw - 2rem));
+    background: hsl(0 0% 5% / 0.95);
+    border: 1px solid hsl(0 0% 100% / 0.12);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.8), 0 0 0 1px hsl(47 92% 52% / 0.1);
+  }
+
+  /* ── Live Badge ── */
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: hsl(47 92% 52% / 0.12);
+    border: 1px solid hsl(47 92% 52% / 0.35);
+    color: hsl(47 92% 52%);
+    box-shadow: 0 0 8px hsl(47 92% 52% / 0.25);
+    animation: livePulse 2s ease-in-out infinite;
+  }
+  .live-badge::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: hsl(47 92% 52%);
+    box-shadow: 0 0 6px hsl(47 92% 52%);
+    animation: liveDot 1s ease-in-out infinite alternate;
+  }
+
+  /* ── Bento Grid ── */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 180px;
+    gap: 1rem;
+  }
+  .bento-grid .bento-featured {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  @media (max-width: 768px) {
+    .bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: 140px;
+    }
+    .bento-grid .bento-featured {
+      grid-column: span 2;
+      grid-row: span 1;
+    }
+  }
+
+  /* ── Breadcrumb Tech Path ── */
+  .breadcrumb-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    color: hsl(var(--muted-foreground) / 0.5);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .breadcrumb-path .sep {
+    color: hsl(var(--primary) / 0.4);
+  }
+  .breadcrumb-path .current {
+    color: hsl(var(--primary) / 0.8);
   }
 
   .tech-line {
     @apply h-[0.5px] w-full bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-4;
+  }
+
+  /* ── Enhanced Shimmer Accent (Sweep) ── */
+  .shimmer-accent {
+    @apply absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-1000;
+  }
+  
+  .shimmer-accent::before {
+    content: '';
+    @apply absolute inset-[-1px] rounded-[inherit];
+    background: linear-gradient(
+      45deg,
+      transparent 40%,
+      hsl(var(--gold) / 0.3) 45%,
+      hsl(var(--gold) / 0.6) 50%,
+      hsl(var(--gold) / 0.3) 55%,
+      transparent 60%
+    );
+    background-size: 200% 200%;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: destination-out;
+    padding: 1.5px;
+    animation: shimmer-sweep 10s linear infinite;
+  }
+
+  /* ── Ken Burns Cinematic Zoom ── */
+  .ken-burns {
+    @apply transition-transform ease-out;
+    transition-duration: 10s;
+  }
+  .group:hover .ken-burns {
+    transform: scale(1.15) translate(1%, 2%);
+  }
+
+  /* ── Haptic Card Dip ── */
+  .haptic-card {
+    @apply transition-transform duration-300;
+  }
+  .haptic-card:active {
+    @apply scale-[0.97] brightness-90;
   }
 }
 
@@ -403,10 +592,38 @@
   100% { transform: translateY(1000%); opacity: 0; }
 }
 
+@keyframes shimmer-sweep {
+  0% { background-position: -200% -200%; }
+  10% { background-position: 200% 200%; }
+  100% { background-position: 200% 200%; }
+}
+
 @keyframes gridScroll {
   from { transform: translate(0, 0); }
   to { transform: translate(40px, 40px); }
 }
+
+@keyframes ambientPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 6px hsl(47 92% 52% / 0.2); }
+  50% { box-shadow: 0 0 14px hsl(47 92% 52% / 0.5); }
+}
+
+@keyframes liveDot {
+  from { opacity: 1; }
+  to { opacity: 0.3; }
+}
+
+@keyframes scramble {
+  0% { opacity: 0; transform: translateY(4px) skewX(-5deg); filter: blur(4px); }
+  60% { opacity: 0.7; filter: blur(1px); }
+  100% { opacity: 1; transform: translateY(0) skewX(0); filter: blur(0); }
+}
+
 
 .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .mask-fade-right { mask-image: linear-gradient(to right, black 80%, transparent 100%); width: 100%; }
 .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .mask-fade-right { mask-image: linear-gradient(to right, black 80%, transparent 100%); width: 100%; }

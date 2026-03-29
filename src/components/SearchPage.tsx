@@ -329,40 +329,41 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
             </h3>
             <span className="text-[0.6rem] font-normal uppercase tracking-[3px] text-muted-foreground">Updated Hourly</span>
           </div>
-          <div className="flex gap-4 md:gap-6 overflow-x-auto pb-8 scrollbar-hide -mx-4 px-4 mask-edges">
-            {trendingResults.map((p) => (
-              <div
+          <div className="bento-grid">
+            {trendingResults.map((p, idx) => (
+              <motion.div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="flex-shrink-0 w-32 md:w-52 group cursor-pointer"
+                whileTap={{ scale: 0.96 }}
+                className={`group cursor-pointer haptic-card ${idx === 0 ? 'bento-featured' : ''}`}
               >
-                <div className="stitched-card relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-4 shadow-2xl">
+                <div className="stitched-card relative w-full h-full rounded-[1.5rem] overflow-hidden shadow-2xl">
+                  <div className="shimmer-accent" />
                   <div className="stitched-card-scanner" />
                   {p.photo_url ? (
-                    <motion.img 
-                      whileHover={{ scale: 1.1, x: 5, y: 5 }}
-                      transition={{ duration: 0.8 }}
-                      src={p.photo_url} 
-                      className="w-full h-full object-cover" 
-                      alt={p.name} 
+                    <motion.img
+                      src={p.photo_url}
+                      className="w-full h-full object-cover ken-burns"
+                      alt={p.name}
                     />
                   ) : (
                     <div className="w-full h-full bg-secondary flex items-center justify-center font-display text-2xl text-primary">
                       {p.name?.[0]}
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="text-white font-medium text-sm mb-1 drop-shadow-md">{p.name}</div>
-                    <div className="text-primary text-[0.6rem] uppercase tracking-widest font-bold drop-shadow-sm">{p.role}</div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <div className="text-white font-medium text-sm drop-shadow-md truncate">{p.name}</div>
+                    <div className="text-primary text-[0.55rem] uppercase tracking-widest font-bold drop-shadow-sm">{p.role}</div>
+                    <div className="font-mono-tech mt-1 text-white/40">#{p.id?.slice(0, 6).toUpperCase()}</div>
                   </div>
                   {p.trending_score && (
-                    <div className="absolute top-4 right-4 bg-orange-500 text-primary-foreground text-[0.55rem] font-normal px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
-                      <TrendingUp size={10} /> {Math.round(p.trending_score)}
+                    <div className="absolute top-3 right-3 bg-orange-500 text-primary-foreground text-[0.55rem] font-normal px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
+                      <TrendingUp size={8} /> {Math.round(p.trending_score)}
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -391,11 +392,13 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
         ) : (
           <div className="grid grid-cols-1 gap-6">
             {results.map((p) => (
-              <div
+              <motion.div
                 key={p.id}
                 onClick={() => onProfileClick(p)}
-                className="stitched-card group relative flex flex-row items-center gap-2 md:gap-4 rounded-lg md:rounded-2xl px-2 md:px-6 py-2 md:py-4 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 mx-auto w-full"
+                whileTap={{ scale: 0.96 }}
+                className="stitched-card group haptic-card relative flex flex-row items-center gap-2 md:gap-4 rounded-lg md:rounded-2xl px-2 md:px-6 py-2 md:py-4 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 mx-auto w-full"
               >
+                <div className="shimmer-accent" />
                 <div className="flex flex-col items-center flex-shrink-0 relative">
                   <div className="relative group/search-avatar">
                     <div className="w-9 h-9 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-xs md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
@@ -416,13 +419,18 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 md:gap-3 mb-0.5 md:mb-2 text-left">
+                  <div className="flex items-center gap-2 mb-0.5 md:mb-2 text-left">
                     <div className="text-sm md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
                       {p.name || "Unknown"}
                       {(p.plan === "pro" || p.role === "Admin") && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
                     </div>
                   </div>
-                  <div className="text-primary font-normal text-[0.6rem] md:text-xs mb-1 md:mb-3 tracking-wide uppercase opacity-80 text-left">{p.role === 'Admin' ? 'Member' : (p.role || "Member")}</div>
+                  <div className="text-primary font-normal text-[0.6rem] md:text-xs mb-1 md:mb-2 tracking-wide uppercase opacity-80 text-left">{p.role === 'Admin' ? 'Member' : (p.role || "Member")}</div>
+                  {/* Call Sheet mono metadata */}
+                  <div className="flex items-center gap-3 mb-1 md:mb-3">
+                    <span className="font-mono-tech text-[0.6rem] text-muted-foreground">ID#{p.id?.slice(0,6).toUpperCase()}</span>
+                    {p.location && <span className="font-mono-tech text-[0.6rem] text-muted-foreground">{p.location.toUpperCase()}</span>}
+                  </div>
                   <div className="hidden md:flex flex-wrap gap-4 md:gap-8 mb-4">
                     {p.location && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
                     {p.experience_years !== null && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
@@ -480,7 +488,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )
@@ -642,16 +650,16 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.98, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      className="stitched-card rounded-xl md:rounded-[2rem] overflow-hidden group hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2 h-full flex flex-col mx-auto w-full"
+      whileTap={{ scale: 0.96 }}
+      className="stitched-card rounded-xl md:rounded-[2rem] overflow-hidden group haptic-card hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2 h-full flex flex-col mx-auto w-full"
     >
+      <div className="shimmer-accent" />
       <div className="stitched-card-scanner" />
       <div className="aspect-[16/10] md:aspect-[16/9] bg-secondary relative overflow-hidden">
         {project.thumbnail_url ? (
           <motion.img 
-            whileHover={{ scale: 1.15, x: 5, y: 5 }}
-            transition={{ duration: 1.2 }}
             src={project.thumbnail_url} 
-            className="w-full h-full object-cover" 
+            className="w-full h-full object-cover ken-burns" 
             alt="" 
           />
         ) : (
