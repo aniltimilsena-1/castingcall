@@ -617,7 +617,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               <button onClick={() => onNavigate("search", { searchType: "talents" })} className="hover:text-foreground/70 transition-all">Find Talent</button>
               <button onClick={() => onNavigate("feed")} className="hover:text-foreground/70 transition-all">Community Feed</button>
               <button onClick={() => onNavigate("premium")} className="hover:text-foreground/70 transition-all">Upgrade to PRO</button>
-              <a href="/CastingCall.apk" download className="hover:text-foreground/70 transition-all text-foreground">Download Android App</a>
+              <a href="/me.castingcall.app.apk" download className="hover:text-foreground/70 transition-all text-foreground">Download Android App</a>
             </div>
           </div>
 

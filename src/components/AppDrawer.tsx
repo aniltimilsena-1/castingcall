@@ -127,8 +127,8 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             <Item 
               onClick={() => {
                 const link = document.createElement('a');
-                link.href = "/CastingCall.apk";
-                link.download = "CastingCall.apk";
+                link.href = "/me.castingcall.app.apk";
+                link.download = "me.castingcall.app.apk";
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

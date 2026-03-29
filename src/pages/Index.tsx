@@ -1062,14 +1062,14 @@ const Index = () => {
                     <span className="text-primary italic">Android App</span>
                   </h3>
                   <div className="flex flex-col gap-1">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-black opacity-60">Mobile Experience v1.1.0</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-black opacity-60">Mobile Experience v1.0.0</p>
                     <p className="text-[9px] text-primary/80 uppercase tracking-[0.2em] font-bold">Now with Real-time Push Notifications</p>
                   </div>
                 </div>
 
                 <div className="w-full space-y-4 pt-4">
                   <a
-                    href="/CastingCall.apk"
+                    href="/me.castingcall.app.apk"
                     download
                     onClick={() => {
                       setShowDownloadPopup(false);
