@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { profileService } from "@/services/profileService";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { calculateSmartMatch, getMatchBadgeStyle } from "@/utils/smartMatch";
 import { 
   Home, 
   Sparkles, 
@@ -23,6 +24,7 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import { App } from "@capacitor/app";
 import Navbar from "@/components/Navbar";
 import AppDrawer, { PageName } from "@/components/AppDrawer";
+import PullToRefresh from "@/components/PullToRefresh";
 
 // ── Lazy-loaded page components (code-splitting) ──
 // Each page loads its own JS chunk only when the user navigates to it
@@ -45,6 +47,7 @@ const WebRTCCall = lazy(() => import("@/components/WebRTCCall"));
 const ProfileDetailDialog = lazy(() => import("@/components/ProfileDetailDialog"));
 const PiPPlayer = lazy(() => import("@/components/PiPPlayer"));
 const CommandCenter = lazy(() => import("@/components/CommandCenter"));
+const CastingTape = lazy(() => import("@/components/CastingTape"));
 
 // Lightweight loading fallback
 const PageLoader = () => (
@@ -108,6 +111,7 @@ const Index = () => {
 
   // CMD+K Command Center
   const [cmdkOpen, setCmdkOpen] = useState(false);
+  const [castingTapeOpen, setCastingTapeOpen] = useState(false);
 
   // Spotlight cursor position
   const [spotlightPos, setSpotlightPos] = useState({ x: -9999, y: -9999 });
@@ -774,6 +778,9 @@ const Index = () => {
 
   return (
     <div className="flex flex-col min-h-screen relative">
+      {/* #11 — Film Grain Noise Texture Overlay */}
+      <div className="noise-overlay" />
+
       {/* Global Technical Grid Background */}
       <div className={`ambient-glow ${ambientClass}`} />
 
@@ -812,11 +819,15 @@ const Index = () => {
           />
         )}
           <Suspense fallback={<PageLoader />}>
-          {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} />}
+          {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} onOpenCastingTape={() => setCastingTapeOpen(true)} />}
           {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
           {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
-          {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} />}
-          {page === "feed" && <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />}
+          {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} castingTapeOpen={castingTapeOpen} onCastingTapeOpenChange={setCastingTapeOpen} />}
+          {page === "feed" && (
+            <PullToRefresh onRefresh={() => setFeedRefreshKey(k => k + 1)}>
+              <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />
+            </PullToRefresh>
+          )}
           {page === "projects" && <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
           {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
           {page === "messages" && (
@@ -903,6 +914,17 @@ const Index = () => {
         user={user}
         currentUserProfile={currentUserProfile}
       />
+
+      {/* Global Casting Tape (#14) */}
+      <Suspense fallback={null}>
+        <CastingTape 
+          open={castingTapeOpen} 
+          onClose={() => setCastingTapeOpen(false)} 
+          onProfileClick={handleProfileClick}
+          role={searchRole}
+        />
+      </Suspense>
+
       <PiPPlayer />
 
       {/* CMD+K Command Center */}

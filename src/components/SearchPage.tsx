@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { profileService, Profile } from "@/services/profileService";
 import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import ProfileDetailDialog from "./ProfileDetailDialog";
+import { SearchResultSkeleton, BentoSkeleton } from "./SkeletonCards";
 
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -22,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useVideo } from "@/contexts/VideoContext";
+import { calculateSmartMatch, getMatchBadgeStyle } from "@/utils/smartMatch";
 
 // Profile type is now imported from profileService
 
@@ -31,11 +33,13 @@ interface SearchPageProps {
   initialType?: "talents" | "projects";
   onBack: () => void;
   onTypeChange?: (type: "talents" | "projects") => void;
-  onProfileClick: (profile: Profile & { is_verified?: boolean; trending_score?: number; mood_tags?: string[]; style_tags?: string[] }) => void;
+  onProfileClick: (profile: Partial<Profile> & { user_id: string }) => void;
   onlineUsers?: Set<string>;
+  castingTapeOpen?: boolean;
+  onCastingTapeOpenChange?: (open: boolean) => void;
 }
 
-export default function SearchPage({ query, role, initialType = "talents", onBack, onTypeChange, onProfileClick, onlineUsers = new Set() }: SearchPageProps) {
+export default function SearchPage({ query, role, initialType = "talents", onBack, onTypeChange, onProfileClick, onlineUsers = new Set(), castingTapeOpen = false, onCastingTapeOpenChange }: SearchPageProps) {
   const { user, profile: currentUserProfile } = useAuth();
   const [searchType, setSearchType] = useState<"talents" | "projects">(initialType);
 
@@ -218,13 +222,22 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
               <div className="flex items-center gap-2 md:gap-3 bg-secondary/50 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-border">
                 <TrendingUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isTrending ? "text-primary" : "text-muted-foreground"}`} />
                 <span className="text-[0.5rem] md:text-[0.65rem] font-normal uppercase tracking-widest text-muted-foreground">Trending</span>
-                <Switch
+                  <Switch
                   checked={isTrending}
                   onCheckedChange={setIsTrending}
                   className="data-[state=checked]:bg-primary h-5 w-9 md:h-6 md:w-11"
                 />
               </div>
             </div>
+
+            <button
+              onClick={() => onCastingTapeOpenChange?.(true)}
+              className="group relative flex items-center gap-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/50 px-5 py-2.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-primary/5"
+            >
+              <div className="absolute inset-0 rounded-2xl border-2 border-primary/20 animate-pulse pointer-events-none" />
+              <Video className="text-primary w-4 h-4" />
+              <span className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-primary">Casting Tape</span>
+            </button>
           </div>
 
           <motion.div 
@@ -379,10 +392,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       </h2>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-6">
-          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground text-[0.65rem] font-normal tracking-[4px] uppercase animate-pulse">Loading Talents...</p>
-        </div>
+        <SearchResultSkeleton count={6} />
       ) : searchType === "talents" ? (
         results.length === 0 ? (
           <div className="text-center py-32 bg-card/30 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
@@ -451,6 +461,30 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                   {p.bio && <p className="hidden md:block text-sm text-foreground/60 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
                 </div>
 
+                {/* AI Smart Match Badge */}
+                {query && (
+                  <div className="hidden lg:flex flex-col items-end gap-1.5 px-6 py-2 border-l border-border/50">
+                    <span className="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">Match Quality</span>
+                    {(() => {
+                      const match = calculateSmartMatch(
+                        { 
+                          role: p.role, 
+                          location: p.location, 
+                          experience_years: p.experience_years,
+                          style_tags: p.style_tags,
+                          mood_tags: p.mood_tags
+                        }, 
+                        { role: role || query, location: query }
+                      );
+                      return (
+                        <div className={`px-4 py-1.5 rounded-full border text-[0.75rem] font-black tracking-widest shadow-lg backdrop-blur-sm ${getMatchBadgeStyle(match.tier)}`}>
+                          {match.score}%
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => onProfileClick(p)}
@@ -506,7 +540,6 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
           </div>
         )
       )}
-
     </motion.div>
   );
 }

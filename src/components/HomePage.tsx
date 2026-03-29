@@ -1,10 +1,13 @@
-import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight, UserPlus, Sparkles, UserCheck, Layout, Smartphone } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { Video, Clapperboard, Music, PersonStanding, Crown, Star, Film, Users, CheckCircle2, Briefcase, MapPin, Search, ChevronRight, UserPlus, Sparkles, UserCheck, Layout, Smartphone, Eye } from "lucide-react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { profileService, type Profile } from "@/services/profileService";
 import { adminService } from "@/services/adminService";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { PageName } from "./AppDrawer";
+import { TalentCardSkeleton } from "./SkeletonCards";
 
 interface HomePageProps {
   onCategoryClick: (role: string) => void;
@@ -12,6 +15,7 @@ interface HomePageProps {
   onTermsClick: () => void;
   onNavigate: (page: PageName, options?: { searchType?: "talents" | "projects"; openForm?: boolean }) => void;
   onlineUsers?: Set<string>;
+  onOpenCastingTape?: () => void;
 }
 
 const categories = [
@@ -23,28 +27,60 @@ const categories = [
   { role: "Casting Director", icon: Users, delay: 0.6 },
 ];
 
-export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick, onNavigate, onlineUsers = new Set() }: HomePageProps) {
-  const { profile: currentUserProfile } = useAuth();
+export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick, onNavigate, onlineUsers = new Set(), onOpenCastingTape }: HomePageProps) {
+  const { profile: currentUserProfile, user } = useAuth();
   const [featured, setFeatured] = useState<Profile[]>([]);
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
   const [statsData, setStatsData] = useState({ talents: "0", projects: "0", visits: "0", casts: "0" });
-  const heroRef = useRef(null);
+  const [doubleTapId, setDoubleTapId] = useState<string | null>(null);
+  const [reelActiveId, setReelActiveId] = useState<string | null>(null);
+  const reelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 100]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+
+  // Mouse Parallax (#15)
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 25, stiffness: 150 };
+  const mouseXSpring = useSpring(mouseX, springConfig);
+  const mouseYSpring = useSpring(mouseY, springConfig);
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["-5deg", "5deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["5deg", "-5deg"]);
+  const moveXBack = useTransform(mouseXSpring, [-0.5, 0.5], [20, -20]);
+  const moveYBack = useTransform(mouseYSpring, [-0.5, 0.5], [20, -20]);
+  const moveXFront = useTransform(mouseXSpring, [-0.5, 0.5], [-30, 30]);
+  const moveYFront = useTransform(mouseYSpring, [-0.5, 0.5], [-30, 30]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = heroRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const data = await profileService.getFeaturedProfiles();
-        setFeatured(data.slice(0, 4));
+        const data = await profileService.getProProfiles();
+        setFeatured(data.slice(0, 6));
       } catch (err) {
-        console.error("Failed to load featured talents");
+        console.error("Failed to load pro talents");
       }
     };
     const fetchRecentProjects = async () => {
@@ -73,15 +109,55 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
     fetchStats();
   }, [currentUserProfile?.role]);
 
-  return (
-    <div className="bg-transparent text-foreground selection:bg-primary/30 overflow-x-hidden">
-      {/* ── HERO SECTION ── */}
-      <section ref={heroRef} className="relative h-[92vh] flex items-center justify-center overflow-hidden">
-        {/* Background Layer */}
-        <motion.div
-          style={{ scale: heroScale, y: heroY, opacity: heroOpacity }}
-          className="absolute inset-0 z-0 bg-transparent"
+  // Double-tap to save
+  const handleDoubleTap = useCallback(async (e: React.MouseEvent, profile: Profile) => {
+    e.stopPropagation();
+    if (!user) { toast.error("Sign in to save talent"); return; }
+    const profileId = profile.id || profile.user_id;
+    setDoubleTapId(profileId);
+    try {
+      await supabase.from("saved_talents").upsert(
+        { user_id: user.id, talent_profile_id: profileId },
+        { onConflict: "user_id,talent_profile_id" }
+      );
+      toast.success("Saved to your list!", { icon: "⭐" });
+    } catch { /* ignore if already saved */ }
+    setTimeout(() => setDoubleTapId(null), 800);
+  }, [user]);
+
+  // Reel preview on hover
+  const handleReelEnter = useCallback((profileId: string) => {
+    reelTimerRef.current = setTimeout(() => setReelActiveId(profileId), 1500);
+  }, []);
+  const handleReelLeave = useCallback(() => {
+    if (reelTimerRef.current) clearTimeout(reelTimerRef.current);
+    setReelActiveId(null);
+  }, []);
+
+    const combinedHeroY = useTransform(
+      [heroY, moveYBack],
+      ([hy, my]) => Number(hy) + Number(my)
+    );
+
+    return (
+      <div className="bg-transparent text-foreground selection:bg-primary/30 overflow-x-hidden">
+        {/* ── HERO SECTION ── */}
+        <section 
+          ref={heroRef} 
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className="relative h-[92vh] flex items-center justify-center overflow-hidden perspective-1000"
         >
+          {/* Background Layer */}
+          <motion.div
+            style={{ 
+              scale: heroScale, 
+              opacity: heroOpacity,
+              x: moveXBack,
+              y: combinedHeroY
+            }}
+            className="absolute inset-0 z-0 bg-transparent"
+          >
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/80 z-10" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40 z-10" />
           <img
@@ -93,7 +169,15 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         </motion.div>
 
         {/* Content Layer */}
-        <div className="relative z-20 text-center px-6 max-w-5xl">
+        <motion.div 
+          style={{ 
+            rotateX, 
+            rotateY,
+            x: moveXFront,
+            y: moveYFront
+          }}
+          className="relative z-20 text-center px-6 max-w-5xl"
+        >
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -127,6 +211,13 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                <span className="relative z-10 flex items-center gap-2">Post a Casting Call <ChevronRight size={20} /></span>
                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
              </button>
+
+             <button
+               onClick={() => onOpenCastingTape?.()}
+               className="group relative px-10 py-4 bg-secondary text-foreground rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:border-primary/50 active:scale-95 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-border/50"
+             >
+               <span className="relative z-10 flex items-center gap-2"><Video size={16} className="text-primary" /> Discovery Card</span>
+             </button>
           </motion.div>
 
           {/* Role shortcut chips */}
@@ -146,7 +237,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               </button>
             ))}
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Floating Indicator */}
         <motion.div
@@ -158,14 +249,14 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         </motion.div>
       </section>
 
-      {/* ── STATS SECTION ── */}
-      <section className="py-6 sm:py-8 px-8 max-w-7xl mx-auto border-y border-border relative z-30">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+      {/* ── GLASSMORPHIC STATS SECTION (#9) ── */}
+      <section className="py-6 sm:py-8 px-8 max-w-7xl mx-auto relative z-30">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {[
-            { label: "Talents Registered", value: statsData.talents },
-            { label: "Active Project", value: statsData.projects },
-            { label: "Monthly Visits", value: statsData.visits },
-            { label: "Successful Casts", value: statsData.casts },
+            { label: "Talents Registered", value: statsData.talents, icon: Users, color: "text-primary" },
+            { label: "Active Projects", value: statsData.projects, icon: Clapperboard, color: "text-amber-400" },
+            { label: "Monthly Visits", value: statsData.visits, icon: Eye, color: "text-blue-400" },
+            { label: "Successful Casts", value: statsData.casts, icon: Star, color: "text-orange-400" },
           ].map((stat, i) => (
             <motion.div
               key={i}
@@ -173,10 +264,13 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="space-y-2"
+              className="glass-stat text-center space-y-3"
             >
-              <div className="text-3xl md:text-5xl font-display text-foreground drop-shadow-sm">{stat.value}</div>
-              <div className="text-[0.65rem] uppercase tracking-[0.25em] text-foreground/60 font-bold">{stat.label}</div>
+              <div className={`w-10 h-10 mx-auto rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center ${stat.color}`}>
+                <stat.icon size={18} className="animate-pulse" />
+              </div>
+              <div className="text-3xl md:text-4xl font-display text-foreground drop-shadow-sm">{stat.value}</div>
+              <div className="text-[0.55rem] uppercase tracking-[0.25em] text-foreground/50 font-bold">{stat.label}</div>
             </motion.div>
           ))}
         </div>
@@ -200,25 +294,26 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               transition={{ delay: cat.delay, duration: 0.6 }}
               className="group relative"
             >
-              <motion.div
-                onClick={() => onCategoryClick(cat.role)}
-                whileTap={{ scale: 0.96 }}
-                className="stitched-card relative z-10 h-44 md:h-56 rounded-3xl md:rounded-[2rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer hover-cinematic"
-              >
-                <div className="shimmer-accent" />
-                <div className="stitched-card-scanner" />
-                {/* Decorative background element */}
-                <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
+              <div className="gradient-border-wrapper">
+                <motion.div
+                  onClick={() => onCategoryClick(cat.role)}
+                  whileTap={{ scale: 0.96 }}
+                  className="gradient-border-inner stitched-card relative z-10 h-44 md:h-56 rounded-3xl md:rounded-[2rem] p-4 md:p-8 flex flex-col items-center justify-between cursor-pointer hover-cinematic"
+                >
+                  <div className="shimmer-accent" />
+                  <div className="stitched-card-scanner" />
+                  <div className="absolute top-0 right-0 -translate-y-1/3 translate-x-1/3 w-40 h-40 bg-primary/10 blur-[90px] rounded-full group-hover:bg-primary/20 transition-colors" />
 
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[2rem] bg-foreground/5 border border-foreground/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 group-hover:border-primary/40 transition-all duration-700">
-                  <cat.icon className="w-7 h-7 md:w-9 md:h-9 text-primary/60 group-hover:text-primary" strokeWidth={1} />
-                </div>
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-[2rem] bg-foreground/5 border border-foreground/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 group-hover:border-primary/40 transition-all duration-700">
+                    <cat.icon className="w-7 h-7 md:w-9 md:h-9 text-primary/60 group-hover:text-primary" strokeWidth={1} />
+                  </div>
 
-                <div className="text-center space-y-1 md:space-y-2 w-full px-4">
-                  <span className="block font-display text-[0.9rem] md:text-lg lg:text-xl text-foreground tracking-tight uppercase font-bold truncate w-full">{cat.role}</span>
-                  <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-foreground/60 group-hover:text-foreground transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
-                </div>
-              </motion.div>
+                  <div className="text-center space-y-1 md:space-y-2 w-full px-4">
+                    <span className="block font-display text-[0.9rem] md:text-lg lg:text-xl text-foreground tracking-tight uppercase font-bold truncate w-full">{cat.role}</span>
+                    <span className="block text-[0.45rem] md:text-[0.6rem] uppercase tracking-[0.2em] md:tracking-[0.25em] text-foreground/60 group-hover:text-foreground transition-colors font-bold">Discover <ChevronRight className="inline-block w-2.5 h-2.5 ml-1" /></span>
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -314,7 +409,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             <button className="text-xs uppercase tracking-[0.2em] text-foreground/40 hover:text-foreground border-b border-border pb-2 transition-colors">View Directory</button>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:gap-8 max-w-[700px] mx-auto w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8 max-w-[900px] mx-auto w-full">
             {featured.map((p, i) => {
               const isElite = p.plan === 'pro' || p.role === 'Admin';
               return (
@@ -326,7 +421,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                   onClick={() => onProfileClick(p)}
-                  className={`group relative bg-card haptic-card border rounded-[1.8rem] p-6 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
+                  className={`group relative bg-card haptic-card border rounded-[1.5rem] p-5 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
                     ? "border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] hover:border-amber-500/60"
                     : "border-border hover:border-primary/20"
                     }`}
@@ -343,14 +438,32 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                     </div>
                   )}
 
-                  <div className="relative w-24 h-24 rounded-full mb-5 p-1 bg-gradient-to-tr from-primary/10 to-transparent group-hover:from-primary/40">
+                  <div
+                    className={`relative w-20 h-20 rounded-full mb-4 p-1 bg-gradient-to-tr from-primary/10 to-transparent group-hover:from-primary/40 reel-preview-container ${reelActiveId === p.id ? 'reel-active' : ''}`}
+                    onDoubleClick={(e) => handleDoubleTap(e, p)}
+                    onMouseEnter={() => handleReelEnter(p.id)}
+                    onMouseLeave={handleReelLeave}
+                  >
                     <div className="w-full h-full rounded-full bg-secondary overflow-hidden shadow-2xl relative border-2 border-border">
                       {p.photo_url ? (
                         <img src={p.photo_url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ken-burns" alt="" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center font-display text-4xl text-primary/20">{p.name?.[0]}</div>
                       )}
+                      {/* Reel video preview (#16) */}
+                      {(p as any)?.videos?.[0] && (
+                        <video
+                          src={(p as any).videos[0]}
+                          className="reel-video rounded-full"
+                          muted
+                          loop
+                          playsInline
+                          ref={(el) => { if (el && reelActiveId === p.id) el.play().catch(() => {}); else if (el) { el.pause(); el.currentTime = 0; } }}
+                        />
+                      )}
                     </div>
+                    {/* Double-tap heart burst (#3) */}
+                    {doubleTapId === p.id && <span className="heart-burst">⭐</span>}
 
                     {onlineUsers?.has(p.user_id) && (
                       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-20">
@@ -369,8 +482,8 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                     {isElite && <Crown size={14} className="text-foreground shadow-[0_0_10px_rgba(0,0,0,0.2)]" />}
                     {p.is_verified && <CheckCircle2 size={14} className="text-blue-500" />}
                   </div>
-                  <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-6 ${isElite ? "text-foreground/80" : "text-foreground/60"}`}>{p.role === 'Admin' ? 'Member' : p.role}</p>
-                  <p className="text-[0.7rem] text-foreground/70 line-clamp-2 h-10 mb-8 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
+                  <p className={`text-[0.6rem] font-bold uppercase tracking-[0.2em] mb-4 ${isElite ? "text-foreground/80" : "text-foreground/60"}`}>{p.role === 'Admin' ? 'Member' : p.role}</p>
+                  <p className="text-[0.65rem] text-foreground/70 line-clamp-2 h-9 mb-6 font-light italic leading-relaxed">"{p.bio || 'Professional talent available for casting calls.'}"</p>
 
                   <div className="w-full h-px bg-border mb-4" />
                   {/* Call Sheet mono metadata row */}

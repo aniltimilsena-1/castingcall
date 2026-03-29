@@ -7,13 +7,18 @@ import { Heart, MessageCircle, MoreVertical, Trash2, ArrowLeft, Bookmark } from 
 import { toast } from "sonner";
 import { FeedItem, Comment } from "@/types/feed";
 import PostModal from "@/components/PostModal";
+import MoodBoardSection from "./MoodBoardSection";
+import ProfileDetailDialog from "./ProfileDetailDialog";
+import { Plus, Layout } from "lucide-react";
 
 export default function SavedItemsPage() {
     const { user, profile: currentUserProfile } = useAuth();
-    const [activeTab, setActiveTab] = useState<"talents" | "posts">("talents");
+    const [activeTab, setActiveTab] = useState<"talents" | "posts" | "boards">("talents");
     const [savedTalents, setSavedTalents] = useState<Profile[]>([]);
     const [savedPosts, setSavedPosts] = useState<FeedItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [viewingProfile, setViewingProfile] = useState<Profile | null>(null);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
     
     // Modal state for viewing a post
     const [selectedPost, setSelectedPost] = useState<FeedItem | null>(null);
@@ -220,6 +225,17 @@ export default function SavedItemsPage() {
                     >
                         Saved Posts ({savedPosts.length})
                     </button>
+                    <button
+                        onClick={() => setActiveTab("boards")}
+                        className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all ${
+                            activeTab === "boards" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:bg-foreground/5"
+                        }`}
+                    >
+                        Collections
+                        <div className="absolute top-1 right-1">
+                          <Plus size={10} className="text-primary/40" />
+                        </div>
+                    </button>
                 </div>
 
                 {loading ? (
@@ -308,9 +324,36 @@ export default function SavedItemsPage() {
                                 )}
                             </div>
                         )}
+
+                        {activeTab === "boards" && user && (
+                          <MoodBoardSection 
+                            userId={user.id} 
+                            onViewTalent={(p) => {
+                              setViewingProfile(p);
+                              setIsProfileOpen(true);
+                            }}
+                          />
+                        )}
                     </>
                 )}
             </div>
+
+            <ProfileDetailDialog 
+                open={isProfileOpen}
+                onOpenChange={setIsProfileOpen}
+                profile={viewingProfile}
+                user={user}
+                currentUserProfile={currentUserProfile}
+                isSaved={viewingProfile ? savedTalents.some(t => t.id === viewingProfile.id) || savedTalents.some(t => t.user_id === viewingProfile.user_id) : false}
+                onToggleSave={(e, id) => {
+                    if (savedTalents.some(t => t.id === id || t.user_id === id)) {
+                      handleUnsaveTalent(id);
+                    } else {
+                      // ProfileDetail handles the save internally normally, but we keep this for consistency
+                      fetchSavedData();
+                    }
+                }}
+            />
 
             <AnimatePresence>
                 {selectedPost && (

@@ -5,8 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Edit3, FolderOpen, Layout, Clock, CheckCircle2, X, ImageIcon, Search, MapPin, DollarSign, Briefcase, Users, Eye, Check, UserPlus, Video, MessageSquare } from "lucide-react";
+import CastingRoom from "./CastingRoom";
+import AuditionScheduler from "./AuditionScheduler";
+import AuditionPicker from "./AuditionPicker";
 import { type Profile } from "@/services/profileService";
+import { 
+  Plus, Edit3, Trash2, FolderOpen, Layout, Clock, CheckCircle2, 
+  X, ImageIcon, Search, MapPin, DollarSign, Briefcase, Users, 
+  Eye, Check, UserPlus, Video, MessageSquare, Zap, Target, Calendar 
+} from "lucide-react";
 
 interface ProjectApplication extends Tables<"applications"> {
   projects?: {
@@ -38,6 +45,9 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
   const [applicants, setApplicants] = useState<ProjectApplication[]>([]);
   const [applicantsLoading, setApplicantsLoading] = useState(false);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const [isRoomOpen, setIsRoomOpen] = useState(false);
+  const [schedulingFor, setSchedulingFor] = useState<Project | null>(null);
+  const [pickingFor, setPickingFor] = useState<ProjectApplication | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -529,7 +539,21 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                     </div>
                     <div>
                       <h3 className="font-display text-3xl text-foreground leading-none mb-2">{viewingApplicantsFor.title}</h3>
-                      <p className="text-xs text-muted-foreground font-normal uppercase tracking-[2px]">Applicants Pipeline ({applicants.length})</p>
+                      <div className="flex items-center gap-4">
+                        <p className="text-xs text-muted-foreground font-normal uppercase tracking-[2px]">Applicants Pipeline ({applicants.length})</p>
+                        <button 
+                          onClick={() => setIsRoomOpen(true)}
+                          className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
+                        >
+                          <Zap size={12} className="animate-pulse" /> Launch Live Review
+                        </button>
+                        <button 
+                          onClick={() => setSchedulingFor(viewingApplicantsFor)}
+                          className="flex items-center gap-2 px-4 py-1.5 bg-secondary hover:bg-white/10 text-muted-foreground border border-white/5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
+                        >
+                          <Calendar size={12} /> Schedule Auditions
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <button
@@ -627,187 +651,139 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
           )}
         </AnimatePresence>
 
-        {loading || appsLoading ? (
-          <div className="flex items-center justify-center py-40">
-            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-          </div>
-        ) : (
-          activeTab === "managed" ? (
-            filteredProjects.length === 0 ? (
-              <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
-                <FolderOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
-                <p className="text-muted-foreground text-lg mb-2">No projects found.</p>
-                <button onClick={() => setShowForm(true)} className="text-primary font-normal hover:underline">Launch your first casting call →</button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {filteredProjects.map((p) => (
-                  <motion.div
-                    layout
-                    key={p.id}
-                    className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] overflow-hidden hover:border-primary/50 transition-all flex flex-col group shadow-lg"
-                  >
-                    <div className="aspect-[16/9] bg-secondary relative overflow-hidden">
-                      {p.thumbnail_url ? (
-                        <img src={p.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-primary/10">
-                          <Layout className="w-24 h-24" />
+        <AnimatePresence mode="wait">
+          {loading || appsLoading ? (
+            <motion.div 
+              key="loader"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center justify-center py-40"
+            >
+              <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeTab === "managed" ? (
+                filteredProjects.length === 0 ? (
+                  <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
+                    <FolderOpen className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
+                    <p className="text-muted-foreground text-lg mb-2">No projects found.</p>
+                    <button onClick={() => setShowForm(true)} className="text-primary font-normal hover:underline">Launch your first casting call →</button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {filteredProjects.map((p) => (
+                      <div
+                        key={p.id}
+                        className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] overflow-hidden hover:border-primary/50 transition-all flex flex-col group shadow-lg"
+                      >
+                        <div className="aspect-[16/9] bg-secondary relative overflow-hidden">
+                          {p.thumbnail_url ? (
+                            <img src={p.thumbnail_url} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-primary/10">
+                              <Layout className="w-24 h-24" />
+                            </div>
+                          )}
+                          <div className="absolute top-6 left-6">
+                            <span className={`px-4 py-2 rounded-full text-[0.65rem] font-normal uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-primary-foreground' : p.status === 'completed' ? 'bg-blue-600 text-white' : 'bg-foreground/10 text-foreground'}`}>
+                              {p.status}
+                            </span>
+                          </div>
                         </div>
-                      )}
-                      <div className="absolute top-6 left-6">
-                        <span className={`px-4 py-2 rounded-full text-[0.65rem] font-normal uppercase tracking-[2px] backdrop-blur-xl border border-white/10 ${p.status === 'active' ? 'bg-primary text-primary-foreground' :
-                          p.status === 'completed' ? 'bg-blue-600 text-white' :
-                            'bg-foreground/10 text-foreground'
-                          }`}>
-                          {p.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-8">
-                      <div className="flex items-center gap-2 text-[0.6rem] font-bold tracking-[3px] text-primary uppercase mb-4 opacity-100">
-                        <Briefcase size={12} /> {p.role_category} Search
-                      </div>
-                      <h4 className="font-display text-2xl text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
-                      <p className="text-foreground/60 text-sm line-clamp-2 mb-8 h-10 leading-relaxed font-body italic">"{p.description}"</p>
+                        <div className="p-8">
+                          <div className="flex items-center gap-2 text-[0.6rem] font-bold tracking-[3px] text-primary uppercase mb-4 opacity-100">
+                            <Briefcase size={12} /> {p.role_category} Search
+                          </div>
+                          <h4 className="font-display text-2xl text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">{p.title}</h4>
+                          <p className="text-foreground/60 text-sm line-clamp-2 mb-8 h-10 leading-relaxed font-body italic">"{p.description}"</p>
 
-                      <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                        <div className="flex gap-2">
-                          <button 
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); startEdit(p); }} 
-                            className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-primary-foreground rounded-xl transition-all"
-                          >
-                            <Edit3 size={16} />
-                          </button>
-                          <button 
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} 
-                            className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                            <div className="flex gap-2">
+                              <button onClick={(e) => { e.stopPropagation(); startEdit(p); }} className="p-3 bg-secondary/50 text-muted-foreground hover:bg-primary hover:text-primary-foreground rounded-xl transition-all"><Edit3 size={16} /></button>
+                              <button onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }} className="p-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={16} /></button>
+                            </div>
+                            <button onClick={() => fetchApplicants(p)} className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-2 shadow-xl shadow-primary/5">
+                              Review Pipeline <Users size={14} />
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => fetchApplicants(p)}
-                          className="bg-primary/10 text-primary border border-primary/20 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-2 shadow-xl shadow-primary/5"
-                        >
-                          Review Pipeline <Users size={14} />
-                        </button>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )) : (
-            myApplications.length === 0 ? (
-              <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
-                <Layout className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
-                <p className="text-muted-foreground text-lg mb-2">You haven't applied to any projects yet.</p>
-                <p className="text-sm text-muted-foreground/50">Explore talents and projects to find opportunities!</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {myApplications.filter(a => a.projects?.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((app) => (
-                  <div key={app.id} className="bg-card border-[1.5px] border-card-border rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary transition-all">
-                    <div className="w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex-shrink-0">
-                      {app.projects?.thumbnail_url ? (
-                        <img src={app.projects.thumbnail_url} className="w-full h-full object-cover" alt="" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-primary/20"><Briefcase size={24} /></div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h3 className="font-display text-2xl text-foreground">{app.projects?.title}</h3>
-                        <span className={`px-3 py-1 rounded-full text-[0.6rem] font-bold uppercase tracking-widest ${app.status === 'accepted' ? 'bg-green-600 text-white' :
-                          app.status === 'invited' ? 'bg-amber-600 text-white gold-glow animate-pulse' :
-                            app.status === 'rejected' ? 'bg-red-600 text-white' :
-                              'bg-secondary text-secondary-foreground'
-                          }`}>
-                          {app.status === 'invited' ? 'PROJECT INVITATION' : app.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground/70 line-clamp-1 mb-3 font-medium">Looking for: {app.projects?.role_category} • Status: {app.projects?.status}</p>
+                    ))}
+                  </div>
+                )
+              ) : (
+                myApplications.length === 0 ? (
+                  <div className="text-center py-32 bg-card/10 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
+                    <Layout className="w-16 h-16 text-muted-foreground/20 mx-auto mb-8" />
+                    <p className="text-muted-foreground text-lg mb-2">You haven't applied to any projects yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {myApplications.filter(a => a.projects?.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((app) => (
+                      <div key={app.id} className="bg-card border-[1.5px] border-card-border rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary transition-all">
+                        <div className="w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex-shrink-0">
+                          {app.projects?.thumbnail_url ? <img src={app.projects.thumbnail_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-primary/20"><Briefcase size={24} /></div>}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center gap-3 mb-2">
+                            <h3 className="font-display text-2xl text-foreground">{app.projects?.title}</h3>
+                            <span className={`px-3 py-1 rounded-full text-[0.6rem] font-bold uppercase tracking-widest ${app.status === 'accepted' ? 'bg-green-600 text-white' : app.status === 'invited' ? 'bg-amber-600 text-white shadow-lg shadow-amber-500/20' : app.status === 'rejected' ? 'bg-red-600 text-white' : 'bg-secondary text-secondary-foreground'}`}>
+                              {app.status === 'invited' ? 'PROJECT INVITATION' : app.status}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground/70 line-clamp-1 mb-3 font-medium">Looking for: {app.projects?.role_category}</p>
 
-                      {app.video_url ? (
-                        <div className="flex items-center gap-4 mt-1 mb-4">
-                          <button
-                            onClick={() => setPlayingVideo(app.video_url)}
-                            className="flex items-center gap-2 bg-primary/5 border border-primary/20 text-primary px-4 py-2 rounded-xl text-xs hover:bg-primary/10 transition-all font-normal"
-                          >
-                            <Video size={14} /> Play My Audition
-                          </button>
-                          {app.status === 'pending' && (
-                            <label className="text-[0.65rem] text-foreground/50 hover:text-primary cursor-pointer underline underline-offset-4 decoration-border transition-colors">
-                              Change Audition
-                              <input type="file" accept="video/*,audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
-                            </label>
+                          {app.video_url ? (
+                            <div className="flex items-center gap-4 mt-1 mb-4">
+                              <button onClick={() => setPlayingVideo(app.video_url)} className="flex items-center gap-2 bg-primary/5 border border-primary/20 text-primary px-4 py-2 rounded-xl text-xs hover:bg-primary/10 transition-all font-normal"><Video size={14} /> Play My Audition</button>
+                            </div>
+                          ) : (
+                            app.status === 'pending' && (
+                              <div className="mt-2 mb-4">
+                                <label className="flex items-center gap-2 text-xs text-primary hover:text-primary/70 cursor-pointer transition-colors font-medium">
+                                  <Plus size={14} /> Add Self-Tape Audition
+                                  <input type="file" accept="video/*,audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
+                                </label>
+                              </div>
+                            )
+                          )}
+
+                          {(app.status === 'pending' || app.status === 'accepted') && (
+                            <div className="mt-2 mb-4">
+                              <button onClick={() => setPickingFor(app)} className="flex items-center gap-2 text-primary hover:text-primary/70 cursor-pointer transition-colors font-bold uppercase text-[9px] tracking-[2px] bg-primary/5 px-4 py-2 rounded-xl border border-primary/20">
+                                <Calendar size={14} /> {app.status === 'accepted' ? 'Book Final Audition' : 'Pick Available Audition Slot'}
+                              </button>
+                            </div>
                           )}
                         </div>
-                      ) : (
-                        app.status === 'pending' && (
-                          <div className="mt-2 mb-4">
-                            <label className="flex items-center gap-2 text-xs text-primary hover:text-primary/70 cursor-pointer transition-colors font-medium">
-                              <Plus size={14} /> Add Self-Tape Audition
-                              <input type="file" accept="video/*,audio/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpdateAudition(app.id, e.target.files[0])} />
-                            </label>
+
+                        {app.status === 'invited' ? (
+                          <div className="flex gap-2">
+                            <button onClick={() => respondToInvitation(app.id, 'accepted')} className="bg-green-600 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-green-500/20">Accept</button>
+                            <button onClick={() => respondToInvitation(app.id, 'rejected')} className="bg-secondary border border-border text-foreground px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:border-red-500/50 transition-all">Decline</button>
                           </div>
-                        )
-                      )}
-
-                      <div className="flex items-center gap-6 mt-1">
-                        <p className="text-xs text-foreground/40 font-bold uppercase tracking-wider">Applied on {new Date(app.created_at).toLocaleDateString()}</p>
-                        {app.status === 'pending' && (
-                          <button
-                            onClick={() => withdrawApplication(app.id)}
-                            className="text-[0.6rem] text-muted-foreground hover:text-red-500 font-bold uppercase tracking-widest transition-colors flex items-center gap-1 bg-foreground/5 px-3 py-1.5 rounded-full hover:bg-red-500/10"
-                          >
-                            <X size={12} /> Withdraw
-                          </button>
+                        ) : (
+                          <div className="flex flex-col md:flex-row items-center gap-4">
+                            <div className="text-muted-foreground flex items-center gap-2 text-sm italic opacity-50">{app.status === 'pending' ? 'Application being reviewed...' : app.status === 'accepted' ? 'You were selected!' : 'Application closed'}</div>
+                            {app.status === 'pending' && <button onClick={() => withdrawApplication(app.id)} className="text-xs text-red-500 hover:text-red-400 font-normal uppercase tracking-widest px-4 py-2 bg-red-500/5 hover:bg-red-500/10 rounded-xl transition-all border border-red-500/10">Withdraw</button>}
+                          </div>
                         )}
                       </div>
-                    </div>
-
-                    {app.status === 'invited' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => respondToInvitation(app.id, 'accepted')}
-                          className="bg-green-600 text-white px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-green-500/20"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => respondToInvitation(app.id, 'rejected')}
-                          className="bg-secondary border border-border text-foreground px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest hover:border-red-500/50 transition-all"
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    )}
-
-                    {app.status !== 'invited' && (
-                      <div className="flex flex-col md:flex-row items-center gap-4">
-                        <div className="text-muted-foreground flex items-center gap-2 text-sm italic opacity-50">
-                          {app.status === 'pending' ? 'Application being reviewed...' : app.status === 'accepted' ? 'You were selected!' : 'Application closed'}
-                        </div>
-                        {app.status === 'pending' && (
-                          <button
-                            onClick={() => withdrawApplication(app.id)}
-                            className="text-xs text-red-500 hover:text-red-400 font-normal uppercase tracking-widest px-4 py-2 bg-red-500/5 hover:bg-red-500/10 rounded-xl transition-all border border-red-500/10"
-                          >
-                            Withdraw
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            )
-          ))
-        }
-      </motion.div>
+                )
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       <AnimatePresence>
         {playingVideo && (
@@ -817,16 +793,37 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
           >
             <div className="relative w-full max-w-5xl aspect-video bg-black rounded-[3rem] overflow-hidden border border-white/10 shadow-2xl">
               <video src={playingVideo} controls autoPlay className="w-full h-full" />
-              <button
-                onClick={() => setPlayingVideo(null)}
-                className="absolute top-8 right-8 p-4 bg-white/10 hover:bg-red-500 text-white rounded-full transition-all backdrop-blur-md"
-              >
-                <X size={24} />
-              </button>
+              <button onClick={() => setPlayingVideo(null)} className="absolute top-8 right-8 p-4 bg-white/10 hover:bg-red-500 text-white rounded-full transition-all backdrop-blur-md"><X size={24} /></button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {isRoomOpen && viewingApplicantsFor && (
+          <CastingRoom
+            projectId={viewingApplicantsFor.id}
+            projectTitle={viewingApplicantsFor.title}
+            onClose={() => setIsRoomOpen(false)}
+            applicants={applicants}
+            onViewProfile={onProfileClick}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {schedulingFor && (
+          <motion.div initial={{ opacity: 0, x: '100%' }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: '100%' }} className="fixed inset-0 z-[101] bg-background">
+            <AuditionScheduler projectId={schedulingFor.id} casterId={user!.id} onClose={() => setSchedulingFor(null)} />
+          </motion.div>
+        )}
+        {pickingFor && (
+          <motion.div initial={{ opacity: 0, y: '100%' }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: '100%' }} className="fixed inset-0 z-[101] bg-background">
+            <AuditionPicker projectId={pickingFor.project_id} talentId={user!.id} onClose={() => setPickingFor(null)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </motion.div>
     </>
   );
 }

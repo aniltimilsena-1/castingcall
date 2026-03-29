@@ -38,6 +38,8 @@ import WebRTCCall from "./WebRTCCall";
 import { type PageName } from "./AppDrawer";
 import { type Profile } from "@/services/profileService";
 import { messageService } from "@/services/messageService";
+import { ConversationSkeleton } from "./SkeletonCards";
+import VoiceNoteRecorder from "./VoiceNoteRecorder";
 
 function ActionItem({ icon: Icon, label, onClick, color = "text-muted-foreground" }: { icon: any, label: string, onClick: () => void, color?: string }) {
   return (
@@ -641,7 +643,9 @@ export default function MessagesPage({
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar">
-          {conversations
+          {loading ? (
+            <ConversationSkeleton count={6} />
+          ) : conversations
             .filter(c => c.partnerName.toLowerCase().includes(searchTerm.toLowerCase()) || c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()))
             .map((c) => (
             <button key={c.partnerId} onClick={() => loadThread(c.partnerId)} className={`w-full px-3 py-3 flex items-center gap-3 hover:bg-foreground/5 transition-all ${selectedPartner === c.partnerId ? "bg-foreground/5" : ""}`}>
@@ -992,6 +996,25 @@ export default function MessagesPage({
                     disabled={!!pendingFile}
                   />
                 </label>
+
+                {/* Voice Note Recorder (#7) */}
+                <VoiceNoteRecorder
+                  disabled={!!pendingFile || uploading}
+                  onSend={async (blob, duration) => {
+                    if (!user || !selectedPartner) return;
+                    try {
+                      const path = `${user.id}/voice/${Date.now()}.webm`;
+                      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, blob, { contentType: 'audio/webm' });
+                      if (uploadError) throw uploadError;
+                      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+                      await messageService.sendMessage(user.id, selectedPartner, `[VOICE]:${publicUrl}:${duration}`);
+                      void loadConversations(true);
+                      void loadThread(selectedPartner);
+                    } catch (err: any) {
+                      toast.error(err.message || 'Failed to send voice note');
+                    }
+                  }}
+                />
 
                 <input
                   value={newMessage}

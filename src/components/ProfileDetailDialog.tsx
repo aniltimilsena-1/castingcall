@@ -7,11 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical, UserCheck, Users, Ban, ShieldAlert } from "lucide-react";
+import { X, Heart, MessageCircle, Bookmark, Edit2, Trash2, Send, Crown, UserPlus, Check, Share2, CheckCircle2, ShoppingBag, Gift, Sparkles, TrendingUp, Lock, MoreVertical, UserCheck, Users, Ban, ShieldAlert, Plus, FolderPlus } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 import { PhotoViewer } from "./SearchPage";
 import { settingsService, UserSettings } from "@/services/settingsService";
+import { moodBoardService, MoodBoard } from "@/services/moodBoardService";
 import ImageWithProtection from "./ui/ImageWithProtection";
+import ActivityTimeline from "./ActivityTimeline";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +62,8 @@ export default function ProfileDetailDialog({
     const [loadingProjects, setLoadingProjects] = useState(false);
     const [alreadyAppliedOrInvited, setAlreadyAppliedOrInvited] = useState<string[]>([]);
     const [hasAcceptedConnection, setHasAcceptedConnection] = useState(false);
+    const [myBoards, setMyBoards] = useState<MoodBoard[]>([]);
+    const [isBoardsOpen, setIsBoardsOpen] = useState(false);
 
     // ── Monetization States
     const [isSubscribed, setIsSubscribed] = useState(false);
@@ -242,6 +246,20 @@ export default function ProfileDetailDialog({
     }, [open, profile?.id, user, currentUserProfile?.role]);
 
     useEffect(() => {
+        if (open && profile?.id && user && (currentUserProfile?.role === "Producer" || currentUserProfile?.role === "Director" || currentUserProfile?.role === "Casting Director" || currentUserProfile?.role === "Admin")) {
+            const fetchBoards = async () => {
+                try {
+                    const data = await moodBoardService.getMyBoards(user.id);
+                    setMyBoards(data || []);
+                } catch (err) {
+                    console.error("Board fetch error:", err);
+                }
+            };
+            fetchBoards();
+        }
+    }, [open, profile?.id, user, currentUserProfile?.role]);
+
+    useEffect(() => {
         if (open && profile?.user_id) {
             const loadMonetization = async () => {
                 setLoadingMonetization(true);
@@ -296,6 +314,17 @@ export default function ProfileDetailDialog({
             toast.error(err.message || "Failed to invite");
         } finally {
             setInvitingProjectId(null);
+        }
+    };
+
+    const addToCollection = async (boardId: string) => {
+        if (!user || !profile?.user_id) return;
+        try {
+            await moodBoardService.addItemToBoard(boardId, profile.user_id);
+            toast.success("Added to collection!");
+            setIsBoardsOpen(false);
+        } catch (err: any) {
+            toast.error("Failed to add to board");
         }
     };
 
@@ -559,6 +588,30 @@ export default function ProfileDetailDialog({
                                                                 <Share2 size={16} />
                                                                 <span className="font-medium">Share Profile</span>
                                                             </DropdownMenuItem>
+
+                                                            {user && (currentUserProfile?.role === "Producer" || currentUserProfile?.role === "Director" || currentUserProfile?.role === "Casting Director" || currentUserProfile?.role === "Admin") && myBoards.length > 0 && (
+                                                                <DropdownMenuSub>
+                                                                    <DropdownMenuSubTrigger className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-primary/10 cursor-pointer text-xs outline-none">
+                                                                        <FolderPlus size={16} />
+                                                                        <span className="font-medium">Add to Collection</span>
+                                                                    </DropdownMenuSubTrigger>
+                                                                    <DropdownMenuPortal>
+                                                                        <DropdownMenuSubContent className="w-56 bg-card border-border p-1.5 shadow-2xl z-[502]">
+                                                                            <p className="px-2 py-2 text-[9px] uppercase tracking-widest text-muted-foreground font-bold">Boards</p>
+                                                                            {myBoards.map(board => (
+                                                                                <DropdownMenuItem
+                                                                                    key={board.id}
+                                                                                    onClick={() => addToCollection(board.id)}
+                                                                                    className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-primary/10 cursor-pointer text-xs"
+                                                                                >
+                                                                                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                                                                    {board.title}
+                                                                                </DropdownMenuItem>
+                                                                            ))}
+                                                                        </DropdownMenuSubContent>
+                                                                    </DropdownMenuPortal>
+                                                                </DropdownMenuSub>
+                                                            )}
 
                                                             {user?.id !== profile.user_id && (
                                                                 <DropdownMenuItem
@@ -885,6 +938,14 @@ export default function ProfileDetailDialog({
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    {/* Activity Timeline (#8) */}
+                                    <div className="bg-card border border-border rounded-3xl p-8">
+                                        <h3 className="text-[0.7rem] font-normal tracking-[2px] uppercase text-foreground/50 mb-6 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Activity Timeline
+                                        </h3>
+                                        <ActivityTimeline userId={profile.user_id} maxItems={8} />
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

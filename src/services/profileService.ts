@@ -44,13 +44,35 @@ export const profileService = {
     },
 
     async getFeaturedProfiles() {
-        const q = supabase.from("profiles")
+        const { data: proProfiles, error } = await supabase.from("profiles")
             .select("*")
             .eq("plan", "pro")
             .neq("role", "Admin")
             .order("created_at", { ascending: false })
             .limit(10);
-        const { data, error } = await q;
+            
+        if (error) throw error;
+        
+        if (proProfiles && proProfiles.length > 0) return proProfiles;
+        
+        // Fallback to latest profiles (but prioritize active ones)
+        const { data: latest } = await supabase.from("profiles")
+            .select("*")
+            .neq("role", "Admin")
+            .order("updated_at", { ascending: false })
+            .limit(50);
+            
+        return latest || [];
+    },
+
+    async getProProfiles() {
+        const { data, error } = await supabase.from("profiles")
+            .select("*")
+            .eq("plan", "pro")
+            .neq("role", "Admin")
+            .order("created_at", { ascending: false })
+            .limit(10);
+            
         if (error) throw error;
         return data || [];
     },
