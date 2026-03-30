@@ -27,27 +27,39 @@ import AppDrawer, { PageName } from "@/components/AppDrawer";
 import PullToRefresh from "@/components/PullToRefresh";
 
 // ── Lazy-loaded page components (code-splitting) ──
-// Each page loads its own JS chunk only when the user navigates to it
-const HomePage = lazy(() => import("@/components/HomePage"));
-const AuthPage = lazy(() => import("@/components/AuthPage"));
-const ProfilePage = lazy(() => import("@/components/ProfilePage"));
-const SearchPage = lazy(() => import("@/components/SearchPage"));
-const FeedPage = lazy(() => import("@/components/FeedPage"));
-const MyProjectsPage = lazy(() => import("@/components/MyProjectsPage"));
-const NotificationsPage = lazy(() => import("@/components/NotificationsPage"));
-const MessagesPage = lazy(() => import("@/components/MessagesPage"));
-const SettingsPage = lazy(() => import("@/components/SettingsPage"));
-const SavedItemsPage = lazy(() => import("@/components/SavedItemsPage"));
-const AnalyticsPage = lazy(() => import("@/components/AnalyticsPage"));
-const HelpSupportPage = lazy(() => import("@/components/HelpSupportPage"));
-const TermsPrivacyPage = lazy(() => import("@/components/TermsPrivacyPage"));
-const PremiumPage = lazy(() => import("@/components/PremiumPage"));
-const AdminPage = lazy(() => import("@/components/AdminPage"));
-const WebRTCCall = lazy(() => import("@/components/WebRTCCall"));
-const ProfileDetailDialog = lazy(() => import("@/components/ProfileDetailDialog"));
-const PiPPlayer = lazy(() => import("@/components/PiPPlayer"));
-const CommandCenter = lazy(() => import("@/components/CommandCenter"));
-const CastingTape = lazy(() => import("@/components/CastingTape"));
+// Robust lazy loader that handles "ChunkLoadError" (user on old version after deploy)
+const lazyWithRetry = (componentImport: () => Promise<any>) => 
+  lazy(() => 
+    componentImport().catch((error) => {
+      console.error("Critical: Chunk fetch failed. Refreshing page...", error);
+      if (error.message?.includes("Failed to fetch dynamically imported module") || 
+          error.message?.includes("loading chunk")) {
+        window.location.reload();
+      }
+      throw error;
+    })
+  );
+
+const HomePage = lazyWithRetry(() => import("@/components/HomePage"));
+const AuthPage = lazyWithRetry(() => import("@/components/AuthPage"));
+const ProfilePage = lazyWithRetry(() => import("@/components/ProfilePage"));
+const SearchPage = lazyWithRetry(() => import("@/components/SearchPage"));
+const FeedPage = lazyWithRetry(() => import("@/components/FeedPage"));
+const MyProjectsPage = lazyWithRetry(() => import("@/components/MyProjectsPage"));
+const NotificationsPage = lazyWithRetry(() => import("@/components/NotificationsPage"));
+const MessagesPage = lazyWithRetry(() => import("@/components/MessagesPage"));
+const SettingsPage = lazyWithRetry(() => import("@/components/SettingsPage"));
+const SavedItemsPage = lazyWithRetry(() => import("@/components/SavedItemsPage"));
+const AnalyticsPage = lazyWithRetry(() => import("@/components/AnalyticsPage"));
+const HelpSupportPage = lazyWithRetry(() => import("@/components/HelpSupportPage"));
+const TermsPrivacyPage = lazyWithRetry(() => import("@/components/TermsPrivacyPage"));
+const PremiumPage = lazyWithRetry(() => import("@/components/PremiumPage"));
+const AdminPage = lazyWithRetry(() => import("@/components/AdminPage"));
+const WebRTCCall = lazyWithRetry(() => import("@/components/WebRTCCall"));
+const ProfileDetailDialog = lazyWithRetry(() => import("@/components/ProfileDetailDialog"));
+const PiPPlayer = lazyWithRetry(() => import("@/components/PiPPlayer"));
+const CommandCenter = lazyWithRetry(() => import("@/components/CommandCenter"));
+const CastingTape = lazyWithRetry(() => import("@/components/CastingTape"));
 
 // Lightweight loading fallback
 const PageLoader = () => (
@@ -60,7 +72,7 @@ const PageLoader = () => (
 );
 
 // PhotoViewer is a lightweight overlay, keep it lazy
-const PhotoViewerLazy = lazy(() => import("@/components/SearchPage").then(mod => ({ default: mod.PhotoViewer })));
+const PhotoViewerLazy = lazyWithRetry(() => import("@/components/SearchPage").then(mod => ({ default: mod.PhotoViewer })));
 
 const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "messages", "settings", "saved", "analytics", "admin"];
 
