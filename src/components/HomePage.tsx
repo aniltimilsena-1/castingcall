@@ -146,7 +146,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           ref={heroRef} 
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative h-[92vh] flex items-center justify-center overflow-hidden perspective-1000"
+          className="relative h-[92vh] flex items-center justify-center pt-24 sm:pt-0 overflow-hidden perspective-1000"
         >
           {/* Background Layer */}
           <motion.div
