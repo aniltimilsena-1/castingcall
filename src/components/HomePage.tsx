@@ -202,11 +202,11 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex items-center justify-center"
+            className="flex items-center justify-center gap-4 md:gap-6"
           >
             <button
                onClick={() => onCategoryClick("post")}
-               className="group relative px-10 py-4 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95 shadow-[0_20px_50px_rgba(245,197,24,0.3)]"
+               className="group relative px-6 py-3 md:px-10 md:py-4 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.65rem] md:text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95 shadow-[0_20px_50px_rgba(245,197,24,0.3)]"
              >
                <span className="relative z-10 flex items-center gap-2">Post a Casting Call <ChevronRight size={20} /></span>
                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -214,7 +214,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
              <button
                onClick={() => onOpenCastingTape?.()}
-               className="group relative px-10 py-4 bg-secondary text-foreground rounded-full font-accent font-bold text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:border-primary/50 active:scale-95 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-border/50"
+               className="group relative px-6 py-3 md:px-10 md:py-4 bg-secondary text-foreground rounded-full font-accent font-bold text-[0.65rem] md:text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:border-primary/50 active:scale-95 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-border/50"
              >
                <span className="relative z-10 flex items-center gap-2"><Video size={16} className="text-primary" /> Discovery Card</span>
              </button>
