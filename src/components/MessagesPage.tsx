@@ -507,7 +507,7 @@ export default function MessagesPage({
   const forwardMessageToTarget = async (msg: Message, targetId: string) => {
     if (!user || !targetId) return;
     
-    let content = msg.content;
+    const content = msg.content;
     const { error } = await supabase.from("messages").insert({
       sender_id: user.id,
       receiver_id: targetId,

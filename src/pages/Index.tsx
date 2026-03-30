@@ -338,14 +338,14 @@ const Index = () => {
           dialToneRef.current.volume = 0;
           dialToneRef.current.play().then(() => {
             dialToneRef.current?.pause();
-          }).catch(() => {});
+          }).catch(() => { /* Silence is intentional */ });
         }
         if (ringToneRef.current) {
           ringToneRef.current.muted = true;
           ringToneRef.current.volume = 0;
           ringToneRef.current.play().then(() => {
             ringToneRef.current?.pause();
-          }).catch(() => {});
+          }).catch(() => { /* Silence is intentional */ });
         }
         
         window.removeEventListener('click', unlock);

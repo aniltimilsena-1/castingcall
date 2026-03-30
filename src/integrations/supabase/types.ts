@@ -89,6 +89,7 @@ export type Database = {
           skills: string[] | null
           photos: string[] | null
           user_id: string
+          videos: string[] | null
           mood_tags?: string[] | null
           style_tags?: string[] | null
           personality_traits?: string[] | null
@@ -118,6 +119,7 @@ export type Database = {
           skills?: string[] | null
           photos?: string[] | null
           user_id: string
+          videos: string[] | null
           mood_tags?: string[] | null
           style_tags?: string[] | null
           personality_traits?: string[] | null
@@ -147,6 +149,7 @@ export type Database = {
           skills?: string[] | null
           photos?: string[] | null
           user_id?: string
+          videos?: string[] | null
           mood_tags?: string[] | null
           style_tags?: string[] | null
           personality_traits?: string[] | null

@@ -27,8 +27,13 @@ export default function PullToRefresh({ onRefresh, children, className }: PullTo
   const ringOpacity = useTransform(pullY, [0, 20], [0, 1]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const el = containerRef.current;
-    if (!el || el.scrollTop > 5) return;
+    const target = e.currentTarget as HTMLElement;
+    const isAtTop = target.scrollTop <= 5;
+    
+    // If we have a nested scrollable element (like FeedPage), we might need to check its scrollTop too
+    // But better: only trigger if the target itself is at top.
+    if (!isAtTop) return;
+    
     startYRef.current = e.touches[0].clientY;
     isPullingRef.current = true;
   }, []);

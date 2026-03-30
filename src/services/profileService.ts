@@ -14,7 +14,7 @@ export const profileService = {
     async getProfileById(id: string) {
         const { data, error } = await supabase
             .from("profiles")
-            .select("*")
+            .select("id, user_id, name, photo_url, role, plan, photos, videos, bio, location, height, age, gender, hair_color, eye_color, experience_years, portfolio_url, skills, mood_tags, style_tags, personality_traits, looks_like, trending_score, visual_search_keywords, is_verified, created_at")
             .or(`id.eq.${id},user_id.eq.${id}`)
             .maybeSingle();
 

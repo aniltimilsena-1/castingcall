@@ -146,7 +146,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           ref={heroRef} 
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative h-[92vh] flex items-center justify-center pt-24 sm:pt-0 overflow-hidden perspective-1000"
+          className="relative h-[92vh] flex items-center justify-center pt-28 sm:pt-0 overflow-hidden perspective-1000"
         >
           {/* Background Layer */}
           <motion.div
@@ -206,17 +206,17 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
           >
             <button
                onClick={() => onCategoryClick("post")}
-               className="group relative px-6 py-3 md:px-10 md:py-4 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.65rem] md:text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95 shadow-[0_20px_50px_rgba(245,197,24,0.3)]"
+               className="group relative px-4 py-2.5 md:px-10 md:py-4 bg-primary text-primary-foreground rounded-full font-accent font-bold text-[0.6rem] md:text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:gold-glow active:scale-95 shadow-[0_20px_50px_rgba(245,197,24,0.3)]"
              >
-               <span className="relative z-10 flex items-center gap-2">Post a Casting Call <ChevronRight size={20} /></span>
+               <span className="relative z-10 flex items-center gap-2">Post a Casting Call <ChevronRight size={16} /></span>
                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
              </button>
 
              <button
                onClick={() => onOpenCastingTape?.()}
-               className="group relative px-6 py-3 md:px-10 md:py-4 bg-secondary text-foreground rounded-full font-accent font-bold text-[0.65rem] md:text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:border-primary/50 active:scale-95 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-border/50"
+               className="group relative px-4 py-2.5 md:px-10 md:py-4 bg-secondary text-foreground rounded-full font-accent font-bold text-[0.6rem] md:text-[0.7rem] tracking-[0.2em] uppercase overflow-hidden transition-all duration-500 hover:scale-110 hover:border-primary/50 active:scale-95 shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-border/50"
              >
-               <span className="relative z-10 flex items-center gap-2"><Video size={16} className="text-primary" /> Discovery Card</span>
+               <span className="relative z-10 flex items-center gap-2"><Video size={14} className="text-primary" /> Discovery Card</span>
              </button>
           </motion.div>
 
@@ -231,7 +231,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               <button
                 key={role}
                 onClick={() => onCategoryClick(role)}
-                className="px-6 py-3 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/80 hover:bg-foreground/10 hover:border-foreground/50 hover:text-foreground text-[0.7rem] md:text-[0.75rem] font-bold uppercase tracking-[0.15em] transition-all duration-300 backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95 whitespace-nowrap"
+                className="px-4 py-2.5 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/80 hover:bg-foreground/10 hover:border-foreground/50 hover:text-foreground text-[0.65rem] md:text-[0.75rem] font-bold uppercase tracking-[0.15em] transition-all duration-300 backdrop-blur-md shadow-2xl hover:scale-110 active:scale-95 whitespace-nowrap"
               >
                 {role}
               </button>
