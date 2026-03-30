@@ -1070,7 +1070,7 @@ const Index = () => {
                 <div className="w-full space-y-4 pt-4">
                   <a
                     href="/me.castingcall.app.apk"
-                    download
+                    download="CastingCall.apk"
                     onClick={() => {
                       setShowDownloadPopup(false);
                       localStorage.setItem('cc_dismissed_download', 'true');

@@ -124,19 +124,18 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
             <Item onClick={() => go("help")}>Help & Support</Item>
             <Item onClick={() => go("terms")}>Terms & Privacy</Item>
             
-            <Item 
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = "/me.castingcall.app.apk";
-                link.download = "me.castingcall.app.apk";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                onClose();
-              }}
+            <a 
+              href="/me.castingcall.app.apk" 
+              download="CastingCall.apk"
+              className="block w-full"
             >
-              Download App (APK)
-            </Item>
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                className="w-full text-left font-accent text-[0.7rem] font-bold uppercase tracking-[0.2em] px-5 py-4.5 rounded-2xl transition-all border border-primary/20 bg-primary/10 text-primary shadow-lg shadow-primary/5 hover:bg-primary/20"
+              >
+                Download App (Direct)
+              </motion.button>
+            </a>
           </Section>
         </div>
 
