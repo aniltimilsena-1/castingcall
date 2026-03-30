@@ -824,7 +824,7 @@ const Index = () => {
           {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
           {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} castingTapeOpen={castingTapeOpen} onCastingTapeOpenChange={setCastingTapeOpen} />}
           {page === "feed" && (
-            <PullToRefresh onRefresh={() => setFeedRefreshKey(k => k + 1)}>
+            <PullToRefresh className="h-full w-full flex flex-col" onRefresh={async () => setFeedRefreshKey(k => k + 1)}>
               <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />
             </PullToRefresh>
           )}
