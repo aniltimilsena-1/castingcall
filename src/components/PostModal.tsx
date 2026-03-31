@@ -288,7 +288,7 @@ export default function PostModal({
                     <button
                         onClick={onCommentSubmit}
                         disabled={!commentValue.trim() || !!isPostingComment}
-                        className="p-2.5 bg-primary text-primary-foreground rounded-full disabled:opacity-30 hover:shadow-lg transition-all hover:scale-105 active:scale-95"
+                        className="p-2.5 bg-primary text-primary-foreground rounded-full disabled:opacity-100 disabled:bg-white/[0.04] disabled:text-white/20 disabled:border-white/[0.05] disabled:cursor-not-allowed hover:shadow-lg transition-all hover:scale-105 active:scale-95"
                     >
                         {isPostingComment ? <div className="w-5 h-5 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin" /> : <Send size={18} fill="currentColor" />}
                     </button>

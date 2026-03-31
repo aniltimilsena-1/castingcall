@@ -57,92 +57,24 @@ export const adminService = {
     },
 
     async approvePayment(v: any) {
-        const pType = v.payment_type || 'pro';
-        const meta = v.metadata || {};
-
-        if (pType === 'pro') {
-            const { error: e1 } = await (supabase.from("profiles") as any).update({ plan: 'pro' }).eq("user_id", v.user_id);
-            if (e1) throw e1;
-        }
-        // 1. Update Fan Pass if applicable
-        else if (pType === 'fan_pass') {
-            const talentId = meta.talent_id;
-            if (!talentId) {
-                console.error("Missing talent_id for fan_pass verification");
-                throw new Error("Cannot verify fan pass: Missing talent ID");
-            }
-
-            const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + 30);
-
-            const { error: e2 } = await (supabase.from("fan_subscriptions" as any) as any)
-                .upsert({
-                    subscriber_id: v.user_id,
-                    talent_id: talentId,
-                    status: 'active',
-                    expires_at: expiresAt.toISOString()
-                }, { onConflict: 'subscriber_id,talent_id' });
-            if (e2) throw e2;
-        }
-        else if (pType === 'product') {
-            const { error: e3 } = await (supabase.from("product_purchases" as any) as any).insert({
-                buyer_id: v.user_id,
-                product_id: meta.product_id,
-                amount_paid: v.amount
-            });
-            if (e3) throw e3;
-        } else if (pType === 'tip') {
-            const { error: e4 } = await (supabase.from("tips" as any) as any).insert({
-                sender_id: v.user_id,
-                receiver_id: meta.talent_id,
-                amount: v.amount,
-                post_url: meta.post_url,
-                message: "Gift approved by admin"
-            });
-            if (e4) throw e4;
-        } else if (pType === 'unlock') {
-            const { error: e5 } = await (supabase.from("photo_purchases" as any) as any).insert({
-                buyer_id: v.user_id,
-                photo_url: meta.post_url,
-                amount_paid: v.amount
-            });
-            if (e5) throw e5;
-        }
-
-        // Mark verified
-        const { error: e6 } = await (supabase.from("payment_verifications" as any) as any).update({ status: 'approved' }).eq("id", v.id);
-        if (e6) throw e6;
-
-        // Create transaction record
-        const { error: e7 } = await (supabase.from("transactions" as any) as any).insert({
-            user_id: v.user_id,
-            amount: v.amount,
-            currency: v.currency || 'NPR',
-            payment_type: pType,
-            payment_method: 'manual_verification',
-            metadata: meta
+        const { error } = await (supabase.rpc as any)('approve_payment_v2', {
+            v_id: v.id,
+            v_user_id: v.user_id,
+            v_payment_type: v.payment_type || 'pro',
+            v_amount: JSON.parse(JSON.stringify(v.amount || 0)), // Ensure FLOAT compatibility
+            v_currency: v.currency || 'NPR',
+            v_metadata: v.metadata || {}
         });
-        if (e7) throw e7;
-
-        // Create notification
-        const { error: e8 } = await (supabase.from("notifications" as any) as any).insert({
-            user_id: v.user_id,
-            title: "Payment Approved",
-            message: `Your payment for ${pType.toUpperCase()} has been verified. Access granted!`,
-        });
-        if (e8) throw e8;
+        if (error) throw error;
     },
 
     async rejectPayment(v: any) {
-        const { error: e1 } = await (supabase.from("payment_verifications" as any) as any).update({ status: 'rejected' }).eq("id", v.id);
-        if (e1) throw e1;
-
-        const { error: e2 } = await (supabase.from("notifications" as any) as any).insert({
-            user_id: v.user_id,
-            title: "Payment Rejected",
-            message: `Your payment for ${v.payment_type?.toUpperCase()} was rejected. Please check your details.`,
+        const { error } = await (supabase.rpc as any)('reject_payment_v2', {
+            v_id: v.id,
+            v_user_id: v.user_id,
+            v_payment_type: v.payment_type || 'unknown'
         });
-        if (e2) throw e2;
+        if (error) throw error;
     },
 
     async deleteProfile(userId: string) {

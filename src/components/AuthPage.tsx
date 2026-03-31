@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Phone, Mail, ArrowRight, ChevronLeft } from "lucide-react";
+import { Eye, EyeOff, Phone, Mail, ArrowRight, ChevronLeft, Star } from "lucide-react";
 import { loggingService } from "@/services/loggingService";
 import { rateLimitService } from "@/services/rateLimitService";
 
@@ -16,6 +16,7 @@ const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Cast
 
 export default function AuthPage({ onSuccess }: AuthPageProps) {
   const { signIn, signUp, signInWithOAuth, signInWithPhone, verifyOTP, resetPassword } = useAuth();
+  const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
   const [tab, setTab] = useState<"login" | "signup" | "reset">("login");
   const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
   const [loading, setLoading] = useState(false);
@@ -214,7 +215,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
               <button
                 onClick={() => handleOAuthClick('google')}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2.5 py-2.5 border border-white/[0.08] rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-all text-sm text-foreground/80 disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2.5 py-2.5 border border-border/10 rounded-xl bg-foreground/5 hover:bg-foreground/10 transition-all text-sm text-foreground/80 disabled:opacity-30"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" fill="#4285F4"/>
@@ -372,15 +373,24 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
               )}
 
               {failedAttempts >= 3 && (
-                <div className="mt-6 flex justify-center">
-                  <Turnstile
-                    ref={turnstileRef}
-                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-                    onSuccess={(token) => setCaptchaToken(token)}
-                    onExpire={() => setCaptchaToken(null)}
-                    onError={() => setCaptchaToken(null)}
-                    options={{ theme: 'dark' }}
-                  />
+                <div className="mt-8 flex justify-center">
+                  {TURNSTILE_SITE_KEY ? (
+                    <Turnstile
+                      ref={turnstileRef}
+                      siteKey={TURNSTILE_SITE_KEY}
+                      onSuccess={(token) => setCaptchaToken(token)}
+                      onExpire={() => setCaptchaToken(null)}
+                      onError={() => {
+                        toast.error("Security verification failed. Please try again.");
+                        setCaptchaToken(null);
+                      }}
+                      options={{ theme: 'dark' }}
+                    />
+                  ) : (
+                    <div className="text-[10px] text-red-500/50 uppercase tracking-widest font-medium border border-red-500/10 p-4 rounded-xl bg-red-500/5">
+                      Missing Security Configuration (Turnstile)
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>
@@ -390,7 +400,7 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-black rounded-xl py-2.5 text-sm font-semibold mt-5 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-primary text-black rounded-xl py-2.5 text-sm font-semibold mt-5 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-30 disabled:bg-white/[0.04] disabled:text-white/20 disabled:border-white/[0.05] disabled:cursor-not-allowed"
           >
             {buttonLabel}
             {!loading && <ArrowRight size={14} />}

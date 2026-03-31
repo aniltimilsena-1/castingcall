@@ -878,27 +878,37 @@ const Index = () => {
             </PullToRefresh>
           )}
           {page === "projects" && (
-            isEmailVerified 
-              ? <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />
-              : <VerificationGuard title="Project Access Restricted" message="To create and manage projects, you must first verify your email address." />
+            user 
+              ? (isEmailVerified 
+                  ? <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />
+                  : <VerificationGuard title="Project Access Restricted" message="To create and manage projects, you must first verify your email address." />)
+              : <PageLoader />
           )}
           {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
           {page === "messages" && (
-            isEmailVerified
-              ? <MessagesPage 
-                  onNavigate={navigate} 
-                  initialPartnerId={activeMessagePartnerId} 
-                  onlineUsers={onlineUsers}
-                  incomingCall={incomingCall}
-                  activeCall={activeCall}
-                  onStartCall={startCall}
-                  onEndCall={endCall}
-                />
-              : <VerificationGuard title="Messaging Locked" message="Verify your email to start conversations with other members." />
+            user
+              ? (isEmailVerified
+                  ? <MessagesPage 
+                      onNavigate={navigate} 
+                      initialPartnerId={activeMessagePartnerId} 
+                      onlineUsers={onlineUsers}
+                      incomingCall={incomingCall}
+                      activeCall={activeCall}
+                      onStartCall={startCall}
+                      onEndCall={endCall}
+                    />
+                  : <VerificationGuard title="Messaging Locked" message="Verify your email to start conversations with other members." />)
+              : <PageLoader />
           )}
           {page === "settings" && <SettingsPage />}
           {page === "saved" && <SavedItemsPage />}
-          {page === "analytics" && <AnalyticsPage />}
+          {page === "analytics" && (
+            user
+              ? (isEmailVerified
+                  ? <AnalyticsPage />
+                  : <VerificationGuard title="Analytics Locked" message="Verify your email to view your performance data and insights." />)
+              : <PageLoader />
+          )}
           {page === "help" && <HelpSupportPage />}
           {page === "terms" && <TermsPrivacyPage />}
           {page === "premium" && <PremiumPage />}

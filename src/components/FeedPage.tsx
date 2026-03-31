@@ -1157,7 +1157,7 @@ function FeedCard({
                                 <button
                                     onClick={onCommentSubmit}
                                     disabled={!commentValue.trim() || !!isPostingComment}
-                                    className="absolute right-2 top-2 bottom-2 w-10 bg-primary rounded-xl flex items-center justify-center text-background disabled:opacity-30 transition-all hover:scale-105"
+                                    className="absolute right-2 top-2 bottom-2 w-10 bg-primary rounded-xl flex items-center justify-center text-background disabled:opacity-100 disabled:bg-white/[0.04] disabled:text-white/20 disabled:border-white/[0.05] disabled:cursor-not-allowed transition-all hover:scale-105"
                                 >
                                     <Send size={16} fill="currentColor" />
                                 </button>

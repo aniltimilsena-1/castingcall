@@ -40,7 +40,7 @@ interface SearchPageProps {
 }
 
 export default function SearchPage({ query, role, initialType = "talents", onBack, onTypeChange, onProfileClick, onlineUsers = new Set(), castingTapeOpen = false, onCastingTapeOpenChange }: SearchPageProps) {
-  const { user, profile: currentUserProfile } = useAuth();
+  const { user, profile: currentUserProfile, isEmailVerified } = useAuth();
   const [searchType, setSearchType] = useState<"talents" | "projects">(initialType);
 
   useEffect(() => {
@@ -583,6 +583,13 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
   const handleApply = async () => {
     if (applied || loading) return;
 
+    if (!user) {
+      toast.error("Please sign in to apply for roles", {
+        description: "Join the community to start your casting journey."
+      });
+      return;
+    }
+
     if (!isEmailVerified) {
       toast.error("Verified users only.", {
         description: "Please confirm your email to apply for roles."
@@ -809,6 +816,7 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
   currentUserProfile: Profile | null;
   photoOwnerId?: string;
 }) {
+  const { isEmailVerified } = useAuth();
   const { confirm: confirmAction } = useConfirmation();
   const { setPipVideo, setIsPipOpen } = useVideo();
   const [likes, setLikes] = useState<number>(0);
@@ -908,7 +916,18 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
   };
 
   const handleLike = async () => {
-    if (!user || !url) return;
+    if (!user || !url) {
+      toast.error("Please sign in to like photos");
+      return;
+    }
+
+    if (!isEmailVerified) {
+      toast.error("Verified users only.", {
+        description: "Confirm your email to like posts."
+      });
+      return;
+    }
+
     if (userLiked) {
       await supabase.from('photo_likes').delete().eq('photo_url', url).eq('user_id', user.id);
       setUserLiked(false);
@@ -921,7 +940,19 @@ export function PhotoViewer({ url, onClose, user, currentUserProfile, photoOwner
   };
 
   const submitComment = async () => {
-    if (!user || !url || !newComment.trim()) return;
+    if (!user || !url) {
+      toast.error("Please sign in to comment");
+      return;
+    }
+
+    if (!isEmailVerified) {
+      toast.error("Verified users only.", {
+        description: "Confirm your email to post comments."
+      });
+      return;
+    }
+
+    if (!newComment.trim()) return;
     setLoading(true);
     const { error } = await supabase.from('photo_comments').insert({
       photo_url: url,

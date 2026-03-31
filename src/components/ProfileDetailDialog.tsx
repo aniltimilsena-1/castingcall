@@ -333,6 +333,14 @@ export default function ProfileDetailDialog({
 
     const addToCollection = async (boardId: string) => {
         if (!user || !profile?.user_id) return;
+        
+        if (!isEmailVerified) {
+            toast.error("Verified users only.", {
+                description: "Confirm your email to add talent to boards."
+            });
+            return;
+        }
+
         try {
             await moodBoardService.addItemToBoard(boardId, profile.user_id);
             toast.success("Added to collection!");

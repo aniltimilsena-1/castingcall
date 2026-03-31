@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { profileService, Profile } from "@/services/profileService";
 import { feedService } from "@/services/feedService";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, MoreVertical, Trash2, ArrowLeft, Bookmark } from "lucide-react";
+import { Heart, MessageCircle, MoreVertical, Trash2, ArrowLeft, Bookmark, Star } from "lucide-react";
 import { toast } from "sonner";
 import { FeedItem, Comment } from "@/types/feed";
 import PostModal from "@/components/PostModal";
