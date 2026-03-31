@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:mobile": "npm run build && del dist\\me.castingcall.app.apk && npx cap sync android",
+    "update:website-app": "copy android\\app\\build\\outputs\\apk\\debug\\app-debug.apk public\\me.castingcall.app.apk"
   },
   "dependencies": {
     "@capacitor/android": "^8.2.0",

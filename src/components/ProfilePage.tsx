@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { followService, FollowProfile } from "@/services/followService";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users, ChevronDown } from "lucide-react";
+import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users, ChevronDown, ChevronLeft } from "lucide-react";
 import { useVideo } from "@/contexts/VideoContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Badge } from "@/components/ui/badge";
@@ -334,7 +334,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBack}
+              className="p-2.5 bg-secondary text-foreground/70 hover:text-primary hover:bg-secondary/80 rounded-xl transition-all border border-border flex items-center justify-center shrink-0"
+              title="Go Back"
+            >
+              <ChevronLeft size={20} />
+            </button>
             <button
               onClick={() => {
                 const url = `${window.location.origin}/profile/${profile?.user_id}`;
@@ -346,6 +353,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
               <Share2 size={15} />
               Share Link
             </button>
+          </div>
+          <div className="flex items-center gap-2">
             {user && profile && user.id !== profile.user_id && (
               <button
                 onClick={async () => {
@@ -708,9 +717,18 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     >
       {/* Edit Header */}
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="font-display text-4xl text-foreground">Edit Profile</h1>
-          <p className="text-foreground/60 text-sm mt-1">Update your professional casting profile</p>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="p-2.5 bg-secondary text-foreground/70 hover:text-primary hover:bg-secondary/80 rounded-xl transition-all border border-border flex items-center justify-center shrink-0"
+            title="Go Back"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div>
+            <h1 className="font-display text-4xl text-foreground">Edit Profile</h1>
+            <p className="text-foreground/60 text-sm mt-1">Update your professional casting profile</p>
+          </div>
         </div>
         <button
           onClick={handleCancelEdit}
