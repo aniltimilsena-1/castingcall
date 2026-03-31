@@ -10,11 +10,12 @@ import { rateLimitService } from "@/services/rateLimitService";
 
 interface AuthPageProps {
   onSuccess: () => void;
+  onBack?: () => void;
 }
 
 const ROLES = ["Actor", "Director", "Singer", "Choreographer", "Producer", "Casting Director"];
 
-export default function AuthPage({ onSuccess }: AuthPageProps) {
+export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
   const { signIn, signUp, signInWithOAuth, signInWithPhone, verifyOTP, resetPassword } = useAuth();
   const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
   const [tab, setTab] = useState<"login" | "signup" | "reset">("login");
@@ -188,8 +189,16 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        {/* ── Header ── */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-white/5 text-muted-foreground/40 hover:text-foreground transition-all group"
+              title="Back"
+            >
+              <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+          )}
           <h1 className="font-accent text-2xl text-foreground tracking-tight">
             {tab === "reset" ? "Reset Password" : tab === "login" ? "Welcome back" : "Create account"}
           </h1>

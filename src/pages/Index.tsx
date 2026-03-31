@@ -869,7 +869,7 @@ const Index = () => {
         )}
           <Suspense fallback={<PageLoader />}>
           {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} onOpenCastingTape={() => setCastingTapeOpen(true)} />}
-          {page === "auth" && <AuthPage onSuccess={() => navigate("home")} />}
+          {page === "auth" && <AuthPage onSuccess={() => navigate("home")} onBack={() => navigate("home")} />}
           {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
           {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} castingTapeOpen={castingTapeOpen} onCastingTapeOpenChange={setCastingTapeOpen} />}
           {page === "feed" && (
