@@ -87,40 +87,49 @@ export default function PremiumPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         key={plan.name}
-                        className={`bg-card/30 backdrop-blur-3xl border-2 rounded-3xl p-8 relative overflow-hidden flex flex-col ${plan.popular ? "border-primary" : "border-border"}`}
+                        className={`premium-card p-8 relative overflow-hidden flex flex-col group ${plan.popular ? "border-primary/50 shadow-primary/10" : ""}`}
                     >
-                        {plan.popular && (
-                            <div className="absolute top-10 right-10 bg-primary text-foreground px-4 py-1 rounded-full text-[0.5rem] font-bold tracking-widest uppercase">Popular Choice</div>
-                        )}
-                        <h3 className="text-[0.65rem] text-foreground/60 mb-6 uppercase tracking-[4px]">{plan.name} PLAN</h3>
-                        <div className="flex items-baseline gap-2 mb-10">
-                            <span className="text-6xl font-display text-foreground italic">{isNepal ? "NPR " : "$"}{plan.price}</span>
-                            <span className="text-xs text-muted-foreground">/ PERMANENT ACCESS</span>
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                          {plan.name === 'PRO' ? <Crown size={120} className="text-primary" /> : <Sparkles size={120} className="text-primary" />}
                         </div>
-                        <ul className="space-y-5 mb-12 flex-1">
-                            {plan.features.map(f => <li key={f} className="flex items-center gap-4 text-sm text-foreground font-normal"><Check size={16} className="text-primary" /> {f}</li>)}
-                        </ul>
-                        <button
-                            disabled={plan.current}
-                            onClick={() => plan.name === 'PRO' && setShowPayment(true)}
-                            className={`w-full py-5 rounded-2xl text-[0.6rem] font-bold uppercase tracking-[3px] transition-all ${plan.current ? "bg-muted text-muted-foreground cursor-default" : "bg-primary text-foreground hover:scale-[1.02] shadow-xl shadow-primary/20"}`}
-                        >
-                            {plan.current ? "Current Plan" : "Upgrade to Pro"}
-                        </button>
+                        <div className="relative z-10 flex flex-col h-full">
+                          {plan.popular && (
+                              <div className="bg-primary text-black px-4 py-1 rounded-full text-[0.5rem] font-bold tracking-widest uppercase mb-4 self-start shadow-lg">Popular Choice</div>
+                          )}
+                          <h3 className="text-[0.65rem] text-primary/70 mb-6 uppercase tracking-[4px] font-bold">{plan.name} PLAN</h3>
+                          <div className="flex items-baseline gap-2 mb-10">
+                              <span className="text-6xl font-display text-foreground italic">{isNepal ? "NPR " : "$"}{plan.price}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">/ LIFETIME</span>
+                          </div>
+                          <ul className="space-y-5 mb-12 flex-1">
+                              {plan.features.map(f => <li key={f} className="flex items-center gap-4 text-sm text-foreground/80 font-normal"><Check size={16} className="text-primary" /> {f}</li>)}
+                          </ul>
+                          <button
+                              disabled={plan.current}
+                              onClick={() => plan.name === 'PRO' && setShowPayment(true)}
+                              className={`w-full py-5 rounded-2xl text-[0.6rem] font-bold uppercase tracking-[3px] transition-all ${plan.current ? "bg-white/5 text-muted-foreground/30 cursor-default" : "bg-primary text-black hover:scale-[1.02] shadow-2xl shadow-primary/20"}`}
+                          >
+                              {plan.current ? "Current Plan" : "Upgrade to Pro"}
+                          </button>
+                        </div>
                     </motion.div>
                 ))}
             </div>
 
-            <div className="bg-card/60 backdrop-blur-3xl border border-border rounded-3xl p-10 text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] -z-10" />
-                <Wallet className="text-primary w-8 h-8 mx-auto mb-8" />
-                <h3 className="text-2xl text-black font-display italic mb-3">The Smart Move for Your Talent</h3>
-                <p className="text-muted-foreground text-[0.65rem] uppercase tracking-[2px] mb-8">Trusted by over {talentsCount} talents globally across the network.</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    <Benefit icon={<Crown size={20} />} label="Premium Badge" />
-                    <Benefit icon={<Sparkles size={20} />} label="Priority Listing" />
-                    <Benefit icon={<TrendingUp size={20} />} label="Analytics Hub" />
-                    <Benefit icon={<Globe size={20} />} label="Global Reach" />
+            <div className="premium-card p-10 text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <Wallet size={120} className="text-primary" />
+                </div>
+                <div className="relative z-10">
+                  <Wallet className="text-primary w-8 h-8 mx-auto mb-8" />
+                  <h3 className="text-2xl text-foreground font-display italic mb-3 uppercase tracking-widest">The Smart Move for Your Talent</h3>
+                  <p className="text-muted-foreground text-[0.65rem] uppercase tracking-[2px] mb-8 font-bold">Trusted by over {talentsCount} talents globally across the network.</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                      <Benefit icon={<Crown size={20} />} label="Premium Badge" />
+                      <Benefit icon={<Sparkles size={20} />} label="Priority Listing" />
+                      <Benefit icon={<TrendingUp size={20} />} label="Analytics Hub" />
+                      <Benefit icon={<Globe size={20} />} label="Global Reach" />
+                  </div>
                 </div>
             </div>
 

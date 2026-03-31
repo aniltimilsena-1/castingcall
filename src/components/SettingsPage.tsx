@@ -86,15 +86,21 @@ export default function SettingsPage() {
     try {
       setSaving(true);
       
+      // RE-AUTHENTICATION CHECK
+      // If NOT in recovery mode, we MUST verify the current password via a sign-in attempt.
+      // This protects against session hijacking / local privilege escalation.
       if (!isRecovering) {
-        // Verify old password by attempting a silent sign-in
+        if (!oldPassword) {
+            throw new Error("Current password is required to set a new one.");
+        }
+        
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: user?.email || "",
           password: oldPassword,
         });
 
         if (signInError) {
-          throw new Error("Incorrect current password. Please try again.");
+          throw new Error("Verification failed: Current password is incorrect.");
         }
       }
 

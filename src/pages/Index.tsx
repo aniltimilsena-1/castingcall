@@ -15,7 +15,9 @@ import {
   PhoneOff, 
   VideoOff, 
   X,
-  Smartphone
+  Smartphone,
+  Mail,
+  ChevronLeft
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "@/contexts/LanguageContext";
@@ -75,14 +77,32 @@ const PageLoader = () => (
 const PhotoViewerLazy = lazyWithRetry(() => import("@/components/SearchPage").then(mod => ({ default: mod.PhotoViewer })));
 
 const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "messages", "settings", "saved", "analytics", "admin"];
+const VERIFIED_ONLY_PAGES: PageName[] = ["projects", "messages"];
 
 const Index = () => {
-  const { user, profile: currentUserProfile, loading } = useAuth();
+  const { user, profile: currentUserProfile, loading, isEmailVerified } = useAuth();
   const { t } = useTranslation();
   const params = useParams();
   const { id } = params;
   const routerNavigate = useNavigate();
   const location = useLocation();
+
+  // Mobile Floating Back Button Component
+  const MobileBackButton = () => {
+    const navigate = useNavigate();
+    return (
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        onClick={() => navigate("/")}
+        className="md:hidden fixed top-6 left-6 z-[250] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
+        title="Back"
+      >
+        <ChevronLeft size={24} className="group-hover:scale-110 transition-transform" />
+      </motion.button>
+    );
+  };
 
   // Derived page state from URL params
   const { page: pageParam } = params;
@@ -679,6 +699,13 @@ const Index = () => {
       setProjectFormInitiallyOpen(false);
     }
 
+    if (VERIFIED_ONLY_PAGES.includes(p) && user && !isEmailVerified) {
+      toast.error("Verified users only.", {
+        description: "Please confirm your email to access this page."
+      });
+      // We don't prevent navigation here because we'll show a guard UI inside the component
+    }
+
     // Sync URL - important for persistence on refresh
     if (p === "home") routerNavigate("/");
     else if (p === "auth") routerNavigate("/auth");
@@ -690,13 +717,14 @@ const Index = () => {
   // Auth Guard Logic
   useEffect(() => {
     if (loading) return;
-    if (AUTH_REQUIRED.includes(page) && !user) {
+    // Allow viewing shared profile links (/profile/:id) without authentication
+    if (AUTH_REQUIRED.includes(page) && !user && !id) {
       routerNavigate("/auth", { replace: true });
     }
     if (page === "auth" && user) {
       routerNavigate("/", { replace: true });
     }
-  }, [page, user, loading, routerNavigate]);
+  }, [page, user, loading, routerNavigate, id]);
 
   // Handle viewing specific profiles via URL
   useEffect(() => {
@@ -814,8 +842,17 @@ const Index = () => {
         onNavigate={navigate}
       />
 
-      <main className={`relative flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} ${page === 'messages' || page === 'feed' ? 'pb-0' : 'pb-24 md:pb-0'} ${page !== 'home' && page !== 'feed' && page !== 'messages' ? 'pt-24 md:pt-24' : ''}`}>
-        {page !== 'messages' && page !== 'feed' && (
+      <main 
+        className={`relative flex-1 ${page === 'feed' ? 'overflow-hidden' : 'overflow-y-auto'} 
+          ${page === 'home' ? 'pb-24 md:pb-0' : 'pb-0 md:pb-0'} 
+          ${page === 'home' ? 'pt-0' : 'pt-0 md:pt-0'}`}
+      >
+        {/* Mobile floating back button ONLY on Login/Auth page */}
+        {page === 'auth' && (
+          <MobileBackButton />
+        )}
+
+        {page === 'home' && (
           <Navbar
             onSearch={handleSearch}
             onAuthClick={handleAuthClick}
@@ -840,18 +877,24 @@ const Index = () => {
               <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />
             </PullToRefresh>
           )}
-          {page === "projects" && <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />}
+          {page === "projects" && (
+            isEmailVerified 
+              ? <MyProjectsPage initialOpenForm={projectFormInitiallyOpen} onProfileClick={handleProfileClick} onMessageClick={handleMessageClick} />
+              : <VerificationGuard title="Project Access Restricted" message="To create and manage projects, you must first verify your email address." />
+          )}
           {page === "notifications" && <NotificationsPage onOpenPhoto={setViewingPhoto} />}
           {page === "messages" && (
-            <MessagesPage 
-              onNavigate={navigate} 
-              initialPartnerId={activeMessagePartnerId} 
-              onlineUsers={onlineUsers}
-              incomingCall={incomingCall}
-              activeCall={activeCall}
-              onStartCall={startCall}
-              onEndCall={endCall}
-            />
+            isEmailVerified
+              ? <MessagesPage 
+                  onNavigate={navigate} 
+                  initialPartnerId={activeMessagePartnerId} 
+                  onlineUsers={onlineUsers}
+                  incomingCall={incomingCall}
+                  activeCall={activeCall}
+                  onStartCall={startCall}
+                  onEndCall={endCall}
+                />
+              : <VerificationGuard title="Messaging Locked" message="Verify your email to start conversations with other members." />
           )}
           {page === "settings" && <SettingsPage />}
           {page === "saved" && <SavedItemsPage />}
@@ -874,7 +917,7 @@ const Index = () => {
         </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
-      {page !== 'messages' && page !== 'feed' && (
+      {page === 'home' && (
         <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
           {([
             { id: "home", label: t('nav.home'), icon: Home },
@@ -1107,6 +1150,37 @@ const Index = () => {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+};
+
+const VerificationGuard = ({ title, message }: { title: string, message: string }) => {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center p-8">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-card w-full max-w-md border border-white/[0.08] p-10 rounded-[2.5rem] text-center shadow-2xl relative overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary/20" />
+        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Mail className="text-primary" size={32} />
+        </div>
+        <h2 className="text-2xl font-display text-foreground mb-4">{title}</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+          {message}
+          <br /><br />
+          We've sent a link to your email. Didn't get it? Check your spam folder or try re-signing in.
+        </p>
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={() => window.location.reload()}
+            className="w-full bg-primary text-black py-4 rounded-2xl font-bold uppercase tracking-widest text-[11px] hover:brightness-110 transition-all shadow-xl shadow-primary/20"
+          >
+            I've Verified My Email
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 };

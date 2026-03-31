@@ -253,8 +253,10 @@ export default function SavedItemsPage() {
                                     </div>
                                 ) : (
                                     savedTalents.map(talent => (
-                                        <div key={talent.id} className="stitched-card bg-card p-4 rounded-3xl flex items-center gap-4 group hover:border-primary transition-all shadow-sm relative overflow-hidden">
-                                            <div className="stitched-card-scanner" />
+                                        <div key={talent.id} className="premium-card p-4 flex items-center gap-4 group hover:border-primary transition-all shadow-sm relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                              <Star size={60} className="text-primary" />
+                                            </div>
                                             <div className="w-16 h-16 rounded-2xl overflow-hidden bg-secondary border border-border flex-shrink-0 relative">
                                                 {talent.photo_url ? (
                                                     <motion.img 
@@ -294,7 +296,7 @@ export default function SavedItemsPage() {
                                     </div>
                                 ) : (
                                     savedPosts.map(post => (
-                                        <div key={post.id} className="stitched-card relative aspect-square rounded-2xl overflow-hidden group cursor-pointer border border-border hover:border-primary transition-all shadow-sm" onClick={() => openPostDetails(post)}>
+                                        <div key={post.id} className="premium-card relative aspect-square overflow-hidden group cursor-pointer border border-border hover:border-primary transition-all shadow-sm" onClick={() => openPostDetails(post)}>
                                             <div className="stitched-card-scanner" />
                                             {post.type === "photo" ? (
                                                 <motion.img 

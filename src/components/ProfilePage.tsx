@@ -64,7 +64,7 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ onBack }: ProfilePageProps) {
-  const { user, profile, loading, isPremium, refreshProfile } = useAuth();
+  const { user, profile, loading, isPremium, isEmailVerified, refreshProfile } = useAuth();
   const { confirm: confirmAction } = useConfirmation();
   const { setPipVideo, setIsPipOpen } = useVideo();
 
@@ -228,6 +228,14 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
   const handleSave = async () => {
     if (!user) return;
+
+    if (!isEmailVerified) {
+      toast.error("Verified users only.", {
+        description: "Please confirm your email before updating your professional profile."
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const updates = {
@@ -326,9 +334,6 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <button onClick={onBack} className="text-foreground/60 hover:text-primary transition-colors text-sm font-normal flex items-center gap-1.5">
-            ← Back
-          </button>
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
@@ -381,7 +386,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         </div>
 
         {/* Hero Card */}
-        <div className="bg-card border border-card-border rounded-3xl overflow-hidden mb-6 shadow-xl">
+        <div className="premium-card mb-6 group">
           {/* Top Banner */}
           <div className="h-28 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent relative">
             <div className="absolute -bottom-14 left-6 md:left-10">
@@ -488,7 +493,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         </div>
 
         {/* Smart Tags Section (View Mode) */}
-        <div className="bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20 rounded-2xl p-6 mb-6">
+        <div className="premium-card p-8 mb-6 group">
           <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4 flex items-center gap-2">
             <Sparkles size={14} /> Smart Search Tags
           </h3>
@@ -522,7 +527,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Stats row */}
         {(profile?.height || profile?.age || profile?.gender || profile?.hair_color || profile?.eye_color) && (
-          <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
+          <div className="premium-card p-8 mb-6 group">
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Physical Attributes</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               {profile?.height && <Stat label="Height" value={profile.height} />}
@@ -536,7 +541,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Skills */}
         {profile?.skills && profile.skills.length > 0 && (
-          <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
+          <div className="premium-card p-8 mb-6 group">
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Skills & Specialties</h3>
             <div className="flex flex-wrap gap-2">
               {(profile.skills || []).map((skill) => (
@@ -550,7 +555,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Photos */}
         {(profile as any)?.photos?.length > 0 && (
-          <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
+          <div className="premium-card p-8 mb-6 group">
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Portfolio Photos</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {((profile as any)?.photos || []).map((url: string, i: number) => (
@@ -570,7 +575,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
         {/* Videos */}
         {(profile as any)?.videos?.length > 0 && (
-          <div className="bg-card border border-card-border rounded-2xl p-6 mb-6">
+          <div className="premium-card p-8 mb-6 group">
             <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Video Reel</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {((profile as any)?.videos || []).map((url: string, i: number) => (
@@ -1333,9 +1338,9 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-background/50 border border-border rounded-xl px-4 py-3 text-center">
-      <div className="text-[0.6rem] font-normal tracking-[2px] uppercase text-foreground/60/50 mb-1">{label}</div>
-      <div className="text-sm font-normal text-foreground">{value}</div>
+    <div className="bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-center">
+      <div className="text-[0.6rem] font-bold tracking-[0.2em] uppercase text-white/40 mb-2">{label}</div>
+      <div className="text-lg font-display text-white">{value}</div>
     </div>
   );
 }

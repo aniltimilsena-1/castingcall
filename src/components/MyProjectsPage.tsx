@@ -410,7 +410,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
               placeholder={activeTab === 'managed' ? "Search within your projects..." : "Search within your applications..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-card/50 backdrop-blur-md border-[1.5px] border-card-border rounded-2xl pl-12 pr-5 py-4 text-sm outline-none focus:border-primary transition-all shadow-inner"
+              className="w-full premium-card pl-12 pr-5 py-4 text-sm outline-none"
             />
           </div>
         </div>
@@ -421,8 +421,11 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
               initial={{ opacity: 0, y: -20, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.98 }}
-              className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] p-10 mb-12 shadow-2xl relative overflow-hidden"
+              className="premium-card p-10 mb-12 shadow-2xl relative overflow-hidden group"
             >
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Layout size={120} className="text-primary" />
+              </div>
               {/* Form content remains same as before but refined */}
               <div className="flex items-center justify-between mb-10">
                 <h3 className="font-display text-3xl text-primary flex items-center gap-4">
@@ -530,8 +533,11 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
               <motion.div
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
-                className="bg-card border border-border w-full max-w-4xl max-h-[90vh] rounded-[3rem] overflow-hidden flex flex-col shadow-2xl"
+                className="premium-card w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl group"
               >
+                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <Users size={120} className="text-primary" />
+                </div>
                 <div className="p-10 border-b border-border flex items-center justify-between bg-secondary/20">
                   <div className="flex items-center gap-5">
                     <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
@@ -580,7 +586,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                     </div>
                   ) : (
                     applicants.map((a: ProjectApplication) => (
-                      <div key={a.id} className="group bg-secondary/10 border border-border rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary/40 transition-all">
+                      <div key={a.id} className="premium-card p-6 flex flex-col md:flex-row md:items-center gap-6 group/item transition-all hover:border-primary/40">
                         <div className="w-16 h-16 rounded-full bg-secondary border-2 border-primary overflow-hidden flex-shrink-0">
                           <img src={a.profiles?.photo_url || ""} className="w-full h-full object-cover" alt="" />
                         </div>
@@ -682,7 +688,7 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                     {filteredProjects.map((p) => (
                       <div
                         key={p.id}
-                        className="bg-card border-[1.5px] border-card-border rounded-[2.5rem] overflow-hidden hover:border-primary/50 transition-all flex flex-col group shadow-lg"
+                        className="premium-card overflow-hidden hover:border-primary/50 transition-all flex flex-col group shadow-lg"
                       >
                         <div className="aspect-[16/9] bg-secondary relative overflow-hidden">
                           {p.thumbnail_url ? (
@@ -728,7 +734,10 @@ export default function MyProjectsPage({ initialOpenForm, onProfileClick, onMess
                 ) : (
                   <div className="space-y-6">
                     {myApplications.filter(a => a.projects?.title?.toLowerCase().includes(searchQuery.toLowerCase())).map((app) => (
-                      <div key={app.id} className="bg-card border-[1.5px] border-card-border rounded-3xl p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary transition-all">
+                      <div key={app.id} className="premium-card p-6 flex flex-col md:flex-row md:items-center gap-6 hover:border-primary transition-all group">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                          <Briefcase size={120} className="text-primary" />
+                        </div>
                         <div className="w-20 h-20 rounded-2xl bg-secondary overflow-hidden flex-shrink-0">
                           {app.projects?.thumbnail_url ? <img src={app.projects.thumbnail_url} className="w-full h-full object-cover" alt="" /> : <div className="w-full h-full flex items-center justify-center text-primary/20"><Briefcase size={24} /></div>}
                         </div>

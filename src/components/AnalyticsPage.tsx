@@ -155,55 +155,62 @@ export default function AnalyticsPage() {
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         {stats.map((s) => (
-          <div key={s.label} className="bg-card border-[1.5px] border-card-border rounded-2xl p-6 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div key={s.label} className="premium-card p-6 flex items-center gap-4 group overflow-visible">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
               <s.icon className="w-5 h-5 text-primary" />
             </div>
-            <div>
+            <div className="relative z-10">
               <div className="font-display text-2xl text-foreground">{s.value}</div>
-              <div className="text-xs text-muted-foreground">{s.label}</div>
+              <div className="text-[0.6rem] text-muted-foreground uppercase tracking-widest font-bold">{s.label}</div>
             </div>
           </div>
         ))}
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 mb-12">
-        <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-primary" />
-              <h3 className="font-normal text-sm text-foreground">Engagement Overview</h3>
-            </div>
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[0.6rem] font-normal tracking-widest">WEEKLY</Badge>
+        <div className="premium-card p-8 group relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <BarChart3 size={120} className="text-primary" />
           </div>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={viewStats.chartData}>
-              <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 53%)", fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "hsl(0 0% 53%)", fontSize: 10 }} axisLine={false} tickLine={false} hide />
-              <Tooltip
-                cursor={{ fill: 'hsl(var(--primary) / 0.05)' }}
-                contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12, color: "hsl(var(--foreground))", fontSize: 12 }}
-              />
-              <Bar dataKey="views" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={20} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                <h3 className="font-bold text-sm text-foreground uppercase tracking-widest">Engagement Overview</h3>
+              </div>
+              <Badge variant="secondary" className="bg-primary/10 text-primary border-none text-[0.6rem] font-bold tracking-[0.2em] px-3">WEEKLY</Badge>
+            </div>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={viewStats.chartData}>
+                <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 53%)", fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "hsl(0 0% 53%)", fontSize: 10 }} axisLine={false} tickLine={false} hide />
+                <Tooltip
+                  cursor={{ fill: 'rgba(251, 191, 36, 0.05)' }}
+                  contentStyle={{ background: "#0a0c10", border: "1px solid rgba(251, 191, 36, 0.2)", borderRadius: 12, color: "#fff", fontSize: 12 }}
+                />
+                <Bar dataKey="views" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={20} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Trophy size={100} className="text-primary" />
+        <div className="premium-card p-8 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Trophy size={140} className="text-primary" />
           </div>
-          <div className="relative mb-6">
-            <svg className="w-32 h-32 transform -rotate-90">
-              <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-secondary" />
-              <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={364.4} strokeDashoffset={364.4 - (364.4 * viewStats.successRate) / 100} className="text-primary transition-all duration-1000 ease-out" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-display text-foreground">{viewStats.successRate}%</span>
+          <div className="relative z-10 flex flex-col items-center">
+            <div className="relative mb-6">
+              <svg className="w-32 h-32 transform -rotate-90">
+                <circle cx="64" cy="64" r="58" stroke="rgba(255,255,255,0.05)" strokeWidth="8" fill="transparent" />
+                <circle cx="64" cy="64" r="58" stroke="hsl(var(--primary))" strokeWidth="8" fill="transparent" strokeDasharray={364.4} strokeDashoffset={364.4 - (364.4 * viewStats.successRate) / 100} className="transition-all duration-[2s] ease-in-out" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-3xl font-display text-foreground drop-shadow-lg">{viewStats.successRate}%</span>
+              </div>
             </div>
+            <h3 className="text-sm font-bold mb-1 text-foreground uppercase tracking-widest">Casting Success</h3>
+            <p className="text-[0.6rem] text-muted-foreground/60 max-w-[180px] uppercase font-bold tracking-tighter">Based on your last {viewStats.projectCount} applications.</p>
           </div>
-          <h3 className="text-sm font-normal mb-1 text-black">Casting Success Rate</h3>
-          <p className="text-[0.65rem] text-muted-foreground max-w-[180px]">Based on your last {viewStats.projectCount} applications.</p>
         </div>
       </div>
 
@@ -237,13 +244,18 @@ export default function AnalyticsPage() {
 
 function StatsCard({ label, value, icon: Icon, desc }: { label: string; value: string; icon: any; desc: string }) {
   return (
-    <div className="bg-card border-[1.5px] border-card-border rounded-2xl p-6">
-      <div className="flex items-center gap-3 mb-4 text-muted-foreground/60">
-        <Icon size={16} />
-        <span className="text-[0.65rem] font-normal uppercase tracking-widest">{label}</span>
+    <div className="premium-card p-6 group overflow-hidden relative">
+      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+        <Icon size={60} className="text-primary" />
       </div>
-      <div className="text-3xl font-display text-black mb-1">{value}</div>
-      <div className="text-[0.6rem] text-muted-foreground italic font-normal tracking-wide">{desc}</div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-4 text-primary/70">
+          <Icon size={16} />
+          <span className="text-[0.6rem] font-bold uppercase tracking-[0.25em]">{label}</span>
+        </div>
+        <div className="text-3xl font-display text-foreground mb-1">{value}</div>
+        <div className="text-[0.55rem] text-muted-foreground/60 uppercase tracking-widest font-bold">{desc}</div>
+      </div>
     </div>
   );
 }

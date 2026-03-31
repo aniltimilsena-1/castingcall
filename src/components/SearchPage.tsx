@@ -6,7 +6,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical, Share2, Flag } from "lucide-react";
+import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical, Share2, Flag, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
@@ -180,13 +180,18 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <button
+      <div className="flex items-center gap-4 mb-10">
+        <button 
           onClick={onBack}
-          className="inline-block border-[1.5px] border-border rounded-xl text-muted-foreground px-5 py-2.5 font-normal text-sm hover:border-primary hover:text-primary transition-all self-start"
+          className="p-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-border text-muted-foreground hover:text-primary transition-all active:scale-90 shadow-xl"
+          title="Go Back"
         >
-          ← Back
+          <ChevronLeft size={20} />
         </button>
+        <div className="flex-1 h-px bg-gradient-to-r from-border via-border/50 to-transparent" />
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div className="flex bg-secondary/80 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-2xl self-center md:self-auto">
           <button
             onClick={() => { setSearchType("talents"); onTypeChange?.("talents"); }}
@@ -205,10 +210,11 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
 
 
       {searchType === 'talents' && (
-        <div className="mb-8 md:mb-12 space-y-4 md:space-y-8 p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-gradient-to-br from-card to-secondary/20 border border-border shadow-2xl overflow-hidden relative group">
+        <div className="mb-8 md:mb-12 space-y-4 md:space-y-8 p-5 md:p-8 premium-card group">
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
             <Sparkles size={120} className="text-primary" />
-          </div>          <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 relative z-10">
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 relative z-10">
             <div className="flex items-center gap-4 md:gap-6">
               <h3 
                 className="font-display text-lg md:text-2xl text-primary flex items-center gap-2 md:gap-3 cursor-pointer hover:text-primary/80 transition-all active:scale-95"
@@ -350,7 +356,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                 whileTap={{ scale: 0.96 }}
                 className={`group cursor-pointer haptic-card ${idx === 0 ? 'bento-featured' : ''}`}
               >
-                <div className="stitched-card relative w-full h-full rounded-[1.5rem] overflow-hidden shadow-2xl">
+                <div className="premium-card relative w-full h-full">
                   <div className="shimmer-accent" />
                   <div className="stitched-card-scanner" />
                   {p.photo_url ? (
@@ -406,7 +412,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
                 key={p.id}
                 onClick={() => onProfileClick(p)}
                 whileTap={{ scale: 0.96 }}
-                className="stitched-card group haptic-card relative flex flex-row items-center gap-2 md:gap-4 rounded-lg md:rounded-2xl px-2 md:px-6 py-2 md:py-4 hover:border-primary transition-all cursor-pointer overflow-hidden transform-gpu hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 mx-auto w-full"
+                className="premium-card group haptic-card relative flex flex-row items-center gap-2 md:gap-4 px-2 md:px-6 py-2 md:py-4 transition-all cursor-pointer transform-gpu mx-auto w-full"
               >
                 <div className="shimmer-accent" />
                 <div className="flex flex-col items-center flex-shrink-0 relative">
@@ -545,7 +551,7 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
 }
 
 function ProjectCard({ project }: { project: Tables<"projects"> }) {
-  const { user } = useAuth();
+  const { user, isEmailVerified } = useAuth();
   const { confirm: confirmAction } = useConfirmation();
   const [applied, setApplied] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -575,11 +581,14 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
   }, [user, project.id]);
 
   const handleApply = async () => {
-    if (!user) {
-      toast.error("Sign in to apply for casting calls");
+    if (applied || loading) return;
+
+    if (!isEmailVerified) {
+      toast.error("Verified users only.", {
+        description: "Please confirm your email to apply for roles."
+      });
       return;
     }
-    if (applied || loading) return;
 
     setLoading(true);
     try {
@@ -684,7 +693,7 @@ function ProjectCard({ project }: { project: Tables<"projects"> }) {
       initial={{ opacity: 0, scale: 0.98, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       whileTap={{ scale: 0.96 }}
-      className="stitched-card rounded-xl md:rounded-[2rem] overflow-hidden group haptic-card hover:border-primary transition-all shadow-xl hover:shadow-2xl hover:shadow-primary/5 relative transform-gpu hover:-translate-y-2 h-full flex flex-col mx-auto w-full"
+      className="premium-card group haptic-card transition-all relative transform-gpu h-full flex flex-col mx-auto w-full"
     >
       <div className="shimmer-accent" />
       <div className="stitched-card-scanner" />

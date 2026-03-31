@@ -264,7 +264,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="glass-stat text-center space-y-3"
+              className="premium-card text-center space-y-4 p-8 group overflow-visible"
             >
               <div className={`w-10 h-10 mx-auto rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center ${stat.color}`}>
                 <stat.icon size={18} className="animate-pulse" />
@@ -321,7 +321,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
 
       {/* ── HOW IT WORKS ── */}
       <section className="py-4 md:py-6 px-8 md:px-12 max-w-7xl mx-auto relative z-30">
-        <div className="bg-card border border-border rounded-[3.5rem] md:rounded-[4rem] p-8 md:p-14 overflow-hidden relative">
+        <div className="premium-card p-8 md:p-14 overflow-hidden relative group">
           {/* Abstract Background Glows */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 blur-[120px] rounded-full pointer-events-none" />
@@ -421,9 +421,9 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                   onClick={() => onProfileClick(p)}
-                  className={`group relative bg-card haptic-card border rounded-[1.5rem] p-5 flex flex-col items-center text-center cursor-pointer transition-all hover:-translate-y-2 ${isElite
+                  className={`group premium-card relative haptic-card p-6 flex flex-col items-center text-center cursor-pointer ${isElite
                     ? "border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.1)] hover:border-amber-500/60"
-                    : "border-border hover:border-primary/20"
+                    : ""
                     }`}
                 >
                   <div className="shimmer-accent" />
@@ -520,7 +520,7 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => onCategoryClick(proj.role_category || 'Actor')}
-                className="stitched-card group haptic-card relative h-auto rounded-2xl md:rounded-[1.2rem] p-3 md:p-5 transition-all cursor-pointer flex flex-col justify-between"
+                className="premium-card group haptic-card relative h-auto p-4 md:p-6 transition-all cursor-pointer flex flex-col justify-between"
               >
                 <div className="shimmer-accent" />
                 <div className="stitched-card-scanner" />
@@ -563,39 +563,41 @@ export default function HomePage({ onCategoryClick, onProfileClick, onTermsClick
         </section>
       )}
 
-      {/* ── MISSION & VISION ── */}
-      <section className="py-12 md:py-20 px-6 max-w-7xl mx-auto relative z-30 bg-card border border-border rounded-[3rem] my-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-          <div className="space-y-8">
-            <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold italic">Our Soul</h2>
-            <h3 className="text-5xl font-display text-foreground italic leading-tight">Empowering Every Story <br /> <span className="text-foreground/40 font-normal not-italic">to be Told</span></h3>
-            <p className="text-sm text-foreground leading-relaxed font-light font-body max-w-md">
-              CaastingCall was built with a single vision: to democratize the entertainment industry.
-              Whether you're a child star in the making or a veteran director looking for your next leading man,
-              we provide the tools to connect, showcase, and succeed.
-            </p>
-            <div className="grid grid-cols-2 gap-6 pt-6">
-              <div className="space-y-2">
-                <span className="block text-2xl font-display text-foreground">Global Reach</span>
-                <span className="text-[0.6rem] text-foreground/60 uppercase tracking-[0.2em]">Unlimited connections from any corner of the globe.</span>
-              </div>
-              <div className="space-y-2">
-                <span className="block text-2xl font-display text-foreground">Trust First</span>
-                <span className="text-[0.6rem] text-foreground/60 uppercase tracking-[0.2em]">Verified profiles and secure communications for peace of mind.</span>
+      <div className="px-5">
+        {/* ── MISSION & VISION ── */}
+        <section className="py-16 md:py-24 px-10 md:px-24 max-w-7xl mx-auto relative z-30 premium-card my-12 md:my-20 group">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
+            <div className="space-y-8">
+              <h2 className="text-[0.7rem] uppercase tracking-[0.4em] text-primary font-bold italic">Our Soul</h2>
+              <h3 className="text-3xl md:text-5xl font-display text-foreground italic leading-tight">Empowering Every Story <br /> <span className="text-foreground/40 font-normal not-italic">to be Told</span></h3>
+              <p className="text-sm text-foreground leading-relaxed font-light font-body max-w-md">
+                CaastingCall was built with a single vision: to democratize the entertainment industry.
+                Whether you're a child star in the making or a veteran director looking for your next leading man,
+                we provide the tools to connect, showcase, and succeed.
+              </p>
+              <div className="grid grid-cols-2 gap-6 pt-6">
+                <div className="space-y-2">
+                  <span className="block text-2xl font-display text-foreground">Global Reach</span>
+                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-[0.2em]">Unlimited connections from any corner of the globe.</span>
+                </div>
+                <div className="space-y-2">
+                  <span className="block text-2xl font-display text-foreground">Trust First</span>
+                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-[0.2em]">Verified profiles and secure communications for peace of mind.</span>
+                </div>
               </div>
             </div>
+            <div className="relative aspect-[4/3] md:aspect-video rounded-[3rem] overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-amber-500/20 z-10" />
+              <img
+                src="/vision-hero.png"
+                alt="Vision"
+                className="w-full h-full object-cover grayscale transition-transform duration-[2s] group-hover:scale-110 group-hover:grayscale-0"
+                onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80"; }}
+              />
+            </div>
           </div>
-          <div className="relative aspect-square md:aspect-video rounded-[3rem] overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-amber-500/20 z-10" />
-            <img
-              src="/vision-hero.png"
-              alt="Vision"
-              className="w-full h-full object-cover grayscale transition-transform duration-[2s] group-hover:scale-110 group-hover:grayscale-0"
-              onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80"; }}
-            />
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* ── FOOTER ── */}
       <footer className="mt-12 border-t border-border py-16 relative z-30 bg-card/60 backdrop-blur-xl">

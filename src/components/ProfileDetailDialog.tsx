@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { profileService, Profile } from "@/services/profileService";
 import { paymentService } from "@/services/paymentService";
 import { messageService } from "@/services/messageService";
@@ -19,6 +20,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
@@ -49,6 +54,7 @@ export default function ProfileDetailDialog({
     isOnline = false,
     onDirectMessage
 }: ProfileDetailDialogProps) {
+    const { isEmailVerified } = useAuth();
     const [showFullProfile, setShowFullProfile] = useState(false);
     const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
     const [isMessaging, setIsMessaging] = useState(false);
@@ -282,6 +288,14 @@ export default function ProfileDetailDialog({
 
     const handleInvite = async (projectId: string) => {
         if (!user || alreadyAppliedOrInvited.includes(projectId)) return;
+        
+        if (!isEmailVerified) {
+            toast.error("Please verify your email to invite others to projects.", {
+                description: "Check your inbox for a confirmation link."
+            });
+            return;
+        }
+
         setInvitingProjectId(projectId);
         try {
             const { error } = await supabase.from("applications" as any).insert({
@@ -330,6 +344,14 @@ export default function ProfileDetailDialog({
 
     const handleSendMessage = async () => {
         if (!message.trim() || !user || !profile?.user_id) return;
+
+        if (!isEmailVerified) {
+            toast.error("Verified users only.", {
+                description: "You must confirm your email before sending messages."
+            });
+            return;
+        }
+
         setSending(true);
         try {
             await messageService.sendMessage(user.id, profile.user_id, message);
@@ -359,6 +381,11 @@ export default function ProfileDetailDialog({
     const handleSubscribe = async () => {
         if (!user) { toast.error("Sign in to subscribe"); return; }
         if (isSubscribed) { toast.info("You're already a fan!"); return; }
+
+        if (!isEmailVerified) {
+            toast.error("Please verify your email to unlock premium features.");
+            return;
+        }
 
         setPaymentModal({
             open: true,
@@ -721,8 +748,8 @@ export default function ProfileDetailDialog({
                             ) : (
                                 /* Full Profile View - Detailed Layout */
                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
-                                    <div className="flex items-center justify-between border-b border-border pb-6">
-                                        <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-center justify-center text-center border-b border-border pb-6">
+                                        <div className="flex flex-col items-center gap-3">
                                             <h2 className="font-display text-3xl text-foreground flex items-center gap-3">
                                                 {profile?.name}
                                                 {(profile?.plan === 'pro' || profile?.role === 'Admin') && <Crown size={20} className="text-amber-500 fill-amber-500/10" />}
@@ -730,16 +757,13 @@ export default function ProfileDetailDialog({
                                             {user?.id !== profile.user_id && (
                                                 <button
                                                     onClick={() => setIsMessaging(!isMessaging)}
-                                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-normal transition-all border ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary/40 border-border text-muted-foreground hover:border-primary'}`}
+                                                    className={`flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-xs font-normal transition-all border shadow-lg ${isMessaging ? 'bg-primary/20 border-primary text-primary' : 'bg-secondary border-border text-muted-foreground hover:text-primary'}`}
                                                 >
                                                     <MessageCircle size={14} />
                                                     {isMessaging ? "Discard Message" : "Message"}
                                                 </button>
                                             )}
                                         </div>
-                                        <button onClick={() => { setShowFullProfile(false); setIsMessaging(false); }} className="text-sm font-normal text-muted-foreground hover:text-primary transition-colors flex items-center gap-2">
-                                            <span>←</span> Back to summary
-                                        </button>
                                     </div>
 
                                     {isMessaging && showFullProfile && (

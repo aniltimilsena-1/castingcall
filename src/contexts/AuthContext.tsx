@@ -20,6 +20,7 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
   isPremium: boolean;
   isRecovering: boolean;
+  isEmailVerified: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -200,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isPremium = profile?.plan === "pro" || profile?.role === "Admin";
+  const isEmailVerified = !!user?.email_confirmed_at;
 
   const value = {
     session,
@@ -216,6 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshProfile,
     isPremium,
     isRecovering,
+    isEmailVerified,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

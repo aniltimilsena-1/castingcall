@@ -6,7 +6,7 @@ import { followService } from "@/services/followService";
 import { paymentService } from "@/services/paymentService";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Send, Bookmark, Sparkles, ArrowLeft, X, Crown, Lock, Unlock, Gift, Minimize2, Trash2, Play, MoreVertical, Volume2, VolumeX, Share, Flag, UserMinus, EyeOff } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, Sparkles, ArrowLeft, X, Crown, Lock, Unlock, Gift, Minimize2, Trash2, Play, MoreVertical, Volume2, VolumeX, Share, Flag, UserMinus, EyeOff, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import PaymentUpgradeDialog from "./PaymentUpgradeDialog";
 import { useVideo } from "@/contexts/VideoContext";
@@ -26,7 +26,7 @@ interface FeedPageProps {
 }
 
 export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
-    const { user, profile: currentUserProfile } = useAuth();
+    const { user, profile: currentUserProfile, isEmailVerified } = useAuth();
     const { confirm: confirmAction } = useConfirmation();
     const [feed, setFeed] = useState<FeedItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -269,6 +269,13 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
             return;
         }
 
+        if (!isEmailVerified) {
+            toast.error("Verified users only.", {
+                description: "Confirm your email to like posts."
+            });
+            return;
+        }
+
         const isLiked = likes[mediaUrl]?.liked;
         try {
             if (isLiked) {
@@ -321,6 +328,13 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
         const text = commentText[mediaUrl];
         if (!user || !text?.trim()) return;
 
+        if (!isEmailVerified) {
+            toast.error("Verified users only.", {
+                description: "Confirm your email to post comments."
+            });
+            return;
+        }
+
         setPostingComment(mediaUrl);
         try {
             const data = await feedService.addComment(mediaUrl, user.id, text, replyingTo?.photoUrl === mediaUrl ? replyingTo.id : null);
@@ -349,6 +363,11 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     const handleLikeComment = async (commentId: string) => {
         if (!user) {
             toast.error("Please log in to like comments");
+            return;
+        }
+
+        if (!isEmailVerified) {
+            toast.error("Verified users only.");
             return;
         }
 
@@ -381,6 +400,14 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
             toast.error("Please log in to follow");
             return;
         }
+
+        if (!isEmailVerified) {
+            toast.error("Verified users only.", {
+                description: "Confirm your email to follow others."
+            });
+            return;
+        }
+
         const isFollowing = followedUsers.has(profileId);
         try {
             if (isFollowing) {
@@ -467,13 +494,6 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     if (loading) {
         return (
             <div className="h-full bg-black overflow-hidden relative">
-                <button 
-                    onClick={() => onBack?.()}
-                    className="fixed top-6 left-6 z-[250] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
-                    title="Back to Home"
-                >
-                    <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
-                </button>
 
                 <div className="max-w-[620px] mx-auto px-4 py-16 pb-20 space-y-8 h-full overflow-y-auto">
                     {[1, 2, 3].map((i) => (
@@ -507,13 +527,6 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
     if (feed.length === 0) {
         return (
             <div className="h-full bg-black overflow-hidden relative">
-                <button 
-                    onClick={() => onBack?.()}
-                    className="fixed top-6 left-6 z-[250] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
-                    title="Back to Home"
-                >
-                    <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
-                </button>
 
                 <div className="flex flex-col items-center justify-center h-full gap-4 px-6 text-center text-white">
                     <Sparkles className="w-14 h-14 text-primary/30" />
@@ -529,14 +542,17 @@ export default function FeedPage({ onProfileClick, onBack }: FeedPageProps) {
 
     return (
         <div className="h-full bg-black overflow-hidden relative">
-            {/* Back Button */}
-            <button 
-                onClick={() => onBack?.()}
-                className="fixed top-6 left-6 z-[250] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
-                title="Back to Home"
-            >
-                <ArrowLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
-            </button>
+            {/* ── Fixed Floating Back Button ── */}
+            {onBack && (
+                <button
+                    onClick={onBack}
+                    className="fixed top-6 left-6 z-[150] p-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 transition-all shadow-xl active:scale-95 group"
+                    title="Back to Home"
+                >
+                    <ChevronLeft size={24} className="group-hover:-translate-x-0.5 transition-transform" />
+                </button>
+            )}
+
 
             {/* ── Full-screen Post Modal ── */}
             <AnimatePresence>
@@ -969,7 +985,10 @@ function FeedCard({
             {/* Lock Overlay */}
             {!isUnlocked && (
                 <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md">
-                    <div className="p-8 bg-card/60 backdrop-blur-2xl rounded-[3rem] border border-white/10 shadow-2xl flex flex-col items-center text-center max-w-[85%]">
+                    <div className="premium-card p-10 flex flex-col items-center text-center max-w-[85%] group">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <Lock size={120} className="text-primary" />
+                        </div>
                         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 border border-primary/20 animate-pulse">
                             <Lock size={32} className="text-primary" />
                         </div>
@@ -1019,7 +1038,7 @@ function FeedCard({
                         animate={{ y: 0 }}
                         exit={{ y: "100%" }}
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                        className="absolute inset-x-0 bottom-0 z-[100] bg-card/95 backdrop-blur-3xl rounded-t-[2.5rem] border-t border-white/10 flex flex-col h-[70%]"
+                        className="absolute inset-x-0 bottom-0 z-[100] bg-gradient-to-b from-[hsl(222,47%,8%)] to-[hsl(222,47%,4%)] backdrop-blur-3xl rounded-t-[2.5rem] border-t border-white/10 flex flex-col h-[70%]"
                     >
                         <div className="flex items-center justify-between px-6 py-5 border-b border-border flex-shrink-0 z-10">
                             <div className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary">Comments ({commentList.length})</div>

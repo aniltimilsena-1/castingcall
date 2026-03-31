@@ -648,7 +648,7 @@ export default function MessagesPage({
           ) : conversations
             .filter(c => c.partnerName.toLowerCase().includes(searchTerm.toLowerCase()) || c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase()))
             .map((c) => (
-            <button key={c.partnerId} onClick={() => loadThread(c.partnerId)} className={`w-full px-3 py-3 flex items-center gap-3 hover:bg-foreground/5 transition-all ${selectedPartner === c.partnerId ? "bg-foreground/5" : ""}`}>
+            <button key={c.partnerId} onClick={() => loadThread(c.partnerId)} className={`w-full px-4 py-4 flex items-center gap-4 transition-all relative border-b border-white/5 hover:bg-primary/5 ${selectedPartner === c.partnerId ? "bg-primary/10 border-r-2 border-r-primary" : ""}`}>
               <div 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -661,31 +661,42 @@ export default function MessagesPage({
                   {c.partnerPhoto ? <img src={c.partnerPhoto} className="w-full h-full object-cover" /> : <span className="text-xl text-primary">{c.partnerName[0]}</span>}
                 </div>
                 {onlineUsers?.has(c.partnerId) && (
-                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-sidebar-background shadow-lg shadow-green-500/20 z-10" />
+                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-lg shadow-green-500/20 z-10" />
                 )}
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <div className="text-[15px] text-foreground truncate">{c.partnerName}</div>
-                <div className="text-[13px] text-muted-foreground truncate">{c.lastMessage}</div>
+                <div className="text-[15px] text-foreground font-medium truncate mb-0.5">{c.partnerName}</div>
+                <div className="text-[12px] text-muted-foreground/60 truncate italic">{c.lastMessage}</div>
               </div>
-              {c.unread > 0 && <div className="w-3 h-3 bg-primary rounded-full mr-2 shadow-[0_0_10px_rgba(251,191,36,0.5)]" />}
+              {c.unread > 0 && (
+                <div className="flex flex-col items-end gap-2">
+                  <div className="w-5 h-5 bg-primary text-black rounded-full flex items-center justify-center text-[10px] font-bold shadow-[0_0_15px_rgba(251,191,36,0.5)]">
+                    {c.unread}
+                  </div>
+                </div>
+              )}
             </button>
           ))}
         </div>
 
         {!isPremium && (
           <div className="p-4 border-t border-white/5">
-            <div className="bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 rounded-2xl p-5">
-              <div className="flex items-start gap-4 mb-4">
-                <Crown className="text-primary w-10 h-10" />
-                <div className="flex-1">
-                  <p className="text-foreground text-sm mb-0.5">Upgrade for {isNepal ? "NPR 499" : "$4.99"}</p>
-                  <p className="text-[0.65rem] text-muted-foreground uppercase tracking-widest leading-normal">{isNepal ? "Unlock local & global limits" : "Go Global Pro"}</p>
-                </div>
+            <div className="premium-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Crown size={80} className="text-primary" />
               </div>
-              <button onClick={() => onNavigate?.("premium")} className="w-full bg-primary text-foreground py-2.5 rounded-xl text-[0.65rem] font-normal uppercase tracking-[2px]">
-                {isNepal ? "Pay with eSewa/Khalti" : "Upgrade via Stripe"}
-              </button>
+              <div className="relative z-10">
+                <div className="flex items-start gap-4 mb-4">
+                  <Crown className="text-primary w-10 h-10" />
+                  <div className="flex-1">
+                    <p className="text-foreground text-sm font-bold mb-0.5">Upgrade for {isNepal ? "NPR 499" : "$4.99"}</p>
+                    <p className="text-[0.6rem] text-muted-foreground uppercase tracking-widest leading-normal">{isNepal ? "Unlock local & global limits" : "Go Global Pro"}</p>
+                  </div>
+                </div>
+                <button onClick={() => onNavigate?.("premium")} className="w-full bg-primary text-black py-2.5 rounded-xl text-[0.6rem] font-bold uppercase tracking-[2px] hover:scale-105 active:scale-95 transition-all">
+                  {isNepal ? "Upgrade Now" : "Go Global Pro"}
+                </button>
+              </div>
             </div>
           </div>
         )}

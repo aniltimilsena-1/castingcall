@@ -134,21 +134,24 @@ export default function MoodBoardSection({ userId, onViewTalent }: MoodBoardSect
                 <div 
                   key={board.id} 
                   onClick={() => setSelectedBoard(board)}
-                  className="group bg-card border border-border rounded-[2.5rem] p-8 flex flex-col h-48 cursor-pointer hover:border-primary transition-all hover:bg-primary/5 shadow-sm relative overflow-hidden"
+                  className="premium-card p-8 flex flex-col h-48 cursor-pointer hover:border-primary transition-all hover:bg-primary/5 shadow-sm relative overflow-hidden group"
                 >
-                  <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Layout size={60} className="text-primary" />
+                  </div>
+                  <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                     <button onClick={(e) => handleDeleteBoard(e, board.id)} className="text-muted-foreground hover:text-red-500 transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 relative z-10">
                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
                       <Layout size={24} />
                     </div>
                     <h3 className="text-lg font-display text-foreground group-hover:text-primary transition-colors">{board.title}</h3>
                     <p className="text-xs text-muted-foreground font-body line-clamp-2 mt-2 leading-relaxed">{board.description || "No description provided."}</p>
                   </div>
-                  <div className="mt-4 flex items-center gap-2">
+                  <div className="mt-4 flex items-center gap-2 relative z-10">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                     <span className="text-[10px] text-muted-foreground uppercase tracking-[2px] font-bold">Open Mood Board</span>
                   </div>
@@ -177,8 +180,10 @@ export default function MoodBoardSection({ userId, onViewTalent }: MoodBoardSect
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {boardItems.map(item => (
-                  <div key={item.id} className="stitched-card bg-card p-4 rounded-3xl flex items-center gap-4 group hover:border-amber-500/50 transition-all shadow-sm relative overflow-hidden">
-                    <div className="stitched-card-scanner" />
+                  <div key={item.id} className="premium-card p-4 flex items-center gap-4 group hover:border-amber-500/50 transition-all shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                      <Zap size={60} className="text-primary" />
+                    </div>
                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-secondary border border-border flex-shrink-0 cursor-pointer" onClick={() => onViewTalent(item.profiles)}>
                       {item.profiles?.photo_url ? (
                         <img src={item.profiles.photo_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
@@ -218,9 +223,11 @@ export default function MoodBoardSection({ userId, onViewTalent }: MoodBoardSect
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="w-full max-w-md bg-[#111111] border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden"
+              className="premium-card w-full max-w-md p-10 shadow-2xl relative overflow-hidden group"
             >
-              <div className="stitched-card-scanner" />
+              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                <FolderPlus size={120} className="text-primary" />
+              </div>
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-display text-primary uppercase tracking-[2px]">New Mood Board</h3>
                 <button onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-white/5 rounded-full transition-colors text-white/40"><X size={24} /></button>
