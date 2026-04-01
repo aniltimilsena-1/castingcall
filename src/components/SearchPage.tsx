@@ -6,7 +6,7 @@ import { Tables } from "@/integrations/supabase/types";
 import { User } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical, Share2, Flag, ChevronLeft } from "lucide-react";
+import { Bookmark, Send, Trash2, Heart, MessageCircle, X, PersonStanding, Clapperboard, Layout, MapPin, DollarSign, Crown, CheckCircle2, Video, Plus, Check, SlidersHorizontal, Image as ImageIcon, Sparkles, TrendingUp, Search, Minimize2, Edit2, MoreVertical, Share2, Flag, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
@@ -175,378 +175,202 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
   const title = role ? `${role}s` : `Search Results for "${query || 'All'}"`;
 
   return (
-    <motion.div
-      className="max-w-[740px] mx-auto px-10 md:px-4 py-8 md:py-16"
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <div className="flex items-center gap-4 mb-10">
-        <button 
-          onClick={onBack}
-          className="p-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-border text-muted-foreground hover:text-primary transition-all active:scale-90 shadow-xl"
-          title="Go Back"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <div className="flex-1 h-px bg-gradient-to-r from-border via-border/50 to-transparent" />
-      </div>
-
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <div className="flex bg-secondary/80 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-2xl self-center md:self-auto">
-          <button
-            onClick={() => { setSearchType("talents"); onTypeChange?.("talents"); }}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "talents" ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Talents
-          </button>
-          <button
-            onClick={() => { setSearchType("projects"); onTypeChange?.("projects"); }}
-            className={`px-8 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-[2px] transition-all duration-300 ${searchType === "projects" ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-105" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Casting Calls
-          </button>
-        </div>
-      </div>
-
-
-      {searchType === 'talents' && (
-        <div className="mb-8 md:mb-12 space-y-4 md:space-y-8 p-5 md:p-8 premium-card group">
-          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-            <Sparkles size={120} className="text-primary" />
+    <div className="min-h-screen bg-background pt-24 pb-24">
+      <div className="search-container">
+        {/* ── SIDEBAR FILTERS ── */}
+        <aside className="filter-sidebar">
+          <div className="flex items-center gap-4 mb-10">
+            <button 
+              onClick={onBack}
+              className="p-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-border text-muted-foreground hover:text-primary transition-all active:scale-90 shadow-xl"
+              title="Go Back"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <h1 className="font-display text-2xl text-foreground tracking-tight">Discovery</h1>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-4 md:gap-6 relative z-10">
-            <div className="flex items-center gap-4 md:gap-6">
-              <h3 
-                className="font-display text-lg md:text-2xl text-primary flex items-center gap-2 md:gap-3 cursor-pointer hover:text-primary/80 transition-all active:scale-95"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <div className="p-1.5 md:p-2 rounded-lg bg-primary/10 border border-primary/20 group-hover:border-primary/40 transition-all">
-                  <SlidersHorizontal className="text-primary w-4 h-4 md:w-5 md:h-5" />
-                </div>
-                Smart Filters
-              </h3>
-              <div className="flex items-center gap-2 md:gap-3 bg-secondary/50 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-border">
-                <TrendingUp className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isTrending ? "text-primary" : "text-muted-foreground"}`} />
-                <span className="text-[0.5rem] md:text-[0.65rem] font-normal uppercase tracking-widest text-muted-foreground">Trending</span>
-                  <Switch
+
+          <div className="flex bg-secondary/50 backdrop-blur-xl p-1 rounded-2xl border border-border mb-8">
+            <button
+              onClick={() => { setSearchType("talents"); onTypeChange?.("talents"); }}
+              className={`flex-1 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest transition-all duration-300 ${searchType === "talents" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Talent
+            </button>
+            <button
+              onClick={() => { setSearchType("projects"); onTypeChange?.("projects"); }}
+              className={`flex-1 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest transition-all duration-300 ${searchType === "projects" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Castings
+            </button>
+          </div>
+
+          <div className="filter-group">
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary/60">Category</label>
+              <ChevronRight size={14} className="text-muted-foreground opacity-30" />
+            </div>
+            <div className="space-y-3">
+              {['Actors', 'Models', 'Voiceover', 'Dancers', 'Musicians'].map(cat => (
+                <label key={cat} className="flex items-center gap-3 cursor-pointer group">
+                  <div className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${role?.includes(cat.slice(0, -1)) ? 'border-primary bg-primary/20' : 'border-white/10 group-hover:border-primary/40'}`}>
+                    {role?.includes(cat.slice(0, -1)) && <div className="w-2 h-2 rounded-full bg-primary" />}
+                  </div>
+                  <span className={`text-sm tracking-wide transition-colors ${role?.includes(cat.slice(0, -1)) ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>{cat}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary/60">Mood & Vibe</label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {moods.map(m => (
+                <Badge
+                  key={m}
+                  variant={selectedMoods.includes(m) ? "default" : "outline"}
+                  className={`cursor-pointer transition-all py-1.5 px-3 border-white/5 tracking-wide text-[10px] ${selectedMoods.includes(m) ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-muted-foreground hover:border-primary/30'}`}
+                  onClick={() => setSelectedMoods(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])}
+                >
+                  {m}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <div className="flex items-center justify-between mb-6">
+              <label className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary/60">Smart Match</label>
+              <div className="flex items-center gap-3">
+                <Switch
                   checked={isTrending}
                   onCheckedChange={setIsTrending}
-                  className="data-[state=checked]:bg-primary h-5 w-9 md:h-6 md:w-11"
+                  className="data-[state=checked]:bg-primary h-5 w-9"
                 />
               </div>
             </div>
-
-            <button
-              onClick={() => onCastingTapeOpenChange?.(true)}
-              className="group relative flex items-center gap-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/50 px-5 py-2.5 rounded-2xl transition-all active:scale-95 shadow-lg shadow-primary/5"
-            >
-              <div className="absolute inset-0 rounded-2xl border-2 border-primary/20 animate-pulse pointer-events-none" />
-              <Video className="text-primary w-4 h-4" />
-              <span className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-primary">Casting Tape</span>
-            </button>
+            <p className="text-[10px] text-muted-foreground/60 leading-relaxed font-body">Enable AI-driven matching based on your production requirements and past successes.</p>
           </div>
 
-          <motion.div 
-            initial={false}
-            animate={{ 
-              height: showFilters ? "auto" : 0,
-              opacity: showFilters ? 1 : 0,
-              marginTop: showFilters ? 32 : 0
+          <button 
+            onClick={() => {
+              setSelectedMoods([]);
+              setSelectedStyles([]);
+              setSelectedTraits([]);
+              setIsTrending(false);
             }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10 overflow-hidden"
+            className="w-full py-4 text-[10px] font-bold uppercase tracking-[3px] text-primary/40 hover:text-primary transition-colors border border-white/5 rounded-2xl hover:bg-primary/5 mt-4"
           >
-            <div>
-              <label className="block text-[0.6rem] font-normal tracking-[3px] uppercase text-primary mb-4">Mood</label>
-              <div className="flex flex-wrap gap-2">
-                {moods.map(m => (
-                  <Badge
-                    key={m}
-                    variant={selectedMoods.includes(m) ? "default" : "outline"}
-                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedMoods.includes(m) ? 'bg-primary text-foreground' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
-                    onClick={() => setSelectedMoods(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])}
-                  >
-                    {m}
-                  </Badge>
-                ))}
-              </div>
+            Clear All Filters
+          </button>
+        </aside>
+
+        {/* ── MAIN RESULTS AREA ── */}
+        <main className="space-y-12">
+          {/* Top Search Bar Refinement */}
+          <div className="flex items-center gap-6 mb-12">
+            <div className="flex-1 relative group">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-all" />
+              <input 
+                type="text" 
+                placeholder={`Search ${searchType}...`}
+                className="w-full bg-card/40 border border-white/5 rounded-[2rem] pl-16 pr-8 py-5 text-lg outline-none focus:border-primary/40 transition-all shadow-2xl backdrop-blur-xl"
+                value={query || ""}
+                readOnly
+              />
             </div>
-
-            <div>
-              <label className="block text-[0.6rem] font-normal tracking-[3px] uppercase text-primary mb-4">Style</label>
-              <div className="flex flex-wrap gap-2">
-                {styles.map(s => (
-                  <Badge
-                    key={s}
-                    variant={selectedStyles.includes(s) ? "default" : "outline"}
-                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedStyles.includes(s) ? 'bg-primary text-foreground' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
-                    onClick={() => setSelectedStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
-                  >
-                    {s}
-                  </Badge>
-                ))}
-              </div>
+            <div className="flex bg-secondary/80 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-2xl">
+              <button className="px-6 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest bg-primary text-primary-foreground">Recommended</button>
+              <button className="px-6 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground">Recent</button>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-[0.6rem] font-normal tracking-[3px] uppercase text-primary mb-4">Trait</label>
-              <div className="flex flex-wrap gap-2">
-                {traits.map(t => (
-                  <Badge
-                    key={t}
-                    variant={selectedTraits.includes(t) ? "default" : "outline"}
-                    className={`cursor-pointer transition-all hover:scale-105 active:scale-95 py-1.5 px-3 border-white/10 ${selectedTraits.includes(t) ? 'bg-primary text-foreground' : 'bg-secondary/30 text-muted-foreground hover:border-primary/50'}`}
-                    onClick={() => setSelectedTraits(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])}
-                  >
-                    {t}
-                  </Badge>
-                ))}
-              </div>
+          {loading ? (
+            <div className="talent-grid">
+              {Array(6).fill(0).map((_, i) => <div key={i} className="aspect-[3/4] premium-card skeleton" />)}
             </div>
-          </motion.div>
-        </div>
-      )}
-
-      {visualSearchMode && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="mb-12 p-8 rounded-[2.5rem] bg-primary/5 border border-primary/20 flex flex-col items-center text-center gap-6"
-        >
-          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center text-primary relative">
-            <Sparkles size={32} className="relative z-10" />
-            <div className="absolute inset-0 rounded-full border-2 border-primary/40 animate-ping opacity-20" />
-            <div className="absolute -inset-4 rounded-full border border-primary/10 animate-pulse" />
-          </div>
-          <div>
-            <h4 className="font-display text-3xl text-foreground mb-3">Visionary AI Discovery</h4>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
-              Our AI analyzes facial structures, style archetypes, and visual vibes to find your perfect match.
-              <span className="block mt-2 text-primary/60 font-medium">Upload a celebrity photo or a moodboard to begin.</span>
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <button className="bg-primary text-foreground px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest flex items-center gap-3">
-              <ImageIcon size={18} /> Upload Image
-            </button>
-            <button
-              onClick={() => setVisualSearchMode(false)}
-              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 px-6 py-3 rounded-xl text-[0.7rem] font-normal uppercase tracking-widest transition-colors"
-            >
-              Disable
-            </button>
-          </div>
-        </motion.div>
-      )}
-
-      {searchType === 'talents' && !query && selectedMoods.length === 0 && (
-        <div className="mb-16">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="font-display text-xl md:text-2xl text-foreground flex items-center gap-2 md:gap-3">
-              <TrendingUp className="text-orange-500" size={20} />
-              Trending {role || "Talent"}
-            </h3>
-            <span className="text-[0.6rem] font-normal uppercase tracking-[3px] text-muted-foreground">Updated Hourly</span>
-          </div>
-          <div className="bento-grid">
-            {trendingResults.map((p, idx) => (
-              <motion.div
-                key={p.id}
-                onClick={() => onProfileClick(p)}
-                whileTap={{ scale: 0.96 }}
-                className={`group cursor-pointer haptic-card ${idx === 0 ? 'bento-featured' : ''}`}
-              >
-                <div className="premium-card relative w-full h-full">
-                  <div className="shimmer-accent" />
-                  <div className="stitched-card-scanner" />
-                  {p.photo_url ? (
-                    <motion.img
-                      src={p.photo_url}
-                      className="w-full h-full object-cover ken-burns"
-                      alt={p.name}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-secondary flex items-center justify-center font-display text-2xl text-primary">
-                      {p.name?.[0]}
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <div className="text-white font-medium text-sm drop-shadow-md truncate">{p.name}</div>
-                    <div className="text-primary text-[0.55rem] uppercase tracking-widest font-bold drop-shadow-sm">{p.role}</div>
-                    <div className="font-mono-tech mt-1 text-white/40">#{p.id?.slice(0, 6).toUpperCase()}</div>
+          ) : (
+            <>
+              {searchType === "talents" ? (
+                results.length === 0 ? (
+                  <div className="text-center py-32 bg-card/10 border border-dashed border-border rounded-[3rem] shadow-inner">
+                    <PersonStanding className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
+                    <p className="text-muted-foreground font-body text-lg">No matching talent found.</p>
                   </div>
-                  {p.trending_score && (
-                    <div className="absolute top-3 right-3 bg-orange-500 text-primary-foreground text-[0.55rem] font-normal px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1">
-                      <TrendingUp size={8} /> {Math.round(p.trending_score)}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
+                ) : (
+                  <div className="talent-grid">
+                    {results.map((p) => (
+                      <motion.div
+                        key={p.id}
+                        onClick={() => onProfileClick(p)}
+                        whileHover={{ y: -8 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="premium-card group relative aspect-[3/4] cursor-pointer overflow-hidden transform-gpu transition-all"
+                      >
+                        <div className="shimmer-accent" />
+                        <div className="stitched-card-scanner" />
+                        
+                        {p.photo_url ? (
+                          <img 
+                            src={p.photo_url} 
+                            alt={p.name} 
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-secondary flex items-center justify-center font-display text-4xl text-primary">
+                            {p.name?.[0]}
+                          </div>
+                        )}
 
-      <h2 className="font-display text-3xl md:text-5xl text-foreground mb-8 md:mb-12 tracking-tight flex items-center gap-4 md:gap-6">
-        {searchType === 'talents' ? (
-          <>
-            {title}
-            {isTrending && <Badge className="bg-orange-500 text-primary-foreground border-none px-4 py-1.5 text-xs font-normal tracking-widest animate-pulse">🔥 TRENDING</Badge>}
-          </>
-        ) : `Open Casting Calls`}
-      </h2>
-
-      {loading ? (
-        <SearchResultSkeleton count={6} />
-      ) : searchType === "talents" ? (
-        results.length === 0 ? (
-          <div className="text-center py-32 bg-card/30 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
-            <PersonStanding className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-            <p className="text-muted-foreground font-body text-lg">No matching talent profiles found.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {results.map((p) => (
-              <motion.div
-                key={p.id}
-                onClick={() => onProfileClick(p)}
-                whileTap={{ scale: 0.96 }}
-                className="premium-card group haptic-card relative flex flex-row items-center gap-2 md:gap-4 px-2 md:px-6 py-2 md:py-4 transition-all cursor-pointer transform-gpu mx-auto w-full"
-              >
-                <div className="shimmer-accent" />
-                <div className="flex flex-col items-center flex-shrink-0 relative">
-                  <div className="relative group/search-avatar">
-                    <div className="w-9 h-9 md:w-16 md:h-16 rounded-full bg-secondary border-2 md:border-[3px] border-primary flex items-center justify-center font-display text-xs md:text-2xl text-primary overflow-hidden shadow-lg transition-transform duration-500 group-hover:scale-110 relative">
-                      <div className="stitched-card-scanner" />
-                      {p.photo_url ? (
-                        <img src={p.photo_url} alt={p.name} className="w-full h-full object-cover" />
-                      ) : (
-                        (p.name || "U")[0].toUpperCase()
-                      )}
-                    </div>
-                    {onlineUsers?.has(p.user_id) && (
-                      <div className="absolute bottom-0 right-0 w-3 md:w-4 h-3 md:h-4 bg-green-500 rounded-full border-2 border-background shadow-lg shadow-green-500/30 z-20" />
-                    )}
-                  </div>
-                  {(p.plan === "pro" || p.role === "Admin") && (
-                    <div className="absolute -top-1.5 -left-1 md:bottom-[-6px] md:top-auto md:left-auto bg-amber-500 text-foreground text-[0.4rem] md:text-[0.5rem] font-bold px-1.5 md:px-2.5 py-0.5 rounded shadow-glow shadow-amber-500/20 tracking-tighter uppercase whitespace-nowrap z-20 border border-amber-400/30">PRO</div>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 md:mb-2 text-left">
-                    <div className="text-sm md:text-lg font-medium text-foreground group-hover:text-primary transition-colors tracking-tight truncate flex items-center gap-2">
-                      {p.name || "Unknown"}
-                      {(p.plan === "pro" || p.role === "Admin") && <Crown size={12} className="text-amber-500 fill-amber-500/10" />}
-                    </div>
-                  </div>
-                  <div className="text-primary font-normal text-[0.6rem] md:text-xs mb-1 md:mb-2 tracking-wide uppercase opacity-80 text-left">{p.role === 'Admin' ? 'Member' : (p.role || "Member")}</div>
-                  {/* Call Sheet mono metadata */}
-                  <div className="flex items-center gap-3 mb-1 md:mb-3">
-                    <span className="font-mono-tech text-[0.6rem] text-muted-foreground">ID#{p.id?.slice(0,6).toUpperCase()}</span>
-                    {p.location && <span className="font-mono-tech text-[0.6rem] text-muted-foreground">{p.location.toUpperCase()}</span>}
-                  </div>
-                  <div className="hidden md:flex flex-wrap gap-4 md:gap-8 mb-4">
-                    {p.location && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">📍 {p.location}</span>}
-                    {p.experience_years !== null && <span className="text-sm text-foreground/70 flex items-center gap-2.5 font-medium tracking-wide">⭐ {p.experience_years}y Exp</span>}
-                    {p.trending_score !== undefined && p.trending_score > 80 && (
-                      <span className="text-[0.6rem] bg-orange-500/10 text-orange-500 px-2.5 py-1 rounded-full border border-orange-500/20 font-normal uppercase tracking-widest flex items-center gap-2">
-                        <TrendingUp size={10} /> Hot
-                      </span>
-                    )}
-                  </div>
-                  <div className="hidden md:flex flex-wrap gap-2">
-                    {p.mood_tags?.slice(0, 2).map((m: string) => (
-                      <span key={m} className="text-[0.6rem] bg-secondary text-secondary-foreground/80 px-2 py-0.5 rounded-md border border-border uppercase tracking-tighter font-medium">{m}</span>
-                    ))}
-                    {p.style_tags?.slice(0, 2).map((s: string) => (
-                      <span key={s} className="text-[0.6rem] bg-primary/20 text-primary px-2 py-0.5 rounded-md border border-primary/30 uppercase tracking-tighter font-bold">{s}</span>
-                    ))}
-                  </div>
-                  {p.bio && <p className="hidden md:block text-sm text-foreground/60 line-clamp-1 mt-4 md:mt-5 italic font-body">"{p.bio}"</p>}
-                </div>
-
-                {/* AI Smart Match Badge */}
-                {query && (
-                  <div className="hidden lg:flex flex-col items-end gap-1.5 px-6 py-2 border-l border-border/50">
-                    <span className="text-[0.55rem] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">Match Quality</span>
-                    {(() => {
-                      const match = calculateSmartMatch(
-                        { 
-                          role: p.role, 
-                          location: p.location, 
-                          experience_years: p.experience_years,
-                          style_tags: p.style_tags,
-                          mood_tags: p.mood_tags
-                        }, 
-                        { role: role || query, location: query }
-                      );
-                      return (
-                        <div className={`px-4 py-1.5 rounded-full border text-[0.75rem] font-black tracking-widest shadow-lg backdrop-blur-sm ${getMatchBadgeStyle(match.tier)}`}>
-                          {match.score}%
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
+                        
+                        <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 bg-gradient-to-t from-black via-black/80 to-transparent">
+                          <h3 className="font-display text-2xl text-white mb-1 group-hover:text-primary transition-colors">{p.name || "Unknown"}</h3>
+                          <p className="text-primary text-[0.65rem] font-bold uppercase tracking-[0.2em] mb-6 opacity-80">{p.role === 'Admin' ? 'Member' : (p.role || "Talent")}, {p.location || 'Global'}</p>
+                          
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); onProfileClick(p); }}
+                            className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[0.65rem] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0"
+                          >
+                            View Portfolio
+                          </button>
                         </div>
-                      );
-                    })()}
+
+                        {(p.plan === "pro" || p.role === "Admin") && (
+                          <div className="absolute top-6 left-6">
+                            <div className="bg-primary/90 text-primary-foreground text-[0.6rem] font-black px-3 py-1.5 rounded-full shadow-lg tracking-widest uppercase border border-white/20">PRO</div>
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
                   </div>
-                )}
-
-                <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => onProfileClick(p)}
-                    className="bg-primary text-primary-foreground px-3 md:px-6 py-2 md:py-2.5 rounded-lg md:rounded-xl text-[0.6rem] md:text-[0.65rem] font-normal uppercase tracking-[1px] md:tracking-[2px] hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/20 whitespace-nowrap"
-                  >
-                    View
-                  </button>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="p-2 md:p-2.5 rounded-lg md:rounded-xl border bg-secondary/40 border-border text-muted-foreground hover:border-primary/50 transition-all outline-none">
-                        <MoreVertical size={16} />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-card border-border p-1.5 shadow-2xl z-[50]">
-                      <DropdownMenuItem 
-                        onClick={(e) => toggleSave(e, p.id)}
-                        className={`flex items-center gap-3 px-3.5 py-3 rounded-xl transition-all cursor-pointer text-xs ${savedTalentIds.includes(p.id) ? 'text-primary bg-primary/5' : 'text-foreground hover:bg-primary/10'}`}
-                      >
-                        <Bookmark size={16} fill={savedTalentIds.includes(p.id) ? "currentColor" : "none"} />
-                        <span className="font-medium">{savedTalentIds.includes(p.id) ? "Unsave Talent" : "Save Talent"}</span>
-                      </DropdownMenuItem>
-                      
-                      <DropdownMenuItem 
-                        onClick={() => {
-                          const url = `${window.location.origin}/profile/${p.id}`;
-                          navigator.clipboard.writeText(url);
-                          toast.success("Profile link copied!");
-                        }}
-                        className="flex items-center gap-3 px-3.5 py-3 rounded-xl hover:bg-primary/10 cursor-pointer text-xs"
-                      >
-                        <Share2 size={16} />
-                        <span className="font-medium">Share Profile</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                )
+              ) : (
+                <div className="talent-grid">
+                  {projectResults.map((proj) => (
+                    <ProjectCard key={proj.id} project={proj} />
+                  ))}
                 </div>
-              </motion.div>
-            ))}
+              )}
+            </>
+          )}
+
+          {/* Pagination */}
+          <div className="flex items-center justify-center gap-6 pt-12">
+            <button className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">Previous</button>
+            <div className="flex items-center gap-2">
+              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-lg">1</button>
+              <button className="w-10 h-10 rounded-full hover:bg-white/5 text-muted-foreground font-bold text-xs transition-colors">2</button>
+              <button className="w-10 h-10 rounded-full hover:bg-white/5 text-muted-foreground font-bold text-xs transition-colors">3</button>
+              <span className="text-muted-foreground px-2">...</span>
+            </div>
+            <button className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">Next</button>
           </div>
-        )
-      ) : (
-        projectResults.length === 0 ? (
-          <div className="text-center py-32 bg-card/30 border-2 border-dashed border-border rounded-[3rem] shadow-inner">
-            <Clapperboard className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-            <p className="text-muted-foreground font-body text-lg">No open casting calls found.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-8">
-            {projectResults.map((p) => (
-              <ProjectCard key={p.id} project={p} />
-            ))}
-          </div>
-        )
-      )}
-    </motion.div>
+        </main>
+      </div>
+    </div>
   );
 }
 

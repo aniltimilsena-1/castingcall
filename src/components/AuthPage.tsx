@@ -193,7 +193,7 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
           {onBack && (
             <button
               onClick={onBack}
-              className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-white/5 text-muted-foreground/40 hover:text-foreground transition-all group"
+              className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-white/5 text-muted-foreground/40 hover:text-foreground transition-all group hidden md:block"
               title="Back"
             >
               <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />

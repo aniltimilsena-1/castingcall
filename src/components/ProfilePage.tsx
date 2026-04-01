@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { followService, FollowProfile } from "@/services/followService";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users, ChevronDown, ChevronLeft } from "lucide-react";
+import { X, Plus, Crown, Edit2, MapPin, Briefcase, Link2, User, Camera, Sparkles, Share2, Lock, ShoppingBag, Trash2, Minimize2, Users, ChevronDown, ChevronLeft, Video } from "lucide-react";
 import { useVideo } from "@/contexts/VideoContext";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Badge } from "@/components/ui/badge";
@@ -325,383 +325,242 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
   if (!isEditing) {
 
     return (
-      <>
-      <motion.div
-        className="max-w-[860px] mx-auto px-4 md:px-6 py-10"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        key="view-mode"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onBack}
-              className="p-2.5 bg-secondary text-foreground/70 hover:text-primary hover:bg-secondary/80 rounded-xl transition-all border border-border flex items-center justify-center shrink-0"
-              title="Go Back"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={() => {
-                const url = `${window.location.origin}/profile/${profile?.user_id}`;
-                navigator.clipboard.writeText(url);
-                toast.success("Profile link copied to clipboard!");
-              }}
-              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-foreground/70 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
-            >
-              <Share2 size={15} />
-              Share Link
-            </button>
-          </div>
-          <div className="flex items-center gap-2">
-            {user && profile && user.id !== profile.user_id && (
-              <button
-                onClick={async () => {
-                  const blockTitle = isBlocked ? "Unblock User" : "Block User";
-                  const blockDesc = isBlocked 
-                    ? `Are you sure you want to unblock ${profile.name}? They will be able to message you and see your content again.`
-                    : `Are you sure you want to block ${profile.name}? They will no longer be able to message you or see your content.`;
-                  
-                  confirmAction({
-                    title: blockTitle,
-                    description: blockDesc,
-                    variant: isBlocked ? "default" : "destructive",
-                    onConfirm: async () => {
-                      try {
-                        const newBlocked = await settingsService.toggleBlock(user.id, profile.user_id);
-                        setIsBlocked(newBlocked);
-                        toast.success(newBlocked ? "User blocked" : "User unblocked");
-                      } catch (err: any) {
-                        toast.error(err.message || "Failed to toggle block");
-                      }
-                    }
-                  });
-                }}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all border ${isBlocked ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-secondary border-border hover:border-red-500 hover:text-red-500 text-foreground/70'}`}
-              >
-                {isBlocked ? <ShieldAlert size={15} /> : <Ban size={15} />}
-                {isBlocked ? "Unblock" : "Block"}
-              </button>
-            )}
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 bg-secondary border border-border hover:border-primary hover:text-primary text-foreground/70 px-5 py-2.5 rounded-xl font-bold text-sm transition-all"
-            >
-              <Edit2 size={15} />
-              Edit Profile
-            </button>
-          </div>
-        </div>
-
-        {/* Hero Card */}
-        <div className="premium-card mb-6 group">
-          {/* Top Banner */}
-          <div className="h-28 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent relative">
-            <div className="absolute -bottom-14 left-6 md:left-10">
-              <div className="w-28 h-28 rounded-full bg-secondary border-4 border-card overflow-hidden shadow-xl flex items-center justify-center font-display text-5xl text-primary">
-                {profile?.photo_url ? (
-                  <img src={profile.photo_url} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  (profile?.name || "?")[0].toUpperCase()
-                )}
-              </div>
-            </div>
-
-            {/* Photo upload button */}
-            <label className="absolute bottom-3 left-40 md:left-44 cursor-pointer">
-              <div className="bg-secondary/80 backdrop-blur-sm border border-border text-foreground/60 hover:text-primary hover:border-primary px-3 py-1.5 rounded-full text-[0.65rem] font-normal flex items-center gap-1.5 transition-all">
-                <Camera size={12} />
-                Change Photo
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file || !user) return;
-                  const fileExt = file.name.split('.').pop();
-                  const filePath = `${user.id}/${Math.random()}.${fileExt}`;
-                  try {
-                    toast.loading("Uploading photo...");
-                    const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
-                    if (uploadError) throw uploadError;
-                    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
-                    const { error: updateError } = await supabase.from('profiles').update({ photo_url: publicUrl }).eq('user_id', user.id);
-                    if (updateError) throw updateError;
-                    await refreshProfile();
-                    toast.dismiss();
-                    toast.success("Photo updated!");
-                  } catch (err: any) {
-                    toast.dismiss();
-                    toast.error(err.message || "Failed to upload photo");
-                  }
-                }}
-              />
-            </label>
+      <div className="bg-background min-h-screen text-white font-body selection:bg-primary/30">
+        {/* ── 1. CINEMATIC HEADER ── */}
+        <section className="relative h-[80vh] flex items-end overflow-hidden">
+          <div className="absolute inset-0 z-0">
+             <motion.img 
+               initial={{ scale: 1.1 }}
+               whileInView={{ scale: 1 }}
+               transition={{ duration: 1.5 }}
+               src={profile?.photo_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80"} 
+               className="w-full h-full object-cover"
+               alt={profile?.name}
+             />
+             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+             <div className="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent" />
           </div>
 
-          <div className="pt-16 pb-8 px-6 md:px-10">
-            <div className="flex flex-wrap items-start gap-3 mb-2">
-              <h1 className="font-body font-normal text-3xl md:text-4xl text-foreground tracking-normal">{profile?.name || "Your Name"}</h1>
-              {isPremium && (
-                <span className="bg-amber-500/10 text-amber-500 border border-amber-500/30 px-3 py-1 rounded-full text-[0.6rem] font-normal tracking-widest uppercase flex items-center gap-1.5 mt-1">
-                  <Crown size={11} strokeWidth={3} /> PRO Member
-                </span>
-              )}
-              {userSettings?.advanced.openToCollaboration && (
-                <span className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[0.6rem] font-bold tracking-widest uppercase flex items-center gap-1.5 mt-1">
-                  <Sparkles size={11} /> Open to Collaboration
-                </span>
-              )}
-            </div>
-            <div className="text-primary font-normal text-sm uppercase tracking-[2px] mb-3">{profile?.role === 'Admin' ? 'Member' : (profile?.role || "Role not set")}</div>
-
-            {/* ── Followers / Following row ── */}
-            <div className="flex items-center gap-5 mb-4">
-              <button
-                onClick={() => openFollowModal("followers")}
-                className="flex flex-col items-start hover:opacity-70 transition-opacity"
-              >
-                <span className="text-xl font-display text-foreground leading-tight">{followCounts.followers.toLocaleString()}</span>
-                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-foreground/60">Followers</span>
-              </button>
-              <div className="w-px h-8 bg-border" />
-              <button
-                onClick={() => openFollowModal("following")}
-                className="flex flex-col items-start hover:opacity-70 transition-opacity"
-              >
-                <span className="text-xl font-display text-foreground leading-tight">{followCounts.following.toLocaleString()}</span>
-                <span className="text-[0.6rem] uppercase tracking-[0.18em] text-foreground/60">Following</span>
-              </button>
-            </div>
-
-            <div className="flex flex-wrap gap-4 text-sm text-foreground/60 mb-5">
-              {profile?.location && (
-                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-primary/60" />{profile.location}</span>
-              )}
-              {profile?.experience_years != null && (
-                <span className="flex items-center gap-1.5"><Briefcase size={14} className="text-primary/60" />{profile.experience_years} yrs experience</span>
-              )}
-              {profile?.portfolio_url && (
-                <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
-                  <Link2 size={14} className="text-primary/60" />Portfolio / IMDB
-                </a>
-              )}
-            </div>
-
-            {profile?.bio ? (
-              <p className="text-foreground/70 text-sm leading-relaxed max-w-2xl italic border-l-2 border-primary/20 pl-4">
-                "{profile.bio}"
-              </p>
-            ) : (
-              <p className="text-foreground/40 text-sm italic">No bio added yet. Click Edit Profile to add one.</p>
-            )}
-          </div>
-        </div>
-
-        {/* Smart Tags Section (View Mode) */}
-        <div className="premium-card p-8 mb-6 group">
-          <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4 flex items-center gap-2">
-            <Sparkles size={14} /> Smart Search Tags
-          </h3>
-          <div className="space-y-4">
-            {moodTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-widest mr-2">Moods:</span>
-                  {(moodTags || []).map(t => <Badge key={t} variant="secondary" className="bg-secondary/40 text-foreground font-normal text-[0.65rem]">{t}</Badge>)}
-                </div>
-              )}
-              {styleTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-widest mr-2">Style:</span>
-                  {(styleTags || []).map(t => <Badge key={t} variant="secondary" className="bg-primary/20 text-primary border-primary/20 font-normal text-[0.65rem]">{t}</Badge>)}
-                </div>
-              )}
-              {personalityTraits.length > 0 && (
-                <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-foreground/60 uppercase tracking-widest mr-2">Traits:</span>
-                  {(personalityTraits || []).map(t => <Badge key={t} variant="secondary" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-normal text-[0.65rem]">{t}</Badge>)}
-                </div>
-              )}
-              {looksLike.length > 0 && (
-                <div className="flex flex-wrap gap-2 items-center">
-                  <span className="text-[0.6rem] text-foreground/50 uppercase tracking-widest mr-2">Looks Like:</span>
-                  {(looksLike || []).map(t => <Badge key={t} variant="outline" className="border-border/30 text-foreground/80 font-bold text-[0.65rem]">{t}</Badge>)}
-                </div>
-              )}
-          </div>
-        </div>
-
-        {/* Stats row */}
-        {(profile?.height || profile?.age || profile?.gender || profile?.hair_color || profile?.eye_color) && (
-          <div className="premium-card p-8 mb-6 group">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Physical Attributes</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-              {profile?.height && <Stat label="Height" value={profile.height} />}
-              {profile?.age != null && <Stat label="Age" value={`${profile.age} yrs`} />}
-              {profile?.gender && <Stat label="Gender" value={profile.gender} />}
-              {profile?.hair_color && <Stat label="Hair" value={profile.hair_color} />}
-              {profile?.eye_color && <Stat label="Eyes" value={profile.eye_color} />}
-            </div>
-          </div>
-        )}
-
-        {/* Skills */}
-        {profile?.skills && profile.skills.length > 0 && (
-          <div className="premium-card p-8 mb-6 group">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Skills & Specialties</h3>
-            <div className="flex flex-wrap gap-2">
-              {(profile.skills || []).map((skill) => (
-                <span key={skill} className="bg-primary/5 text-primary text-xs font-medium px-3 py-1.5 rounded-xl border border-primary/20">
-                  {skill}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Photos */}
-        {(profile as any)?.photos?.length > 0 && (
-          <div className="premium-card p-8 mb-6 group">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Portfolio Photos</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {((profile as any)?.photos || []).map((url: string, i: number) => (
-                <div key={i} className="aspect-square rounded-xl overflow-hidden border border-border">
-                  <ImageWithProtection 
-                    src={url} 
-                    alt={`Portfolio ${i + 1}`} 
-                    className="w-full h-full"
-                    watermark={userSettings?.protection.watermark}
-                    preventDownload={userSettings?.protection.preventDownload}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Videos */}
-        {(profile as any)?.videos?.length > 0 && (
-          <div className="premium-card p-8 mb-6 group">
-            <h3 className="text-[0.65rem] font-normal tracking-[2px] uppercase text-foreground/60 mb-4">Video Reel</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {((profile as any)?.videos || []).map((url: string, i: number) => (
-                <div key={i} className="relative group rounded-xl overflow-hidden border border-border bg-black">
-                  <video src={url} controls className="w-full h-full" />
-                  <button
-                    onClick={() => {
-                      setPipVideo({ url, title: "Talent Reel", owner: profile?.name });
-                      setIsPipOpen(true);
-                      toast.info("Video minimized to Picture-in-Picture");
-                    }}
-                    className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-primary hover:text-black text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
-                    title="Picture-in-Picture"
-                  >
-                    <Minimize2 size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Edit CTA at bottom */}
-        <div className="flex justify-center pt-4">
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 bg-primary text-primary-foreground px-10 py-3.5 rounded-xl font-normal text-sm hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-          >
-            <Edit2 size={16} />
-            Edit My Profile
-          </button>
-        </div>
-      </motion.div>
-
-      {/* ── Followers / Following Modal ── */}
-      <AnimatePresence>
-        {followModal && (
-          <>
-            <motion.div
-              key="follow-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[400] pointer-events-auto"
-              onClick={() => setFollowModal(null)}
-            />
-            <div className="fixed inset-0 z-[401] flex items-end md:items-center justify-center pointer-events-none p-4">
-                <motion.div
-                  key="follow-panel"
-                  initial={{ opacity: 0, y: 100 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 100 }}
-                  transition={{ type: "spring", damping: 28, stiffness: 350 }}
-                  className="w-full max-w-md bg-card border border-border rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] pointer-events-auto"
-                >
-                  <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
-                    <div className="flex items-center gap-2">
-                      <Users size={18} className="text-primary" />
-                      <h3 className="font-display text-lg text-foreground capitalize">{followModal}</h3>
-                      <span className="text-sm text-foreground/60">
-                        ({followModal === "followers" ? followCounts.followers : followCounts.following})
-                      </span>
-                    </div>
-                    <div
-                      onClick={(e) => { e.stopPropagation(); setFollowModal(null); }}
-                      className="text-foreground/60 hover:text-foreground transition-colors p-2 rounded-lg hover:bg-secondary/20 cursor-pointer pointer-events-auto"
-                    >
-                      <X size={20} />
-                    </div>
-                  </div>
-                  <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1">
-                    {followListLoading ? (
-                      <div className="flex flex-col items-center gap-3 py-16">
-                        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                        <p className="text-[0.65rem] uppercase tracking-[3px] text-foreground/60 animate-pulse">Loading...</p>
-                      </div>
-                    ) : followList.length === 0 ? (
-                      <div className="flex flex-col items-center py-16 gap-3">
-                        <Users size={36} className="text-foreground/60/20" />
-                        <p className="text-foreground/60 text-sm">
-                          {followModal === "followers" ? "No followers yet." : "Not following anyone yet."}
-                        </p>
-                      </div>
-                    ) : (
-                      followList.map((fp) => (
-                        <div key={fp.user_id} className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-secondary/20 transition-colors">
-                          <div className="w-11 h-11 rounded-full bg-secondary border border-border flex-shrink-0 overflow-hidden flex items-center justify-center font-display text-xl text-primary">
-                            {fp.photo_url
-                              ? <img src={fp.photo_url} alt={fp.name} className="w-full h-full object-cover" />
-                              : (fp.name || "?")[0].toUpperCase()
-                            }
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm font-normal text-foreground truncate">{fp.name}</span>
-                              {fp.plan === "pro" && <Crown size={12} className="text-amber-500 flex-shrink-0" />}
-                            </div>
-                            <span className="text-[0.6rem] uppercase tracking-[0.15em] text-primary/60">{fp.role}</span>
-                          </div>
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-12 pb-24">
+             <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+                <div className="space-y-6">
+                   <motion.div 
+                     initial={{ opacity: 0, x: -20 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     className="flex items-center gap-3"
+                   >
+                      <button 
+                        onClick={onBack}
+                        className="p-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 text-white hover:text-primary transition-all active:scale-90"
+                      >
+                         <ChevronLeft size={20} />
+                      </button>
+                      {isPremium && (
+                        <div className="px-4 py-1.5 bg-amber-500/20 border border-amber-500/30 rounded-full text-[0.6rem] font-black uppercase tracking-[0.3em] text-amber-500 shadow-2xl">
+                           <Crown size={12} className="inline mr-2" /> PRO Artist
                         </div>
-                      ))
-                    )}
-                  </div>
-                  <div className="p-4 border-t border-border flex-shrink-0 bg-secondary/10">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setFollowModal(null); }}
-                      className="w-full py-3 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-xl text-sm font-bold transition-all pointer-events-auto border border-border/50"
-                    >
-                      Close
-                    </button>
-                  </div>
+                      )}
+                   </motion.div>
+
+                   <motion.h1 
+                     initial={{ opacity: 0, y: 30 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     className="font-display text-6xl md:text-8xl tracking-tighter leading-none"
+                   >
+                      {profile?.name?.split(' ')[0]} <br />
+                      <span className="text-primary italic">{profile?.name?.split(' ').slice(1).join(' ')}</span>
+                   </motion.h1>
+
+                   <motion.div 
+                     initial={{ opacity: 0 }}
+                     animate={{ opacity: 1 }}
+                     transition={{ delay: 0.2 }}
+                     className="flex items-center gap-6 text-[0.65rem] font-black uppercase tracking-[0.3em] text-primary/80"
+                   >
+                      <span>{profile?.role}</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                      <span>{profile?.location}</span>
+                   </motion.div>
+                </div>
+
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex flex-wrap gap-4"
+                >
+                   <button 
+                     onClick={() => setIsEditing(true)}
+                     className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+                   >
+                      Direct Message
+                   </button>
+                   <button 
+                     onClick={() => setIsEditing(true)}
+                     className="px-10 py-5 border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-white/10 transition-all"
+                   >
+                      Edit Profile
+                   </button>
                 </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
-      </>
+             </div>
+          </div>
+        </section>
+
+        {/* ── 2. PROFILE CONTENT ── */}
+        <section className="py-24 px-12">
+           <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                 {/* Left Sidebar: About & Specs */}
+                 <div className="lg:col-span-4 space-y-12">
+                    <div className="premium-card p-10 group">
+                       <h3 className="text-[0.6rem] font-black uppercase tracking-[4px] text-primary/60 mb-8 border-b border-white/5 pb-4">Personal Narrative</h3>
+                       <p className="text-muted-foreground font-body leading-relaxed font-light italic text-lg">
+                          "{profile?.bio || "No narrative established yet."}"
+                       </p>
+                    </div>
+
+                    <div className="premium-card p-10">
+                       <h3 className="text-[0.6rem] font-black uppercase tracking-[4px] text-primary/60 mb-8 border-b border-white/5 pb-4">Performance Specs</h3>
+                       <div className="grid grid-cols-2 gap-8">
+                          {[
+                            { label: "Height", val: profile?.height },
+                            { label: "Weight", val: "72kg" },
+                            { label: "Hair", val: profile?.hair_color },
+                            { label: "Eyes", val: profile?.eye_color },
+                            { label: "Age", val: profile?.age },
+                            { label: "Exp", val: `${profile?.experience_years}y` }
+                          ].map(spec => (
+                            <div key={spec.label} className="space-y-1">
+                               <div className="text-[0.55rem] font-black uppercase tracking-[2px] text-muted-foreground/40">{spec.label}</div>
+                               <div className="text-sm font-bold tracking-widest uppercase">{spec.val || "—"}</div>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
+
+                    <div className="premium-card p-10">
+                       <h3 className="text-[0.6rem] font-black uppercase tracking-[4px] text-primary/60 mb-8 border-b border-white/5 pb-4">Digital Links</h3>
+                       <div className="space-y-4">
+                          <button className="w-full flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-primary/40 transition-all group">
+                             <span className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground">IMDb Profile</span>
+                             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+                                <Link2 size={14} />
+                             </div>
+                          </button>
+                          <button className="w-full flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-blue-400/40 transition-all group">
+                             <span className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground">Casting Tape</span>
+                             <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                <Video size={14} />
+                             </div>
+                          </button>
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* Right Side: Performance Reel & Portfolio */}
+                 <div className="lg:col-span-8 space-y-16">
+                    {/* Performance Reel */}
+                    <div className="space-y-8">
+                       <div className="flex items-center justify-between mb-8">
+                          <h2 className="font-display text-4xl">Performance <span className="text-primary italic">Reel</span></h2>
+                          <Badge variant="outline" className="border-primary/20 text-primary uppercase tracking-[2px] px-3 py-1 font-black text-[9px]">DIRECTOR'S CUT</Badge>
+                       </div>
+
+                       <div className="aspect-video premium-card relative overflow-hidden bg-black group">
+                          {((profile as any)?.videos?.[0]) ? (
+                            <video src={(profile as any).videos[0]} controls className="w-full h-full" />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-6 text-muted-foreground/20">
+                               <Video size={80} />
+                               <span className="text-[0.6rem] font-black uppercase tracking-[4px]">No video reel linked</span>
+                            </div>
+                          )}
+                          <div className="stitched-card-scanner" />
+                       </div>
+                    </div>
+
+                    {/* Stitched Lookbook (Photos) */}
+                    <div className="space-y-8">
+                       <div className="flex items-center justify-between mb-8">
+                          <h2 className="font-display text-4xl">Stitched <span className="text-primary italic">Lookbook</span></h2>
+                          <div className="flex gap-2">
+                             <button className="p-3 bg-secondary/50 rounded-xl border border-white/5 text-muted-foreground hover:text-primary transition-all"><Camera size={18} /></button>
+                             <button className="p-3 bg-secondary/50 rounded-xl border border-white/5 text-muted-foreground hover:text-primary transition-all"><Share2 size={18} /></button>
+                          </div>
+                       </div>
+
+                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                          {((profile as any)?.photos || []).slice(0, 6).map((url: string, i: number) => (
+                            <motion.div 
+                              key={url}
+                              whileHover={{ y: -8 }}
+                              className="aspect-[3/4] premium-card overflow-hidden group/photo relative"
+                            >
+                               <div className="shimmer-accent" />
+                               <ImageWithProtection 
+                                src={url} 
+                                alt={`Elena Portfolio ${i + 1}`} 
+                                className="w-full h-full transform-gpu transition-transform duration-1000 group-hover/photo:scale-110"
+                                watermark={userSettings?.protection.watermark}
+                                preventDownload={userSettings?.protection.preventDownload}
+                               />
+                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity" />
+                               <div className="absolute bottom-4 left-4 right-4 translate-y-4 group-hover/photo:translate-y-0 transition-transform opacity-0 group-hover/photo:opacity-100">
+                                  <button className="w-full py-3 bg-white/10 backdrop-blur-xl border border-white/10 rounded-xl text-[0.6rem] font-black uppercase tracking-[2px] text-white">Full Screen</button>
+                               </div>
+                            </motion.div>
+                          ))}
+                       </div>
+                    </div>
+
+                    {/* Experience Milestones */}
+                    <div className="premium-card p-12">
+                       <div className="flex items-center gap-4 mb-12">
+                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-2xl">
+                             <Briefcase size={20} />
+                          </div>
+                          <h2 className="font-display text-3xl">Career <span className="text-primary italic">Milestones</span></h2>
+                       </div>
+
+                       <div className="space-y-12">
+                          {[
+                            { role: "Lead Actor", prod: "Cinematic Journey 2024", type: "Feature Film", status: "Completed" },
+                            { role: "Supporting Role", prod: "The Spotlight Project", type: "Netflix Original", status: "Post-Prod" },
+                            { role: "Protagonist", prod: "Digital Hearts", type: "Web Series", status: "Featured" }
+                          ].map((milestone, i) => (
+                            <div key={i} className="flex gap-8 relative group">
+                               {i < 2 && <div className="absolute left-[24px] top-12 bottom-[-48px] w-px bg-white/5 group-hover:bg-primary/20 transition-colors" />}
+                               <div className="w-[50px] h-[50px] rounded-full border border-white/10 bg-secondary/30 flex items-center justify-center text-[10px] font-black text-primary/40 group-hover:text-primary transition-all relative z-10 shrink-0">
+                                  {2024 - i}
+                               </div>
+                               <div className="flex-1 pb-8 border-b border-white/5">
+                                  <div className="flex items-center justify-between mb-2">
+                                     <h4 className="font-display text-xl group-hover:text-primary transition-colors">{milestone.prod}</h4>
+                                     <span className="text-[0.6rem] font-black uppercase tracking-[2px] text-muted-foreground/30">{milestone.status}</span>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-[0.65rem] font-bold uppercase tracking-[2px] text-muted-foreground">
+                                     <span className="text-primary/60">{milestone.role}</span>
+                                     <div className="w-1 h-1 rounded-full bg-white/10" />
+                                     <span>{milestone.type}</span>
+                                  </div>
+                               </div>
+                            </div>
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        </section>
+
+        {/* ── FOOTER ── */}
+        <footer className="py-24 px-12 border-t border-white/5 text-center bg-background">
+          <div className="max-w-4xl mx-auto">
+             <div className="font-display text-2xl italic tracking-tighter text-primary mb-8 opacity-20">Elena Petrov Elite Portfolio</div>
+             <p className="text-[0.6rem] text-muted-foreground/20 uppercase tracking-[0.5em] font-black">© 2026 THE CAASTING NETWORK • DIGITALLY VERIFIED ARTIST</p>
+          </div>
+        </footer>
+      </div>
     );
   }
 

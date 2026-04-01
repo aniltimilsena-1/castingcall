@@ -26,6 +26,7 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import { App } from "@capacitor/app";
 import Navbar from "@/components/Navbar";
 import AppDrawer, { PageName } from "@/components/AppDrawer";
+import BottomNav from "@/components/BottomNav";
 import PullToRefresh from "@/components/PullToRefresh";
 
 // ── Lazy-loaded page components (code-splitting) ──
@@ -852,21 +853,7 @@ const Index = () => {
           <MobileBackButton />
         )}
 
-        {page === 'home' && (
-          <Navbar
-            onSearch={handleSearch}
-            onAuthClick={handleAuthClick}
-            onMenuClick={() => setDrawerOpen(true)}
-            onLogoClick={() => routerNavigate("/")}
-            onPremiumClick={() => navigate("premium")}
-            onNotificationClick={() => navigate("notifications")}
-            onMessagesClick={() => navigate("messages")}
-            onNavigate={navigate}
-            activePage={page}
-            searchType={searchInitialType}
-            onDownloadClick={() => setShowDownloadPopup(true)}
-          />
-        )}
+        {/* Navbar is now integrated into the Hero or handled by BottomNav for a cleaner look */}
           <Suspense fallback={<PageLoader />}>
           {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} onOpenCastingTape={() => setCastingTapeOpen(true)} />}
           {page === "auth" && <AuthPage onSuccess={() => navigate("home")} onBack={() => navigate("home")} />}
@@ -927,28 +914,7 @@ const Index = () => {
         </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
-      {page === 'home' && (
-        <nav className="md:hidden fixed bottom-6 inset-x-6 z-[150] glass border border-foreground/5 shadow-2xl dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-stretch h-20 rounded-[2.5rem] overflow-hidden pointer-events-auto transition-all" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
-          {([
-            { id: "home", label: t('nav.home'), icon: Home },
-            { id: "feed", label: t('nav.feed'), icon: Sparkles },
-            { id: "search", label: t('nav.search'), icon: Search },
-            { id: "profile", label: t('nav.profile'), icon: User },
-          ] as { id: PageName; label: string; icon: any }[]).map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => navigate(id)}
-              className={`flex-1 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90 ${page === id ? "text-primary" : "text-muted-foreground/70"
-                }`}
-            >
-              <div className={`relative flex items-center justify-center ${page === id ? "after:content-[''] after:absolute after:-bottom-2 after:w-1.5 after:h-1.5 after:bg-primary after:rounded-full after:gold-glow" : ""}`}>
-                <Icon size={24} strokeWidth={page === id ? 2.5 : 1.5} className="transition-all" />
-              </div>
-              <span className={`text-[0.55rem] transition-all font-black uppercase tracking-[0.2em] ${page === id ? "opacity-100 scale-105" : ""}`}>{label}</span>
-            </button>
-          ))}
-        </nav>
-      )}
+      <BottomNav activePage={page} onNavigate={navigate} />
 
       <Suspense fallback={null}>
       <ProfileDetailDialog

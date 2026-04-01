@@ -119,106 +119,151 @@ export default function Navbar({
   const crumb = breadcrumbLabel[activePage] || activePage.toUpperCase();
 
   return (
-    <nav className="absolute top-0 left-0 w-full z-[100] bg-transparent transition-all duration-500">
-      {/* Breadcrumb technical path strip */}
-      <div className="px-8 md:px-12 pt-2 flex items-center max-w-[2000px] mx-auto">
-        <div className="breadcrumb-path">
-          <span>CAASTINGCALL</span>
-          <span className="sep">/</span>
-          <span className="current">{crumb}</span>
+    <nav className="fixed top-0 left-0 w-full z-[100] bg-background/40 backdrop-blur-3xl border-b border-white/5 transition-all duration-700">
+      {/* ── Technical Breadcrumb Strip ── */}
+      <div className="hidden md:flex items-center px-12 py-1.5 border-b border-white/5 bg-black/40">
+        <div className="flex items-center gap-4 text-[0.55rem] font-black uppercase tracking-[0.4em] text-muted-foreground/30">
+          <span className="text-primary/40">The Casting Call Network</span>
+          <span className="opacity-20 italic">v3.0.1</span>
+          <div className="w-px h-3 bg-white/5" />
+          <span className="current text-white/40">{crumb}</span>
         </div>
       </div>
-      <div className="flex items-center justify-between px-8 md:px-12 h-16 max-w-[2000px] mx-auto">
-        <button 
-          onClick={onLogoClick} 
-          className="relative group flex items-center flex-shrink-0 transition-all duration-700 font-accent text-2xl font-black italic tracking-tighter text-primary active:scale-95"
-          title="Home"
-        >
-          CaastingCall
-        </button>
 
-        <div className="flex-1 flex items-center justify-end gap-2 md:gap-6">
+      <div className="flex items-center justify-between px-8 md:px-12 h-20 max-w-[2000px] mx-auto">
+        {/* Logo Section */}
+        <div className="flex items-center gap-12">
+           <button 
+             onClick={onLogoClick} 
+             className="relative group flex items-center flex-shrink-0 transition-transform duration-500 font-display text-2xl md:text-3xl italic tracking-tighter text-primary active:scale-95"
+           >
+             Caasting<span className="text-white">Call</span>
+             <div className="absolute -bottom-1 left-0 w-0 h-px bg-primary group-hover:w-full transition-all duration-700" />
+           </button>
+
+           {/* Desktop Nav Items */}
+           <div className="hidden lg:flex items-center gap-2">
+              <button onClick={() => onNavigate('home')} className={navItemClass('home')}>Discovery</button>
+              <button onClick={() => onNavigate('search', { searchType: 'talents' })} className={navItemClass('search', 'talents')}>Talent Hub</button>
+              <button onClick={() => onNavigate('projects')} className={navItemClass('projects')}>Casting Calls</button>
+              <button onClick={() => onNavigate('feed')} className={navItemClass('feed')}>Editorial Feed</button>
+           </div>
+        </div>
+
+        <div className="flex-1 flex items-center justify-end gap-3 md:gap-6">
+          {/* Universal Command / Search */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex p-2 md:p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
-            title="Open Search"
+            className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/5 text-muted-foreground hover:border-primary/20 hover:text-primary transition-all group"
           >
-            <Search size={22} />
+            <Search size={18} className="group-hover:scale-110 transition-transform" />
+            <span className="hidden md:inline text-[0.6rem] font-black uppercase tracking-[0.2em] opacity-40">Command Center</span>
+            <div className="hidden md:flex items-center gap-1 px-1.5 py-0.5 bg-black/40 rounded-lg border border-white/5">
+               <Command size={9} />
+               <span className="font-mono-tech text-[0.45rem]">K</span>
+            </div>
           </button>
 
-          {/* CMD+K shortcut hint */}
-          <button
-            onClick={() => {
-              // Trigger CMD+K - dispatch custom event
-              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true, bubbles: true }));
-            }}
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/8 bg-white/4 text-muted-foreground/40 hover:text-muted-foreground hover:border-white/15 transition-all"
-            title="Command Center (CMD+K)"
-          >
-            <Command size={11} />
-            <span className="font-mono-tech text-[0.5rem]">K</span>
-          </button>
+          <div className="flex items-center gap-2 md:gap-4">
+            {user && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={onMessagesClick}
+                  className="p-3 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-primary transition-all relative"
+                >
+                  <MessageSquare size={18} />
+                  {unreadMsgCount > 0 && (
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(245,197,24,0.6)]" />
+                  )}
+                </button>
+  
+                <button
+                  onClick={onNotificationClick}
+                  className="p-3 rounded-xl text-muted-foreground hover:bg-white/5 hover:text-primary transition-all relative"
+                >
+                  <Bell size={18} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  )}
+                </button>
+              </div>
+            )}
 
-          {/* Full Screen Search Overlay */}
-          <AnimatePresence>
-            {isSearchOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-2xl flex flex-col items-center pt-[8vh] px-6"
-              >
-                <div className="w-full max-w-2xl relative">
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 20, opacity: 0 }}
-                    className="relative group search-full-screen"
+            {!isPro && (
+               <button
+                 onClick={onPremiumClick}
+                 className="hidden xl:flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all font-display font-black text-[0.6rem] uppercase tracking-[0.2em]"
+               >
+                 <Crown size={14} />
+                 Elevate to PRO
+               </button>
+            )}
+
+            <button
+              onClick={onAuthClick}
+              className={`relative px-8 py-3 rounded-2xl font-display font-black text-[0.65rem] uppercase tracking-[0.3em] transition-all duration-500 flex items-center gap-3 ${isPro
+                ? "bg-amber-500 text-black shadow-2xl shadow-amber-500/20 hover:scale-105"
+                : "bg-primary text-primary-foreground hover:shadow-2xl hover:shadow-primary/30 active:scale-95"
+                }`}
+            >
+              {isPro && <Crown size={14} />}
+              {user ? (isPro ? "Dashboard" : "Studio") : "Join the Stage"}
+            </button>
+
+            <button
+              onClick={onMenuClick}
+              className="p-3.5 rounded-2xl bg-white/5 text-muted-foreground hover:text-primary border border-white/5 transition-all active:scale-90"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Cinematic Search Overlay */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[1000] bg-background/95 backdrop-blur-[50px] flex flex-col items-center pt-[12vh] px-8"
+            >
+              <div className="w-full max-w-3xl relative">
+                <motion.div
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 30, opacity: 0 }}
+                  className="space-y-12"
+                >
+                  <form 
+                    onSubmit={(e) => { e.preventDefault(); handleSearchCommit(searchValue); }}
+                    className="flex flex-col gap-6"
                   >
-                    <form 
-                      onSubmit={(e) => { e.preventDefault(); handleSearchCommit(searchValue); }}
-                      className="flex items-center w-full bg-card/40 border-2 border-primary/20 focus-within:border-primary rounded-[1.5rem] px-5 py-3.5 gap-4 shadow-[0_0_40px_rgba(245,197,24,0.08)] transition-all"
-                    >
-                      <Search size={22} className="text-primary/60 group-focus-within:text-primary transition-colors flex-shrink-0" />
+                    <div className="flex items-center gap-6 border-b-2 border-white/10 pb-6 focus-within:border-primary transition-colors">
+                      <Search size={32} className="text-primary" />
                       <input
                         autoFocus
                         type="text"
-                        placeholder="Search talents, projects..."
-                        className="bg-transparent border-none outline-none text-lg md:text-xl text-white font-display uppercase tracking-wider w-full placeholder:text-muted-foreground/20 italic"
+                        placeholder="Search for talent, directors, or casting calls..."
+                        className="bg-transparent border-none outline-none text-2xl md:text-3xl text-white font-display uppercase tracking-widest w-full placeholder:text-muted-foreground/10"
                         value={searchValue}
                         onChange={(e) => setSearchValue(e.target.value)}
                       />
-                      <button
-                        type="submit"
-                        className="bg-primary text-black px-6 py-2.5 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 flex-shrink-0"
-                      >
-                        SEARCH
-                      </button>
-                    </form>
+                    </div>
+                    <div className="flex justify-between items-center">
+                       <p className="text-[0.6rem] font-black uppercase tracking-[0.4em] text-white/20">Press <span className="text-white">Enter</span> to initiate query</p>
+                       <button onClick={() => setIsSearchOpen(false)} className="text-[0.6rem] font-black uppercase tracking-[0.4em] text-primary hover:tracking-[0.6em] transition-all">ESC TO CLOSE</button>
+                    </div>
+                  </form>
 
-                    <button 
-                      onClick={() => setIsSearchOpen(false)}
-                      className="absolute -top-12 right-0 p-2 rounded-full bg-white/5 border border-white/10 text-muted-foreground hover:text-white hover:bg-white/10 transition-all"
-                    >
-                      <X size={18} />
-                    </button>
-                  </motion.div>
-
-                  <div className="mt-12 px-4 max-w-2xl mx-auto w-full">
-                     <div className="flex items-center justify-between mb-8">
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/40">Recent Searches</h4>
-                        {searchHistory.length > 0 && (
-                          <button 
-                            onClick={clearHistory}
-                            className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-red-400 transition-colors"
-                          >
-                            Clear All
-                          </button>
-                        )}
+                  {/* Search History */}
+                  <div className="space-y-8">
+                     <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                        <h4 className="text-[0.6rem] font-black uppercase tracking-[0.4em] text-primary/40 text-center w-full">Recent Architectural Discoveries</h4>
                      </div>
                      
                      {searchHistory.length > 0 ? (
-                       <div className="flex flex-wrap gap-3">
+                       <div className="flex flex-wrap justify-center gap-4">
                           {searchHistory.map((term, index) => (
                             <motion.button
                               key={`${term}-${index}`}
@@ -226,91 +271,24 @@ export default function Navbar({
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: index * 0.05 }}
                               onClick={() => { setSearchValue(term); handleSearchCommit(term); }}
-                              className="px-4 py-2 rounded-xl border border-white/5 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:border-primary/40 hover:text-primary transition-all flex items-center gap-2 group/item"
+                              className="px-6 py-3 rounded-2xl border border-white/5 bg-white/5 text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground hover:border-primary/40 hover:text-primary transition-all flex items-center gap-3 group/item shadow-2xl"
                             >
-                              <Search size={10} className="opacity-40 group-hover/item:text-primary transition-colors" />
                               {term}
                             </motion.button>
                           ))}
                        </div>
                      ) : (
-                       <div className="py-12 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
-                          <Search size={32} className="mx-auto text-white/5 mb-4" />
-                          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/30">Your recent searches will appear here</p>
+                       <div className="py-24 text-center">
+                          <Search size={48} className="mx-auto text-white/[0.02] mb-6" />
+                          <p className="text-[0.5rem] font-black uppercase tracking-[0.5em] text-muted-foreground/10">No recent history detected in local archive</p>
                        </div>
                      )}
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="hidden sm:flex items-center gap-1 md:gap-4 lg:gap-6">
-            {user && (
-              <>
-                <button
-                  onClick={onMessagesClick}
-                  className="flex p-2 md:p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
-                  title="Direct Messages"
-                >
-                  <MessageSquare size={18} className={`transition-colors ${unreadMsgCount > 0 ? "text-primary" : "text-muted-foreground"}`} />
-                  {unreadMsgCount > 0 && (
-                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-background animate-pulse" />
-                  )}
-                </button>
-  
-                <button
-                  onClick={onNotificationClick}
-                  className="flex p-2 md:p-2.5 rounded-xl text-muted-foreground hover:bg-foreground/5 hover:text-primary transition-all relative border border-transparent hover:border-foreground/10"
-                  title="Notifications"
-                >
-                  <Bell className="w-4 h-4 md:w-[18px] md:h-[18px]" />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full border border-background animate-pulse" />
-                  )}
-                </button>
-              </>
-            )}
-
-            {!isPro && (
-              <button
-                onClick={onPremiumClick}
-                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/20 text-amber-500 hover:bg-amber-500/10 transition-colors font-body font-normal text-[0.6rem] uppercase tracking-wider"
-              >
-                <Crown className="w-3.5 h-3.5" />
-                Upgrade
-              </button>
-            )}
-
-            {onDownloadClick && (
-              <button
-                 onClick={onDownloadClick}
-                 className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 text-primary hover:bg-primary/5 transition-colors font-body font-normal text-[0.6rem] uppercase tracking-wider"
-              >
-                 <Smartphone className="w-3.5 h-3.5" />
-                 Get App
-              </button>
-            )}
-          </div>
-
-          <button
-            onClick={onAuthClick}
-            className={`relative px-3 py-1.5 sm:px-6 sm:py-2.5 rounded-full font-accent font-bold text-[0.6rem] sm:text-[0.65rem] uppercase tracking-[0.15em] transition-all duration-500 flex items-center gap-1 sm:gap-2 whitespace-nowrap ${isPro
-              ? "border border-amber-500/40 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10 shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-              : "bg-primary text-primary-foreground hover:opacity-90 hover:scale-105 shadow-xl shadow-primary/30"
-              }`}
-          >
-            {isPro && <Crown size={12} className="animate-pulse" />}
-            {user ? (isPro ? (isMobile ? "PRO" : "DASHBOARD") : "STAGE") : "JOIN"}
-          </button>
-
-          <button
-            onClick={onMenuClick}
-            className="p-2 sm:px-3 sm:py-1.5 rounded-full bg-secondary/20 text-muted-foreground hover:text-primary transition-colors hover:bg-secondary flex items-center justify-center flex-shrink-0"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        </div>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

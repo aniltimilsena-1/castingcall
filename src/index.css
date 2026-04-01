@@ -20,67 +20,43 @@
 ───────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --radius: 0.375rem;
+    --radius: 0.5rem;
 
-    /* ── IMDb Color Palette (High Fidelity) ── */
-    --gold: 47 92% 52%;            /* #F5C518 */
-    --link: 214 84% 64%;           /* #5799EF IMDb Cinematic Blue */
-    --gold-glow: 47 92% 52% / 0.15;
-    --gold-fixed: #F5C518;
-    --gold-dim: #E2B616;
-
-    /* ── CINEMA DARK SYSTEM ── */
-    --background: 222 47% 5% / 0;         /* Transparent to show global background */
-    --foreground: 0 0% 100%;       /* Pure White text */
+    /* ── CastingCall Redesign Color System ── */
+    --background-hex: #0B0F1A;
+    --background: 222 40% 7%;      /* #0B0F1A foundation */
+    --surface: 222 40% 9%;        /* Slightly Elevated */
+    --card: 222 35% 12%;          /* High-end Navy */
     
-    /* Cards - Pure Cinema Black */
-    --card: 0 0% 3% / 0.85;               
-    --card-foreground: 0 0% 100%;
-    --card-border: 0 0% 0% / 0;    
-
-    /* Popover */
-    --popover: 0 0% 0% / 0.8;
-    --popover-foreground: 0 0% 100%;
-
-    /* Primary - IMDb Yellow */
-    --primary: 47 92% 52%;
-    --primary-foreground: 0 0% 5%;
-
-    /* Secondary surface */
-    --secondary: 0 0% 0% / 0.6;
+    --primary-gold: 45 61% 52%;    /* #D4AF37 */
+    --gold: 45 61% 52%;
+    --soft-gold: 47 92% 75%;
+    
+    --foreground: 0 0% 100%;       /* Pure White */
+    --muted-foreground: 217 19% 70%; 
+    
+    /* ── Radix UI / Shadcn mapping ── */
+    --primary: 45 61% 52%;
+    --primary-foreground: 222 40% 7%;
+    
+    --secondary: 222 40% 12%;      /* Matte Navy */
     --secondary-foreground: 0 0% 100%;
+    
+    --muted: 222 30% 18%;
+    --accent: 45 61% 52%;
+    --accent-foreground: 222 40% 7%;
+    
+    --border: 222 30% 25% / 0.5;
+    --input: 222 30% 25% / 0.3;
+    --ring: 45 61% 52% / 0.5;
 
-    /* Muted Text - IMDb Grey */
-    --muted: 0 0% 5%;
-    --muted-foreground: 0 0% 55%;  /* #8C8C8C */
-
-    /* Accent - Blue for links/actions */
-    --accent: 214 84% 64%;
-    --accent-foreground: 0 0% 100%;
-
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    /* Borders & inputs */
-    --border: 0 0% 100% / 0.08;
-    --input: 0 0% 100% / 0.08;
-    --ring: 47 92% 52%;
-
-    /* Sidebar - Pure Black */
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 60%;
-    --sidebar-primary: 47 92% 52%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 2%;
-    --sidebar-accent-foreground: 47 92% 52%;
-    --sidebar-border: 0 0% 5%;
-    --sidebar-ring: 47 92% 52%;
-
-    /* Surface Depth */
-    --surface-low: 0 0% 0%;
-    --surface-high: 0 0% 5%;
-    --surface-bright: 0 0% 8%;
+    /* Spacing System (Modern Guttering) */
+    --space-1: 0.5rem;
+    --space-2: 1rem;
+    --space-3: 1.5rem;
+    --space-4: 2rem;
+    --space-6: 3rem;
+    --radius: 2rem; /* Premium Roundness */
   }
 
   /* Force Dark Utility (Just in case components rely on .dark class) */
@@ -136,7 +112,7 @@
   /* h1–h3: Cinematic Authoritative (Roboto) */
   h1, h2, h3 {
     @apply text-foreground;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.01em;
@@ -234,7 +210,36 @@
   }
   
   .glass-card {
-    @apply bg-card border border-foreground/10;
+    @apply bg-card/60 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+
+  /* ── Search Sidebar Layout ── */
+  .search-container {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 3rem;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2rem 4rem;
+  }
+
+  @media (max-width: 1024px) {
+    .search-container {
+      grid-template-columns: 1fr;
+      padding: 1.5rem;
+    }
+  }
+
+  .filter-sidebar {
+    @apply space-y-8 sticky top-28 h-fit;
+  }
+
+  .filter-group {
+    @apply space-y-4 pb-8 border-b border-white/5;
+  }
+
+  .talent-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8;
   }
 
   /* ── Cinematic Accent glow (Gold) ── */
@@ -798,6 +803,23 @@
   .reel-preview-container.reel-active .reel-badge {
     opacity: 1;
   }
+
+  /* ── Role Shortcut Marquee ── */
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-50% - 0.5rem)); }
+  }
+
+  .animate-marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 40s linear infinite;
+  }
+
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+
 }
 
 
