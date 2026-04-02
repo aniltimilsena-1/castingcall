@@ -46,7 +46,6 @@ const lazyWithRetry = (componentImport: () => Promise<any>) =>
 const HomePage = lazyWithRetry(() => import("@/components/HomePage"));
 const AuthPage = lazyWithRetry(() => import("@/components/AuthPage"));
 const ProfilePage = lazyWithRetry(() => import("@/components/ProfilePage"));
-const SearchPage = lazyWithRetry(() => import("@/components/SearchPage"));
 const FeedPage = lazyWithRetry(() => import("@/components/FeedPage"));
 const MyProjectsPage = lazyWithRetry(() => import("@/components/MyProjectsPage"));
 const NotificationsPage = lazyWithRetry(() => import("@/components/NotificationsPage"));
@@ -63,6 +62,8 @@ const ProfileDetailDialog = lazyWithRetry(() => import("@/components/ProfileDeta
 const PiPPlayer = lazyWithRetry(() => import("@/components/PiPPlayer"));
 const CommandCenter = lazyWithRetry(() => import("@/components/CommandCenter"));
 const CastingTape = lazyWithRetry(() => import("@/components/CastingTape"));
+const CategoryPage = lazyWithRetry(() => import("@/components/CategoryPage"));
+const SearchPage = lazyWithRetry(() => import("@/components/SearchPage"));
 
 // Lightweight loading fallback
 const PageLoader = () => (
@@ -74,8 +75,7 @@ const PageLoader = () => (
   </div>
 );
 
-// PhotoViewer is a lightweight overlay, keep it lazy
-const PhotoViewerLazy = lazyWithRetry(() => import("@/components/SearchPage").then(mod => ({ default: mod.PhotoViewer })));
+// PhotoViewer removed as it was attached to SearchPage
 
 const AUTH_REQUIRED: PageName[] = ["profile", "projects", "notifications", "messages", "settings", "saved", "analytics", "admin"];
 const VERIFIED_ONLY_PAGES: PageName[] = ["projects", "messages"];
@@ -109,7 +109,6 @@ const Index = () => {
   const { page: pageParam } = params;
   const page: PageName = (pageParam === "auth" || location.pathname === "/auth" || pageParam === "login" || pageParam === "signup") ? "auth" : 
                          (location.pathname === "/" || location.pathname === "") ? "home" :
-                         (location.pathname === "/search") ? "search" :
                          (location.pathname === "/feed") ? "feed" :
                          (location.pathname === "/projects") ? "projects" :
                          (location.pathname === "/messages") ? "messages" :
@@ -122,6 +121,7 @@ const Index = () => {
                          (location.pathname === "/premium") ? "premium" :
                          (location.pathname === "/admin") ? "admin" :
                          (location.pathname.startsWith("/profile")) ? "profile" :
+                         (location.pathname.startsWith("/category")) ? "category" :
                          (pageParam as PageName) || "home";
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -781,9 +781,7 @@ const Index = () => {
       return;
     }
     setSearchRole(role);
-    setSearchQuery("");
-    setSearchInitialType("talents");
-    navigate("search");
+    navigate("category");
   };
 
   const handleAuthClick = () => {
@@ -853,12 +851,26 @@ const Index = () => {
           <MobileBackButton />
         )}
 
-        {/* Navbar is now integrated into the Hero or handled by BottomNav for a cleaner look */}
+        {page === "home" && (
+          <Navbar 
+            onSearch={handleSearch}
+            onAuthClick={handleAuthClick}
+            onMenuClick={() => setDrawerOpen(true)}
+            onLogoClick={() => navigate("home")}
+            onNavigate={navigate}
+            searchType={searchInitialType}
+            activePage={page}
+            onPremiumClick={() => navigate("premium")}
+            onNotificationClick={() => navigate("notifications")}
+            onMessagesClick={() => navigate("messages")}
+          />
+        )}
           <Suspense fallback={<PageLoader />}>
           {page === "home" && <HomePage key={homeRefreshKey} onCategoryClick={handleCategoryClick} onProfileClick={handleProfileClick} onTermsClick={() => routerNavigate("/terms")} onNavigate={navigate} onlineUsers={onlineUsers} onOpenCastingTape={() => setCastingTapeOpen(true)} />}
+          {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onBack={() => navigate("home")} onProfileClick={handleProfileClick} />}
           {page === "auth" && <AuthPage onSuccess={() => navigate("home")} onBack={() => navigate("home")} />}
           {page === "profile" && <ProfilePage onBack={() => routerNavigate("/")} />}
-          {page === "search" && <SearchPage query={searchQuery} role={searchRole} initialType={searchInitialType} onTypeChange={setSearchInitialType} onBack={() => routerNavigate("/")} onProfileClick={handleProfileClick} onlineUsers={onlineUsers} castingTapeOpen={castingTapeOpen} onCastingTapeOpenChange={setCastingTapeOpen} />}
+          {page === "category" && <CategoryPage role={searchRole} onBack={() => navigate("home")} onProfileClick={handleProfileClick} />}
           {page === "feed" && (
             <PullToRefresh className="h-full w-full flex flex-col" onRefresh={async () => setFeedRefreshKey(k => k + 1)}>
               <FeedPage key={feedRefreshKey} onProfileClick={handleProfileClick} onBack={() => navigate("home")} />
@@ -914,7 +926,7 @@ const Index = () => {
         </main>
 
       {/* ── Mobile Bottom Tab Bar ── */}
-      <BottomNav activePage={page} onNavigate={navigate} />
+      {page === "home" && <BottomNav activePage={page} onNavigate={navigate} />}
 
       <Suspense fallback={null}>
       <ProfileDetailDialog
@@ -939,12 +951,7 @@ const Index = () => {
         }}
       />
 
-      <PhotoViewerLazy
-        url={viewingPhoto}
-        onClose={() => setViewingPhoto(null)}
-        user={user}
-        currentUserProfile={currentUserProfile}
-      />
+
 
       {/* Global Casting Tape (#14) */}
       <Suspense fallback={null}>

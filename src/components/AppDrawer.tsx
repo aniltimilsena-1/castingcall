@@ -8,7 +8,7 @@ export type PageName =
   | "home" | "auth" | "profile" | "search" | "feed"
   | "projects" | "notifications" | "messages"
   | "settings" | "saved" | "analytics"
-  | "help" | "terms" | "premium" | "admin";
+  | "help" | "terms" | "premium" | "admin" | "category";
 
 interface AppDrawerProps {
   open: boolean;
@@ -87,8 +87,6 @@ export default function AppDrawer({ open, onClose, onNavigate }: AppDrawerProps)
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 custom-scrollbar" style={{ WebkitOverflowScrolling: "touch" }}>
           <Section label="Explore">
             <Item onClick={() => go("home")}>{t('nav.home')}</Item>
-            <Item onClick={() => go("search", { searchType: "projects" })}>Casting Calls</Item>
-            <Item onClick={() => go("search", { searchType: "talents" })}>Actors</Item>
             <Item onClick={() => go("feed")}>{t('nav.feed')}</Item>
           </Section>
           

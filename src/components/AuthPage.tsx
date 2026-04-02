@@ -132,6 +132,11 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
           if (signupPass !== signupConfirmPass) { toast.error("Passwords do not match"); return; }
           if (signupPass.length < 6) { toast.error("Password must be at least 6 characters"); return; }
           
+          if (!signupEmail.toLowerCase().endsWith("@gmail.com")) { 
+            toast.error("Please use a valid @gmail.com address. We require actual Gmail accounts for sign up."); 
+            return; 
+          }
+          
           const { error } = await supabase.auth.signUp({
             email: signupEmail,
             password: signupPass,
@@ -374,8 +379,8 @@ export default function AuthPage({ onSuccess, onBack }: AuthPageProps) {
                       onChange={(e) => setSignupRole(e.target.value)}
                       className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-3 py-2 text-foreground text-sm outline-none focus:border-primary/50 transition-colors appearance-none"
                     >
-                      <option value="">Select your role…</option>
-                      {ROLES.map((r) => <option key={r}>{r}</option>)}
+                      <option value="" className="bg-[#121826] text-white">Select your role…</option>
+                      {ROLES.map((r) => <option key={r} className="bg-[#121826] text-white">{r}</option>)}
                     </select>
                   </div>
                 </div>

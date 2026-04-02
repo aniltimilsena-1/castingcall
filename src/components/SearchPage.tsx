@@ -175,83 +175,75 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
   const title = role ? `${role}s` : `Search Results for "${query || 'All'}"`;
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-24">
-      <div className="search-container">
-        {/* ── SIDEBAR FILTERS ── */}
-        <aside className="filter-sidebar">
-          <div className="flex items-center gap-4 mb-10">
+    <div className="min-h-screen bg-[#f0f2f5] pt-24 pb-24 font-sans text-black">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-8 flex flex-col md:flex-row gap-6">
+        {/* ── SIDEBAR FILTERS (Facebook Style) ── */}
+        <aside className="w-full md:w-[320px] shrink-0 bg-white rounded-[1rem] p-6 shadow-sm border border-gray-200/60 h-auto self-start">
+          <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
             <button 
               onClick={onBack}
-              className="p-3 rounded-2xl bg-secondary/80 backdrop-blur-xl border border-border text-muted-foreground hover:text-primary transition-all active:scale-90 shadow-xl"
+              className="p-2 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
               title="Go Back"
             >
               <ChevronLeft size={20} />
             </button>
-            <h1 className="font-display text-2xl text-foreground tracking-tight">Discovery</h1>
+            <h1 className="font-bold text-xl text-black">Search Filters</h1>
           </div>
 
-          <div className="flex bg-secondary/50 backdrop-blur-xl p-1 rounded-2xl border border-border mb-8">
+          <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
             <button
               onClick={() => { setSearchType("talents"); onTypeChange?.("talents"); }}
-              className={`flex-1 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest transition-all duration-300 ${searchType === "talents" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${searchType === "talents" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-black"}`}
             >
-              Talent
+              People
             </button>
             <button
               onClick={() => { setSearchType("projects"); onTypeChange?.("projects"); }}
-              className={`flex-1 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest transition-all duration-300 ${searchType === "projects" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${searchType === "projects" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-black"}`}
             >
               Castings
             </button>
           </div>
 
-          <div className="filter-group">
-            <div className="flex items-center justify-between mb-4">
-              <label className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary/60">Category</label>
-              <ChevronRight size={14} className="text-muted-foreground opacity-30" />
-            </div>
-            <div className="space-y-3">
+          <div className="mb-6">
+            <h3 className="text-gray-900 font-bold mb-3">Categories</h3>
+            <div className="space-y-2">
               {['Actors', 'Models', 'Voiceover', 'Dancers', 'Musicians'].map(cat => (
-                <label key={cat} className="flex items-center gap-3 cursor-pointer group">
-                  <div className={`w-5 h-5 rounded-full border-2 transition-all flex items-center justify-center ${role?.includes(cat.slice(0, -1)) ? 'border-primary bg-primary/20' : 'border-white/10 group-hover:border-primary/40'}`}>
-                    {role?.includes(cat.slice(0, -1)) && <div className="w-2 h-2 rounded-full bg-primary" />}
+                <label key={cat} className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-lg group">
+                  <div className={`w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center ${role?.includes(cat.slice(0, -1)) ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}`}>
+                    {role?.includes(cat.slice(0, -1)) && <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />}
                   </div>
-                  <span className={`text-sm tracking-wide transition-colors ${role?.includes(cat.slice(0, -1)) ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>{cat}</span>
+                  <span className={`text-[15px] ${role?.includes(cat.slice(0, -1)) ? 'text-blue-600 font-semibold' : 'text-gray-700'}`}>{cat}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="filter-group">
-            <div className="flex items-center justify-between mb-4">
-              <label className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary/60">Mood & Vibe</label>
-            </div>
+          <div className="mb-6 border-t border-gray-100 pt-6">
+            <h3 className="text-gray-900 font-bold mb-3">Mood & Vibe</h3>
             <div className="flex flex-wrap gap-2">
               {moods.map(m => (
-                <Badge
+                <button
                   key={m}
-                  variant={selectedMoods.includes(m) ? "default" : "outline"}
-                  className={`cursor-pointer transition-all py-1.5 px-3 border-white/5 tracking-wide text-[10px] ${selectedMoods.includes(m) ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-muted-foreground hover:border-primary/30'}`}
+                  className={`cursor-pointer transition-all py-1.5 px-3 rounded-full text-[13px] font-medium border ${selectedMoods.includes(m) ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
                   onClick={() => setSelectedMoods(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])}
                 >
                   {m}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>
 
-          <div className="filter-group">
-            <div className="flex items-center justify-between mb-6">
-              <label className="text-[0.6rem] font-bold tracking-[3px] uppercase text-primary/60">Smart Match</label>
-              <div className="flex items-center gap-3">
-                <Switch
-                  checked={isTrending}
-                  onCheckedChange={setIsTrending}
-                  className="data-[state=checked]:bg-primary h-5 w-9"
-                />
-              </div>
+          <div className="border-t border-gray-100 pt-6">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-gray-900 font-bold">Smart Match</h3>
+              <Switch
+                checked={isTrending}
+                onCheckedChange={setIsTrending}
+                className="data-[state=checked]:bg-blue-600 h-5 w-9"
+              />
             </div>
-            <p className="text-[10px] text-muted-foreground/60 leading-relaxed font-body">Enable AI-driven matching based on your production requirements and past successes.</p>
+            <p className="text-[12px] text-gray-500">Enable AI-driven matching based on your production requirements.</p>
           </div>
 
           <button 
@@ -261,94 +253,105 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
               setSelectedTraits([]);
               setIsTrending(false);
             }}
-            className="w-full py-4 text-[10px] font-bold uppercase tracking-[3px] text-primary/40 hover:text-primary transition-colors border border-white/5 rounded-2xl hover:bg-primary/5 mt-4"
+            className="w-full py-3 text-[13px] font-bold text-gray-500 hover:text-gray-800 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 mt-6"
           >
-            Clear All Filters
+            Clear Filters
           </button>
         </aside>
 
         {/* ── MAIN RESULTS AREA ── */}
-        <main className="space-y-12">
+        <main className="flex-1 w-full space-y-6">
           {/* Top Search Bar Refinement */}
-          <div className="flex items-center gap-6 mb-12">
-            <div className="flex-1 relative group">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-all" />
+          <div className="bg-white rounded-[1rem] p-4 shadow-sm border border-gray-200/60 sticky top-[80px] z-[50]">
+            <div className="flex items-center relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-all" />
               <input 
                 type="text" 
                 placeholder={`Search ${searchType}...`}
-                className="w-full bg-card/40 border border-white/5 rounded-[2rem] pl-16 pr-8 py-5 text-lg outline-none focus:border-primary/40 transition-all shadow-2xl backdrop-blur-xl"
+                className="w-full bg-gray-100 border-none rounded-full pl-12 pr-4 py-3 text-[15px] outline-none focus:ring-2 focus:ring-blue-500/20 text-black placeholder:text-gray-500 transition-all"
                 value={query || ""}
                 readOnly
               />
             </div>
-            <div className="flex bg-secondary/80 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-2xl">
-              <button className="px-6 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest bg-primary text-primary-foreground">Recommended</button>
-              <button className="px-6 py-3 rounded-xl text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground">Recent</button>
-            </div>
           </div>
 
           {loading ? (
-            <div className="talent-grid">
-              {Array(6).fill(0).map((_, i) => <div key={i} className="aspect-[3/4] premium-card skeleton" />)}
+            <div className="space-y-4">
+              {Array(4).fill(0).map((_, i) => (
+                <div key={i} className="bg-white rounded-[1.25rem] p-4 flex items-center gap-4 animate-pulse shadow-sm h-[6.5rem]">
+                  <div className="w-[4.5rem] h-[4.5rem] bg-gray-200 rounded-full shrink-0" />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-5 bg-gray-200 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <>
               {searchType === "talents" ? (
                 results.length === 0 ? (
-                  <div className="text-center py-32 bg-card/10 border border-dashed border-border rounded-[3rem] shadow-inner">
-                    <PersonStanding className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-                    <p className="text-muted-foreground font-body text-lg">No matching talent found.</p>
+                  <div className="bg-white rounded-[1rem] shadow-sm border border-gray-200/60 py-20 flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                      <Search className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-[#111] font-bold text-lg mb-1">No results found</h3>
+                    <p className="text-gray-500 text-sm">We couldn't find any talents matching your search.</p>
                   </div>
                 ) : (
-                  <div className="talent-grid">
+                  <div className="space-y-3">
+                    <div className="px-1 pt-2 pb-1 text-sm font-semibold text-gray-500">
+                      Found {results.length} people
+                    </div>
                     {results.map((p) => (
-                      <motion.div
+                      <div 
                         key={p.id}
                         onClick={() => onProfileClick(p)}
-                        whileHover={{ y: -8 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="premium-card group relative aspect-[3/4] cursor-pointer overflow-hidden transform-gpu transition-all"
+                        className="bg-white rounded-[1.25rem] p-3 md:p-4 flex items-center pr-6 cursor-pointer shadow-sm border border-gray-100 hover:shadow-md transform transition-all active:scale-[0.99]"
                       >
-                        <div className="shimmer-accent" />
-                        <div className="stitched-card-scanner" />
+                        <div className="w-[4.5rem] h-[4.5rem] md:w-[5.5rem] md:h-[5.5rem] rounded-full overflow-hidden shrink-0 shadow-inner mr-4 md:mr-6 bg-white border border-gray-200 flex items-center justify-center">
+                          {p.photo_url ? (
+                            <img 
+                              src={p.photo_url} 
+                              alt={p.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="font-display font-extrabold text-gray-800 text-3xl md:text-4xl">
+                              {(p.name || "U").charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
                         
-                        {p.photo_url ? (
-                          <img 
-                            src={p.photo_url} 
-                            alt={p.name} 
-                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-secondary flex items-center justify-center font-display text-4xl text-primary">
-                            {p.name?.[0]}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-[#111] text-lg md:text-xl leading-tight mb-1 truncate">{p.name || "Unknown"}</h3>
+                          <div className="flex items-center gap-2 flex-wrap pb-0.5">
+                            <span className="text-gray-600 font-medium text-[13px]">{(p.role === 'Admin' ? 'Member' : p.role)?.replace('/', '') || "Talent"}</span>
+                            {p.location && (
+                              <>
+                                <span className="text-gray-300">•</span>
+                                <span className="text-gray-500 text-[13px]">{p.location}</span>
+                              </>
+                            )}
                           </div>
-                        )}
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
-                        
-                        <div className="absolute bottom-0 left-0 right-0 p-8 pt-20 bg-gradient-to-t from-black via-black/80 to-transparent">
-                          <h3 className="font-display text-2xl text-white mb-1 group-hover:text-primary transition-colors">{p.name || "Unknown"}</h3>
-                          <p className="text-primary text-[0.65rem] font-bold uppercase tracking-[0.2em] mb-6 opacity-80">{p.role === 'Admin' ? 'Member' : (p.role || "Talent")}, {p.location || 'Global'}</p>
-                          
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); onProfileClick(p); }}
-                            className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-black text-[0.65rem] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0"
-                          >
-                            View Portfolio
-                          </button>
+                          {(p.plan === "pro" || p.role === "Admin") && (
+                            <div className="mt-1.5 flex">
+                              <span className="text-xs font-bold text-[#0066cc] bg-blue-50 px-2 py-0.5 rounded-md">PRO VERIFIED</span>
+                            </div>
+                          )}
                         </div>
 
-                        {(p.plan === "pro" || p.role === "Admin") && (
-                          <div className="absolute top-6 left-6">
-                            <div className="bg-primary/90 text-primary-foreground text-[0.6rem] font-black px-3 py-1.5 rounded-full shadow-lg tracking-widest uppercase border border-white/20">PRO</div>
-                          </div>
-                        )}
-                      </motion.div>
+                        <button 
+                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-[13px] rounded-lg transition-colors ml-4 shrink-0"
+                        >
+                          View Profile
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )
               ) : (
-                <div className="talent-grid">
+                <div className="space-y-4">
                   {projectResults.map((proj) => (
                     <ProjectCard key={proj.id} project={proj} />
                   ))}
@@ -358,15 +361,14 @@ export default function SearchPage({ query, role, initialType = "talents", onBac
           )}
 
           {/* Pagination */}
-          <div className="flex items-center justify-center gap-6 pt-12">
-            <button className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">Previous</button>
-            <div className="flex items-center gap-2">
-              <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold text-xs shadow-lg">1</button>
-              <button className="w-10 h-10 rounded-full hover:bg-white/5 text-muted-foreground font-bold text-xs transition-colors">2</button>
-              <button className="w-10 h-10 rounded-full hover:bg-white/5 text-muted-foreground font-bold text-xs transition-colors">3</button>
-              <span className="text-muted-foreground px-2">...</span>
+          <div className="flex items-center justify-between bg-white p-4 rounded-[1rem] shadow-sm border border-gray-100 mt-6 pt-4">
+            <button className="px-4 py-2 rounded-lg font-semibold text-[14px] text-gray-600 hover:bg-gray-100 transition-colors">Previous</button>
+            <div className="flex items-center gap-1">
+              <button className="w-9 h-9 rounded-full bg-[#0066cc] text-white font-bold text-[14px]">1</button>
+              <button className="w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 font-bold text-[14px] transition-colors">2</button>
+              <button className="w-9 h-9 rounded-full hover:bg-gray-100 text-gray-600 font-bold text-[14px] transition-colors">3</button>
             </div>
-            <button className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">Next</button>
+            <button className="px-4 py-2 rounded-lg font-semibold text-[14px] text-blue-600 hover:bg-blue-50 transition-colors">Next</button>
           </div>
         </main>
       </div>

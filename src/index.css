@@ -21,6 +21,7 @@
 @layer base {
   :root {
     --radius: 0.5rem;
+    --link: 221.2 83.2% 53.3%;
 
     /* ── CastingCall Redesign Color System ── */
     --background-hex: #0B0F1A;
@@ -56,7 +57,6 @@
     --space-3: 1.5rem;
     --space-4: 2rem;
     --space-6: 3rem;
-    --radius: 2rem; /* Premium Roundness */
   }
 
   /* Force Dark Utility (Just in case components rely on .dark class) */

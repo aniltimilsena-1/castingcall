@@ -327,23 +327,31 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
     return (
       <div className="bg-background min-h-screen text-white font-body selection:bg-primary/30">
         {/* ── 1. CINEMATIC HEADER ── */}
-        <section className="relative h-[80vh] flex items-end overflow-hidden">
+        <section className="relative h-[80vh] flex items-end overflow-hidden bg-gradient-to-tr from-secondary to-background">
           <div className="absolute inset-0 z-0">
-             <motion.img 
-               initial={{ scale: 1.1 }}
-               whileInView={{ scale: 1 }}
-               transition={{ duration: 1.5 }}
-               src={profile?.photo_url || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80"} 
-               className="w-full h-full object-cover"
-               alt={profile?.name}
-             />
+             {profile?.photo_url ? (
+               <motion.img 
+                 initial={{ scale: 1.1 }}
+                 whileInView={{ scale: 1 }}
+                 transition={{ duration: 1.5 }}
+                 src={profile.photo_url} 
+                 className="w-full h-full object-cover"
+                 alt={profile?.name}
+               />
+             ) : (
+               <div className="w-full h-full bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] opacity-80 flex items-center justify-center">
+                 <span className="font-display font-extrabold text-[20rem] md:text-[30rem] text-white/5 select-none tracking-tighter mix-blend-overlay">
+                   {(profile?.name || "U").charAt(0).toUpperCase()}
+                 </span>
+               </div>
+             )}
              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
              <div className="absolute inset-0 bg-gradient-to-r from-background/40 to-transparent" />
           </div>
 
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-12 pb-24">
-             <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
-                <div className="space-y-6">
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 pb-12 md:pb-24">
+             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-12">
+                <div className="space-y-4 md:space-y-6">
                    <motion.div 
                      initial={{ opacity: 0, x: -20 }}
                      animate={{ opacity: 1, x: 0 }}
@@ -365,7 +373,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                    <motion.h1 
                      initial={{ opacity: 0, y: 30 }}
                      animate={{ opacity: 1, y: 0 }}
-                     className="font-display text-6xl md:text-8xl tracking-tighter leading-none"
+                     className="font-display text-5xl sm:text-6xl md:text-8xl tracking-tighter leading-none break-words"
                    >
                       {profile?.name?.split(' ')[0]} <br />
                       <span className="text-primary italic">{profile?.name?.split(' ').slice(1).join(' ')}</span>
@@ -387,17 +395,18 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="flex flex-wrap gap-4"
+                  className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 w-full md:w-auto mt-2 md:mt-0"
                 >
                    <button 
-                     onClick={() => setIsEditing(true)}
-                     className="px-10 py-5 bg-primary text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all"
+                     onClick={() => {}}
+                     className="w-full sm:w-auto px-6 py-4 md:px-10 md:py-5 bg-primary text-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all text-center"
+                     aria-label="Direct Message this user"
                    >
                       Direct Message
                    </button>
                    <button 
                      onClick={() => setIsEditing(true)}
-                     className="px-10 py-5 border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-white/10 transition-all"
+                     className="w-full sm:w-auto px-6 py-4 md:px-10 md:py-5 border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-white/10 transition-all text-white text-center"
                    >
                       Edit Profile
                    </button>
@@ -407,9 +416,9 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         </section>
 
         {/* ── 2. PROFILE CONTENT ── */}
-        <section className="py-24 px-12">
+        <section className="py-12 md:py-24 px-6 md:px-12">
            <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16">
                  {/* Left Sidebar: About & Specs */}
                  <div className="lg:col-span-4 space-y-12">
                     <div className="premium-card p-10 group">
@@ -424,7 +433,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                        <div className="grid grid-cols-2 gap-8">
                           {[
                             { label: "Height", val: profile?.height },
-                            { label: "Weight", val: "72kg" },
+                            { label: "Weight", val: (profile as any)?.weight },
                             { label: "Hair", val: profile?.hair_color },
                             { label: "Eyes", val: profile?.eye_color },
                             { label: "Age", val: profile?.age },
@@ -499,7 +508,7 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                                <div className="shimmer-accent" />
                                <ImageWithProtection 
                                 src={url} 
-                                alt={`Elena Portfolio ${i + 1}`} 
+                                alt={`${profile?.name || 'User'} Portfolio ${i + 1}`} 
                                 className="w-full h-full transform-gpu transition-transform duration-1000 group-hover/photo:scale-110"
                                 watermark={userSettings?.protection.watermark}
                                 preventDownload={userSettings?.protection.preventDownload}
@@ -523,29 +532,29 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
                        </div>
 
                        <div className="space-y-12">
-                          {[
-                            { role: "Lead Actor", prod: "Cinematic Journey 2024", type: "Feature Film", status: "Completed" },
-                            { role: "Supporting Role", prod: "The Spotlight Project", type: "Netflix Original", status: "Post-Prod" },
-                            { role: "Protagonist", prod: "Digital Hearts", type: "Web Series", status: "Featured" }
-                          ].map((milestone, i) => (
-                            <div key={i} className="flex gap-8 relative group">
-                               {i < 2 && <div className="absolute left-[24px] top-12 bottom-[-48px] w-px bg-white/5 group-hover:bg-primary/20 transition-colors" />}
-                               <div className="w-[50px] h-[50px] rounded-full border border-white/10 bg-secondary/30 flex items-center justify-center text-[10px] font-black text-primary/40 group-hover:text-primary transition-all relative z-10 shrink-0">
-                                  {2024 - i}
-                               </div>
-                               <div className="flex-1 pb-8 border-b border-white/5">
-                                  <div className="flex items-center justify-between mb-2">
-                                     <h4 className="font-display text-xl group-hover:text-primary transition-colors">{milestone.prod}</h4>
-                                     <span className="text-[0.6rem] font-black uppercase tracking-[2px] text-muted-foreground/30">{milestone.status}</span>
-                                  </div>
-                                  <div className="flex items-center gap-4 text-[0.65rem] font-bold uppercase tracking-[2px] text-muted-foreground">
-                                     <span className="text-primary/60">{milestone.role}</span>
-                                     <div className="w-1 h-1 rounded-full bg-white/10" />
-                                     <span>{milestone.type}</span>
-                                  </div>
-                               </div>
-                            </div>
-                          ))}
+                          {((profile as any)?.milestones || []).length > 0 ? (
+                            ((profile as any).milestones).map((milestone: any, i: number) => (
+                              <div key={i} className="flex gap-8 relative group">
+                                 {i < ((profile as any).milestones).length - 1 && <div className="absolute left-[24px] top-12 bottom-[-48px] w-px bg-white/5 group-hover:bg-primary/20 transition-colors" />}
+                                 <div className="w-[50px] h-[50px] rounded-full border border-white/10 bg-secondary/30 flex items-center justify-center text-[10px] font-black text-primary/40 group-hover:text-primary transition-all relative z-10 shrink-0">
+                                    {milestone.year || "—"}
+                                 </div>
+                                 <div className="flex-1 pb-8 border-b border-white/5">
+                                    <div className="flex items-center justify-between mb-2">
+                                       <h4 className="font-display text-xl group-hover:text-primary transition-colors">{milestone.prod}</h4>
+                                       <span className="text-[0.6rem] font-black uppercase tracking-[2px] text-muted-foreground/30">{milestone.status}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-[0.65rem] font-bold uppercase tracking-[2px] text-muted-foreground">
+                                       <span className="text-primary/60">{milestone.role}</span>
+                                       <div className="w-1 h-1 rounded-full bg-white/10" />
+                                       <span>{milestone.type}</span>
+                                    </div>
+                                 </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-muted-foreground/30 text-sm font-light italic">No verified milestones added yet.</div>
+                          )}
                        </div>
                     </div>
                  </div>
@@ -556,8 +565,8 @@ export default function ProfilePage({ onBack }: ProfilePageProps) {
         {/* ── FOOTER ── */}
         <footer className="py-24 px-12 border-t border-white/5 text-center bg-background">
           <div className="max-w-4xl mx-auto">
-             <div className="font-display text-2xl italic tracking-tighter text-primary mb-8 opacity-20">Elena Petrov Elite Portfolio</div>
-             <p className="text-[0.6rem] text-muted-foreground/20 uppercase tracking-[0.5em] font-black">© 2026 THE CAASTING NETWORK • DIGITALLY VERIFIED ARTIST</p>
+             <div className="font-display text-2xl italic tracking-tighter text-primary mb-8 opacity-20">{profile?.name ? `${profile.name} Portfolio` : "Casting Profile"}</div>
+             <p className="text-[0.6rem] text-muted-foreground/20 uppercase tracking-[0.5em] font-black">© {new Date().getFullYear()} CAASTINGCALL</p>
           </div>
         </footer>
       </div>

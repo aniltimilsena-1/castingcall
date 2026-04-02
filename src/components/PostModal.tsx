@@ -117,13 +117,25 @@ export default function PostModal({
                                         onClick={() => {
                                             if (videoRef.current) {
                                                 if (isPlaying) { videoRef.current.pause(); setIsPlaying(false); }
-                                                else { videoRef.current.play(); setIsPlaying(true); }
+                                                else { 
+                                                    const playPromise = videoRef.current.play();
+                                                    if (playPromise !== undefined) {
+                                                        playPromise.then(() => setIsPlaying(true)).catch(console.error);
+                                                    }
+                                                }
                                             }
                                         }}
                                     />
                                     {!isPlaying && (
-                                        <button className="absolute inset-0 flex items-center justify-center bg-black/20"
-                                            onClick={() => { videoRef.current?.play(); setIsPlaying(true); }}>
+                                        <button 
+                                            aria-label="Play video"
+                                            className="absolute inset-0 flex items-center justify-center bg-black/20"
+                                            onClick={() => { 
+                                                const playPromise = videoRef.current?.play();
+                                                if (playPromise !== undefined) {
+                                                    playPromise.then(() => setIsPlaying(true)).catch(console.error);
+                                                }
+                                            }}>
                                             <div className="w-20 h-20 bg-primary/20 backdrop-blur-xl rounded-full flex items-center justify-center border border-primary/40 group-hover/video:scale-110 transition-transform">
                                                 <Play size={32} fill="currentColor" className="text-primary ml-1" />
                                             </div>
@@ -131,6 +143,7 @@ export default function PostModal({
                                     )}
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
+                                        aria-label={isMuted ? "Unmute video" : "Mute video"}
                                         className="absolute bottom-8 right-8 z-50 w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/80 hover:text-primary transition-all shadow-2xl"
                                     >
                                         {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
