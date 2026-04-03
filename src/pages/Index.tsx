@@ -64,6 +64,7 @@ const CommandCenter = lazyWithRetry(() => import("@/components/CommandCenter"));
 const CastingTape = lazyWithRetry(() => import("@/components/CastingTape"));
 const CategoryPage = lazyWithRetry(() => import("@/components/CategoryPage"));
 const SearchPage = lazyWithRetry(() => import("@/components/SearchPage"));
+const MaintenancePage = lazyWithRetry(() => import("@/components/MaintenancePage"));
 
 // Lightweight loading fallback
 const PageLoader = () => (
@@ -804,6 +805,19 @@ const Index = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="font-display text-4xl text-primary animate-pulse">CaastingCall</div>
+      </div>
+    );
+  }
+
+  // SET TO TRUE TO ENABLE MAINTENANCE MODE
+  const isMaintenanceMode = true;
+
+  if (isMaintenanceMode && currentUserProfile?.role !== "Admin") {
+    return (
+      <div className="flex flex-col min-h-screen relative">
+        <Suspense fallback={<div className="min-h-screen bg-[#0d0d0d]" />}>
+          <MaintenancePage />
+        </Suspense>
       </div>
     );
   }
